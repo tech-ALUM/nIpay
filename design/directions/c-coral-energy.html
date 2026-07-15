@@ -1,0 +1,70 @@
+<!-- @dsCard group="Direzioni" name="C — Coral Energy" subtitle="Hero coral a onda, card bianche flottanti, vivace" -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--coral:#FF6F61;--coral2:#FF9084;--teal:#0E7C86;--ink:#1C2026;--paper:#F6F7F9;--surf:#fff;--mut:#8A919E;--line:#EEF0F3}
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9eaee;font-family:'Inter',system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;padding:20px}
+  .phone{width:390px;height:844px;background:var(--paper);border-radius:36px;border:8px solid #15181D;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .hero{background:linear-gradient(160deg,var(--coral2),var(--coral) 60%,#F0584A);color:#fff;padding:26px 24px 64px;border-radius:0 0 42px 42px;position:relative}
+  .brand{display:flex;justify-content:space-between;align-items:center}
+  .brand b{font-family:'Space Grotesk',sans-serif;font-size:16px;letter-spacing:.03em}
+  .ava{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:14px}
+  .lbl{font-size:12px;opacity:.85;margin-top:22px}
+  .tot{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:40px;margin-top:4px;letter-spacing:-.02em}
+  .float{margin:-44px 24px 0;background:var(--surf);border-radius:24px;padding:16px;box-shadow:0 14px 34px rgba(21,24,29,.12);display:flex;gap:8px;position:relative;z-index:2}
+  .float div{flex:1;text-align:center}
+  .float .k{font-size:11px;color:var(--mut)}
+  .float .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;margin-top:3px}
+  .float .sep{width:1px;flex:0 0 1px;background:var(--line)}
+  h2{font-family:'Space Grotesk',sans-serif;font-size:16px;margin:22px 24px 10px;display:flex;justify-content:space-between;align-items:baseline}
+  h2 a{font-size:11px;color:var(--coral);font-weight:600}
+  .wals{display:flex;gap:10px;padding:0 24px;overflow:hidden}
+  .w{min-width:140px;border-radius:20px;padding:14px;color:#fff;position:relative;overflow:hidden}
+  .w .wave{position:absolute;inset:auto -10px -18px;height:44px;background:rgba(255,255,255,.16);border-radius:50% 50% 0 0}
+  .w1{background:linear-gradient(150deg,#12919D,#0A5C64)}
+  .w2{background:linear-gradient(150deg,#FF8A7E,#EE5343)}
+  .w3{background:linear-gradient(150deg,#8A68D6,#5F42A8)}
+  .w .n{font-size:12px;opacity:.9}
+  .w .b{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;margin-top:14px}
+  .tx{margin:0 24px;background:var(--surf);border-radius:22px;overflow:hidden;box-shadow:0 8px 24px rgba(21,24,29,.06)}
+  .t{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  .t:last-child{border-bottom:none}
+  .ic{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .tt{flex:1}.n{font-size:13px;font-weight:600}.c{font-size:11px;color:var(--mut);margin-top:1px}
+  .amt{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px}
+  .fab{position:absolute;left:50%;transform:translateX(-50%);bottom:44px;width:62px;height:62px;border-radius:50%;background:var(--ink);color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 28px rgba(21,24,29,.35);z-index:3}
+  .nav{height:70px;background:var(--surf);border-top:1px solid var(--line);display:flex}
+  .nav div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#B8BEC9;gap:3px}
+  .nav div.on{color:var(--coral);font-weight:700}.nav span{font-size:19px}
+  .nav .gap{flex:0 0 62px}
+</style>
+<div class="phone">
+  <div class="hero">
+    <div class="brand"><b>■ nIpay</b><div class="ava">AB</div></div>
+    <div class="lbl">Saldo totale · Luglio</div>
+    <div class="tot">2.847,30 €</div>
+  </div>
+  <div class="float">
+    <div><div class="k">Entrate</div><div class="v" style="color:var(--teal)">+1.850</div></div>
+    <div class="sep"></div>
+    <div><div class="k">Uscite</div><div class="v" style="color:var(--coral)">−1.213</div></div>
+    <div class="sep"></div>
+    <div><div class="k">Netto</div><div class="v">+637</div></div>
+  </div>
+  <h2>Portafogli <a>gestisci</a></h2>
+  <div class="wals">
+    <div class="w w1"><div class="wave"></div><div class="n">Conto</div><div class="b">2.310,80 €</div></div>
+    <div class="w w2"><div class="wave"></div><div class="n">Contanti</div><div class="b">136,50 €</div></div>
+    <div class="w w3"><div class="wave"></div><div class="n">Risparmi</div><div class="b">400,00 €</div></div>
+  </div>
+  <h2>Ultime transazioni <a>tutte →</a></h2>
+  <div class="tx">
+    <div class="t"><div class="ic" style="background:#FFEFED">🛒</div><div class="tt"><div class="n">Esselunga</div><div class="c">Spesa · Conto · oggi</div></div><div class="amt" style="color:#EE5343">−42,50</div></div>
+    <div class="t"><div class="ic" style="background:#E6F3F4">💼</div><div class="tt"><div class="n">Stipendio</div><div class="c">Entrate · Conto · 1 lug</div></div><div class="amt" style="color:var(--teal)">+1.850,00</div></div>
+  </div>
+  <div class="fab">+</div>
+  <div class="nav">
+    <div class="on"><span>⌂</span>Home</div><div><span>☰</span>Transazioni</div><div class="gap"></div><div><span>◔</span>Statistiche</div><div><span>⚙</span>Altro</div>
+  </div>
+</div>
