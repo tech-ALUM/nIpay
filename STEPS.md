@@ -5,20 +5,20 @@
 >
 > Ambiente di sviluppo: Linux → si compila e testa **Android**; la build iOS richiede un Mac o CI (es. Codemagic) e arriva in M9.
 
-## M0 — Setup progetto
-- [ ] `flutter create` con org `com.alum.nipay`, struttura cartelle per feature (`lib/features/...`, `lib/data/...`, `lib/core/...`)
-- [ ] Lint (`flutter_lints` + regole custom), formattazione, `analysis_options.yaml`
-- [ ] Dipendenze base: `flutter_riverpod`, `drift`, `drift_flutter`, `uuid`, `intl`, `fl_chart`, `go_router`
-- [ ] Scaffold l10n IT+EN (`flutter gen-l10n`, file `app_it.arb` / `app_en.arb`)
-- [ ] CI GitHub Actions: analyze + test + build APK debug su ogni push
-- [ ] README con istruzioni di build
+## M0 — Setup progetto ✅ (2026-07-15)
+- [x] `flutter create` con org `com.alum.nipay`, struttura cartelle per feature (`lib/features/...`, `lib/data/...`, `lib/core/...`)
+- [x] Lint (`flutter_lints` + regole custom), formattazione, `analysis_options.yaml`
+- [x] Dipendenze base: `flutter_riverpod`, `drift`, `drift_flutter`, `uuid`, `intl`, `fl_chart`, `go_router` (Riverpod 2.6: la v3 confligge con drift_dev/flutter_test su Flutter 3.44.6, migrare quando si allinea)
+- [x] Scaffold l10n IT+EN (`flutter gen-l10n`, file `app_it.arb` / `app_en.arb`)
+- [x] CI GitHub Actions: analyze + test + build APK debug su ogni push
+- [x] README con istruzioni di build
 
-**Fatto quando**: l'app vuota compila su Android, CI verde.
+**Fatto quando**: l'app vuota compila su Android ✓ (app-debug.apk buildato in locale), CI verde (da verificare al primo run su GitHub).
 
 ## M1 — Design system (Claude Design)
-- [ ] Creare progetto design-system "nIpay" su claude.ai/design
-- [ ] Palette colori, tipografia, spaziature (foundation)
-- [ ] Mockup HTML delle schermate chiave: home/portafogli, lista transazioni, inserimento transazione, dashboard statistiche
+- [ ] Creare progetto design-system "nIpay" su claude.ai/design (bloccato: serve autorizzazione Claude Design da sessione interattiva; intanto i file sono in `design/` nel repo)
+- [x] Palette colori, tipografia, spaziature (foundation) — `design/foundation/` (brand ALUM)
+- [x] Mockup HTML delle schermate chiave: home/portafogli, lista transazioni, inserimento transazione, dashboard statistiche — `design/mockups/`
 - [ ] Review del team ALUM sui mockup
 - [ ] Tradurre il design approvato in `ThemeData` Flutter (light + dark) e widget base (card, bottoni, chip)
 
