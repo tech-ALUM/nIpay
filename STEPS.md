@@ -24,15 +24,15 @@
 
 **Fatto quando**: il team ha approvato i mockup e il tema Flutter li rispecchia.
 
-## M2 — Layer dati
-- [ ] Schema Drift: tutte le tabelle di OVERVIEW.md (Wallet, Transaction, Category, Tag, CustomFieldDef/Value, RecurringRule, Budget, Attachment, DashboardCard)
-- [ ] Convenzioni sync-ready su ogni tabella: `id` UUID testuale, `createdAt`, `updatedAt`, `deletedAt` (soft-delete)
-- [ ] Importi in centesimi (int)
-- [ ] Repository per entità con query reattive (Stream) e interfacce astratte
-- [ ] Seed categorie di default alla prima apertura
-- [ ] Test unitari sui repository (DB in memoria)
+## M2 — Layer dati ✅ (2026-07-15)
+- [x] Schema Drift: tutte le tabelle di OVERVIEW.md (Wallet, Transaction, Category, Tag, CustomFieldDef/Value, RecurringRule, Budget, Attachment, DashboardCard)
+- [x] Convenzioni sync-ready su ogni tabella: `id` UUID testuale, `createdAt`, `updatedAt`, `deletedAt` (soft-delete); DateTime salvati come ISO-8601 (build.yaml)
+- [x] Importi in centesimi (int)
+- [x] Repository per entità con query reattive (Stream) e interfacce astratte
+- [x] Seed categorie di default (repository idempotente; il wiring "alla prima apertura" arriva con la UI in M3)
+- [x] Test unitari sui repository (DB in memoria) — 20 test, TDD
 
-**Fatto quando**: CRUD completo da test per ogni entità, zero accessi a Drift fuori dal layer dati.
+**Fatto quando**: CRUD completo da test per ogni entità ✓, zero accessi a Drift fuori dal layer dati ✓. Nota: trasferimenti ricorrenti non supportati (UnsupportedError), ricorrenza mensile con riporto giorno (31 gen + 1 mese → inizio marzo) — rivedere se servirà "ultimo giorno del mese".
 
 ## M3 — Portafogli e transazioni (MVP usabile)
 - [ ] CRUD portafogli (nome, colore/icona, saldo iniziale, archivio)

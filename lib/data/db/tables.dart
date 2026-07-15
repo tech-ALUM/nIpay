@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 /// Colonne comuni a tutte le tabelle: id UUID + timestamp sync-ready.
@@ -13,6 +15,54 @@ mixin SyncColumns on Table {
 }
 
 enum TransactionType { expense, income, transfer }
+
+enum CustomFieldType { text, number, choice, date }
+
+class StringListConverter extends TypeConverter<List<String>, String> {
+  const StringListConverter();
+
+  @override
+  List<String> fromSql(String fromDb) =>
+      (jsonDecode(fromDb) as List).cast<String>();
+
+  @override
+  String toSql(List<String> value) => jsonEncode(value);
+}
+
+class Tags extends Table with SyncColumns {
+  TextColumn get name => text()();
+}
+
+/// Join N:M transazione↔tag. PK composta, niente riga duplicata.
+class TransactionTags extends Table {
+  TextColumn get transactionId => text().references(Transactions, #id)();
+  TextColumn get tagId => text().references(Tags, #id)();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {transactionId, tagId};
+}
+
+class CustomFieldDefs extends Table with SyncColumns {
+  TextColumn get name => text()();
+  TextColumn get type => textEnum<CustomFieldType>()();
+
+  /// Solo per type=choice: opzioni ammesse (JSON).
+  TextColumn get options =>
+      text().map(const StringListConverter()).nullable()();
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+}
+
+/// Un valore per (transazione, campo): setValue sovrascrive.
+class CustomFieldValues extends Table {
+  TextColumn get transactionId => text().references(Transactions, #id)();
+  TextColumn get fieldId => text().references(CustomFieldDefs, #id)();
+  TextColumn get value => text()();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {transactionId, fieldId};
+}
 
 class Transactions extends Table with SyncColumns {
   TextColumn get type => textEnum<TransactionType>()();
@@ -40,6 +90,48 @@ class Categories extends Table with SyncColumns {
   TextColumn get parentId => text().nullable().references(Categories, #id)();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
   BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
+}
+
+/// Tetto di spesa mensile per categoria (un budget per categoria).
+class Budgets extends Table with SyncColumns {
+  TextColumn get categoryId => text().references(Categories, #id)();
+  IntColumn get limitCents => integer()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {categoryId},
+      ];
+}
+
+enum RecurrenceFrequency { daily, weekly, monthly, yearly }
+
+/// Template di transazione che si ripete; [nextRunAt] è la prossima occorrenza
+/// da generare (catch-up all'apertura dell'app).
+class RecurringRules extends Table with SyncColumns {
+  TextColumn get walletId => text().references(Wallets, #id)();
+  TextColumn get categoryId => text().nullable().references(Categories, #id)();
+  TextColumn get type => textEnum<TransactionType>()();
+  IntColumn get amountCents => integer()();
+  TextColumn get description => text().withDefault(const Constant(''))();
+  TextColumn get frequency => textEnum<RecurrenceFrequency>()();
+  DateTimeColumn get startAt => dateTime()();
+  DateTimeColumn get nextRunAt => dateTime()();
+  DateTimeColumn get endAt => dateTime().nullable()();
+  DateTimeColumn get pausedAt => dateTime().nullable()();
+}
+
+/// File (es. foto scontrino) salvato nella dir dell'app, path relativo.
+class Attachments extends Table with SyncColumns {
+  TextColumn get transactionId => text().references(Transactions, #id)();
+  TextColumn get relativePath => text()();
+  TextColumn get mimeType => text()();
+}
+
+/// Card della dashboard statistiche: tipo, posizione e config (JSON).
+class DashboardCards extends Table with SyncColumns {
+  TextColumn get type => text()();
+  IntColumn get position => integer()();
+  TextColumn get configJson => text().withDefault(const Constant('{}'))();
 }
 
 class Wallets extends Table with SyncColumns {
