@@ -1,0 +1,100 @@
+<!-- @dsCard group="Bold Ink — Schermate" name="Statistiche" subtitle="Dark + Light affiancati" -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9eaee;font-family:'Inter',system-ui,sans-serif;display:flex;justify-content:center;gap:24px;padding:20px;flex-wrap:wrap}
+  .phone{width:390px;height:844px;border-radius:36px;border:8px solid #000;overflow:hidden;display:flex;flex-direction:column;background:var(--bg);color:var(--text)}
+  .dark{--bg:#101318;--surf:#1A1F27;--surf2:#222834;--text:#F2F4F8;--mut:#8B93A1;--line:#2A313D;--coral:#FF8A7E;--coralA:#FF6F61;--teal:#3FC5CF;--track:#222834;--warn:#E9B84A;--per:#F2F4F8;--pertx:#101318;--donutmut:#39414E;--sh:none}
+  .light{--bg:#F6F7F9;--surf:#FFFFFF;--surf2:#EDEFF2;--text:#171B21;--mut:#79818F;--line:#E8EAEE;--coral:#E8503F;--coralA:#FF6F61;--teal:#0E7C86;--track:#EDEFF2;--warn:#E0A800;--per:#171B21;--pertx:#FFFFFF;--donutmut:#C9CCD2;--sh:0 6px 18px rgba(21,24,29,.05)}
+  .top{display:flex;align-items:center;padding:18px 20px 10px}
+  .top h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0;flex:1}
+  .per{font-size:12px;background:var(--per);color:var(--pertx);border-radius:999px;padding:6px 12px;font-weight:600}
+  .list{flex:1;overflow:hidden;padding:4px 20px}
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:12px;box-shadow:var(--sh)}
+  .card .h{display:flex;align-items:center;margin-bottom:10px}
+  .card .h .t{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:14px;flex:1}
+  .card .h .g{color:var(--mut);opacity:.6;font-size:13px;letter-spacing:2px}
+  .card .h .cfg{color:var(--mut);font-size:13px;margin-left:8px}
+  .flex{display:flex;align-items:center;gap:14px}
+  .leg{font-size:11px;color:var(--mut);line-height:1.9}
+  .leg b{font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--text)}
+  .leg .d{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+  .bars{display:flex;align-items:flex-end;gap:9px;height:80px;flex:1}
+  .bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;height:100%}
+  .bars .b i{width:100%;border-radius:5px 5px 0 0;display:block;background:var(--surf2)}
+  .bars .b.hot i{background:linear-gradient(180deg,#FF8A7E,#FF6F61)}
+  .bars .b span{font-size:9px;color:var(--mut)}
+  .kpi{display:flex;gap:10px}
+  .kpi div{flex:1;background:var(--surf2);border-radius:14px;padding:10px}
+  .kpi .k{font-size:10px;color:var(--mut)}
+  .kpi .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;margin-top:2px}
+  .bar{height:6px;border-radius:3px;background:var(--track);overflow:hidden;margin:4px 0 8px}
+  .bar i{display:block;height:100%;border-radius:3px}
+  .br{display:flex;justify-content:space-between;font-size:12px}
+  .br span:last-child{font-family:'JetBrains Mono',monospace;font-size:11px}
+  .add{border:2px dashed var(--line);border-radius:20px;text-align:center;padding:14px;color:var(--mut);font-size:13px;font-family:'Space Grotesk',sans-serif}
+  .nav{height:64px;background:var(--surf);border-top:1px solid var(--line);display:flex}
+  .nav div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:var(--mut);gap:2px}
+  .nav div.on{color:var(--coralA);font-weight:600}.nav span{font-size:18px}
+</style>
+<template id="screen">
+  <div class="top"><h1>Statistiche</h1><div class="per">Luglio 2026 ▾</div></div>
+  <div class="list">
+    <div class="card">
+      <div class="h"><span class="g">⠿</span>&nbsp;&nbsp;<span class="t">Spese per categoria</span><span class="cfg">⚙</span></div>
+      <div class="flex">
+        <svg width="108" height="108" viewBox="0 0 42 42">
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--track)" stroke-width="7"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#FF6F61" stroke-width="7" stroke-dasharray="34 66" stroke-dashoffset="25"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#17A2AE" stroke-width="7" stroke-dasharray="26 74" stroke-dashoffset="91"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#8A68D6" stroke-width="7" stroke-dasharray="18 82" stroke-dashoffset="65"/>
+          <text x="21" y="20" text-anchor="middle" font-size="6" font-weight="700" font-family="JetBrains Mono" fill="var(--text)">1.213€</text>
+          <text x="21" y="27" text-anchor="middle" font-size="3.4" font-family="Inter" fill="var(--mut)">uscite</text>
+        </svg>
+        <div class="leg">
+          <div><span class="d" style="background:#FF6F61"></span>Spesa <b>412 €</b></div>
+          <div><span class="d" style="background:#17A2AE"></span>Casa <b>315 €</b></div>
+          <div><span class="d" style="background:#8A68D6"></span>Trasporti <b>218 €</b></div>
+          <div><span class="d" style="background:var(--donutmut)"></span>Altro <b>268 €</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="h"><span class="g">⠿</span>&nbsp;&nbsp;<span class="t">Trend ultimi 6 mesi</span><span class="cfg">⚙</span></div>
+      <div class="bars">
+        <div class="b"><i style="height:45%"></i><span>feb</span></div>
+        <div class="b"><i style="height:60%"></i><span>mar</span></div>
+        <div class="b"><i style="height:38%"></i><span>apr</span></div>
+        <div class="b"><i style="height:72%"></i><span>mag</span></div>
+        <div class="b"><i style="height:55%"></i><span>giu</span></div>
+        <div class="b hot"><i style="height:64%"></i><span>lug</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="h"><span class="g">⠿</span>&nbsp;&nbsp;<span class="t">Cash flow</span><span class="cfg">⚙</span></div>
+      <div class="kpi">
+        <div><div class="k">Entrate</div><div class="v" style="color:var(--teal)">+1.850</div></div>
+        <div><div class="k">Uscite</div><div class="v" style="color:var(--coral)">−1.213</div></div>
+        <div><div class="k">Netto</div><div class="v">+637</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="h"><span class="g">⠿</span>&nbsp;&nbsp;<span class="t">Budget</span><span class="cfg">⚙</span></div>
+      <div class="br"><span>🛒 Spesa</span><span>312 / 400 €</span></div>
+      <div class="bar"><i style="width:78%;background:var(--warn)"></i></div>
+      <div class="br"><span>🍽 Ristoranti</span><span>85 / 150 €</span></div>
+      <div class="bar"><i style="width:57%;background:#17A2AE"></i></div>
+    </div>
+    <div class="add">＋ Aggiungi card</div>
+  </div>
+  <div class="nav">
+    <div><span>⌂</span>Home</div><div><span>☰</span>Transazioni</div><div class="on"><span>◔</span>Statistiche</div><div><span>⚙</span>Altro</div>
+  </div>
+</template>
+<div class="phone dark"></div>
+<div class="phone light"></div>
+<script>
+  const tpl = document.getElementById('screen');
+  document.querySelectorAll('.phone').forEach(p => p.appendChild(tpl.content.cloneNode(true)));
+</script>

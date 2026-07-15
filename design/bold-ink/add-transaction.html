@@ -1,0 +1,55 @@
+<!-- @dsCard group="Bold Ink — Schermate" name="Nuova transazione" subtitle="Dark + Light affiancati" -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9eaee;font-family:'Inter',system-ui,sans-serif;display:flex;justify-content:center;gap:24px;padding:20px;flex-wrap:wrap}
+  .phone{width:390px;height:844px;border-radius:36px;border:8px solid #000;overflow:hidden;display:flex;flex-direction:column;background:var(--bg);color:var(--text)}
+  .dark{--bg:#101318;--surf:#1A1F27;--surf2:#222834;--text:#F2F4F8;--mut:#8B93A1;--line:#2A313D;--coral:#FF8A7E;--coralA:#FF6F61;--teal:#3FC5CF;--selbg:rgba(255,111,97,.14);--sh:none}
+  .light{--bg:#F6F7F9;--surf:#FFFFFF;--surf2:#EDEFF2;--text:#171B21;--mut:#79818F;--line:#E8EAEE;--coral:#E8503F;--coralA:#FF6F61;--teal:#0E7C86;--selbg:#FFF0EE;--sh:0 6px 18px rgba(21,24,29,.05)}
+  .top{display:flex;align-items:center;gap:12px;padding:16px 20px 8px}
+  .top h1{font-family:'Space Grotesk',sans-serif;font-size:18px;margin:0;flex:1}
+  .x{color:var(--mut);font-size:18px}
+  .seg{display:flex;margin:8px 20px;background:var(--surf2);border-radius:14px;padding:3px}
+  .seg div{flex:1;text-align:center;font-size:13px;padding:9px 0;border-radius:11px;color:var(--mut)}
+  .seg .on{background:linear-gradient(135deg,#FF8A7E,#FF6F61);color:#fff;font-weight:700;font-family:'Space Grotesk',sans-serif;box-shadow:0 4px 14px rgba(255,111,97,.35)}
+  .amount{text-align:center;padding:20px 0 8px}
+  .amount .v{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:44px;color:var(--coral);letter-spacing:-.02em}
+  .amount .cur{font-size:13px;color:var(--mut);margin-top:4px}
+  .sec{margin:10px 20px 0}
+  .sec .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;font-family:'Space Grotesk',sans-serif}
+  .cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .cat{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:10px 4px;text-align:center;font-size:11px;color:var(--mut);box-shadow:var(--sh)}
+  .cat span{display:block;font-size:20px;margin-bottom:3px}
+  .cat.on{border-color:var(--coralA);background:var(--selbg);color:var(--text);font-weight:600}
+  .row{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:8px;box-shadow:var(--sh)}
+  .row .k{color:var(--mut)}
+  .pill{font-size:11px;padding:3px 10px;border-radius:999px;background:rgba(23,162,174,.15);color:var(--teal);margin-left:4px}
+  .save{margin:auto 20px 24px;background:linear-gradient(135deg,#FF8A7E,#FF6F61);color:#fff;border-radius:18px;text-align:center;padding:16px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;box-shadow:0 10px 26px rgba(255,111,97,.4)}
+</style>
+<template id="screen">
+  <div class="top"><h1>Nuova transazione</h1><span class="x">✕</span></div>
+  <div class="seg"><div class="on">Spesa</div><div>Entrata</div><div>Trasferim.</div></div>
+  <div class="amount"><div class="v">42,50</div><div class="cur">EUR · Conto ▾ · oggi ▾</div></div>
+  <div class="sec">
+    <div class="l">Categoria</div>
+    <div class="cats">
+      <div class="cat on"><span>🛒</span>Spesa</div><div class="cat"><span>🍽</span>Ristoranti</div><div class="cat"><span>⛽</span>Trasporti</div><div class="cat"><span>🏠</span>Casa</div>
+      <div class="cat"><span>🎬</span>Svago</div><div class="cat"><span>💊</span>Salute</div><div class="cat"><span>👕</span>Shopping</div><div class="cat" style="border-style:dashed"><span>＋</span>Nuova</div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="l">Dettagli</div>
+    <div class="row"><span class="k">Descrizione</span><span>Esselunga</span></div>
+    <div class="row"><span class="k">Tag</span><span><span class="pill">#casa</span><span class="pill">＋</span></span></div>
+    <div class="row"><span class="k">Metodo pagamento</span><span>Carta ▾</span></div>
+    <div class="row"><span class="k">Scontrino</span><span>📷 Aggiungi foto</span></div>
+  </div>
+  <div class="save">Salva spesa</div>
+</template>
+<div class="phone dark"></div>
+<div class="phone light"></div>
+<script>
+  const tpl = document.getElementById('screen');
+  document.querySelectorAll('.phone').forEach(p => p.appendChild(tpl.content.cloneNode(true)));
+</script>
