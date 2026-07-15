@@ -24,6 +24,14 @@ Ogni file si apre con doppio click nel browser (nessun server necessario).
 - Titoli Space Grotesk, testo Inter.
 - Dark mode: paper→ink come sfondo, superfici `#1E222A` (da definire in fase tema Flutter).
 
+## Direzione scelta
+
+**A — Bold Ink** (scelta di Alberto, 2026-07-15), in **doppio tema switchabile in-app**:
+dark (`directions/a-bold-ink.html`) come identità principale + light
+(`directions/a-bold-ink-light.html`) con la stessa personalità. In Flutter:
+`ThemeData` dark + light e toggle `ThemeMode` (sistema/chiaro/scuro) nelle impostazioni.
+Le altre direzioni (B, C) restano come riferimento storico.
+
 ## Review
 
 Commenti del team: issue GitHub sul repo o direttamente ad Alberto.
