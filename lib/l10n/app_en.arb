@@ -1,0 +1,11 @@
+{
+  "@@locale": "en",
+  "appTitle": "nIpay",
+  "@appTitle": {
+    "description": "Application name shown in the app bar and launcher"
+  },
+  "homePlaceholder": "Welcome to nIpay",
+  "@homePlaceholder": {
+    "description": "Placeholder text on the empty home screen (M0)"
+  }
+}
