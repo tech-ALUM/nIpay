@@ -1,0 +1,35 @@
+<!-- @dsCard group="Foundation" name="Colori" subtitle="Palette ALUM + token semantici nIpay" -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --coral:#FF6F61; --teal:#0E7C86; --ink:#15181D; --paper:#F7F8FA; --surface:#FFFFFF;
+    --income:#0E7C86; --expense:#FF6F61; --transfer:#6B7280;
+    --warn:#E0A800; --danger:#D64545; --muted:#6B7280; --line:#E5E7EB;
+  }
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--paper);color:var(--ink);margin:0;padding:24px}
+  h2{font-family:'Space Grotesk',sans-serif;font-size:15px;margin:20px 0 10px;letter-spacing:.02em}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .sw{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .sw .chip{height:56px}
+  .sw .m{padding:8px 10px}
+  .sw .n{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px}
+  .sw .h{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+  .sw .u{font-size:11px;color:var(--muted);margin-top:2px}
+</style>
+<h2>Brand ALUM (bloccati)</h2>
+<div class="grid">
+  <div class="sw"><div class="chip" style="background:#FF6F61"></div><div class="m"><div class="n">Coral</div><div class="h">#FF6F61</div><div class="u">Accento primario: FAB, azioni, spese</div></div></div>
+  <div class="sw"><div class="chip" style="background:#0E7C86"></div><div class="m"><div class="n">Teal</div><div class="h">#0E7C86</div><div class="u">Secondario: entrate, link, selezioni</div></div></div>
+  <div class="sw"><div class="chip" style="background:#15181D"></div><div class="m"><div class="n">Ink</div><div class="h">#15181D</div><div class="u">Testo, bande scure, dark bg</div></div></div>
+  <div class="sw"><div class="chip" style="background:#F7F8FA;border-bottom:1px solid #E5E7EB"></div><div class="m"><div class="n">Paper</div><div class="h">#F7F8FA</div><div class="u">Sfondo pagina (light)</div></div></div>
+  <div class="sw"><div class="chip" style="background:#FFFFFF;border-bottom:1px solid #E5E7EB"></div><div class="m"><div class="n">Surface</div><div class="h">#FFFFFF</div><div class="u">Card e superfici</div></div></div>
+</div>
+<h2>Semantici nIpay</h2>
+<div class="grid">
+  <div class="sw"><div class="chip" style="background:#FF6F61"></div><div class="m"><div class="n">Spesa</div><div class="h">#FF6F61</div><div class="u">Importi in uscita (= coral)</div></div></div>
+  <div class="sw"><div class="chip" style="background:#0E7C86"></div><div class="m"><div class="n">Entrata</div><div class="h">#0E7C86</div><div class="u">Importi in ingresso (= teal)</div></div></div>
+  <div class="sw"><div class="chip" style="background:#6B7280"></div><div class="m"><div class="n">Trasferimento</div><div class="h">#6B7280</div><div class="u">Neutro: non è spesa né entrata</div></div></div>
+  <div class="sw"><div class="chip" style="background:#E0A800"></div><div class="m"><div class="n">Budget warning</div><div class="h">#E0A800</div><div class="u">Budget ≥ 80%</div></div></div>
+  <div class="sw"><div class="chip" style="background:#D64545"></div><div class="m"><div class="n">Budget superato</div><div class="h">#D64545</div><div class="u">Budget ≥ 100%</div></div></div>
+</div>

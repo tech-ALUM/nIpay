@@ -1,0 +1,95 @@
+<!-- @dsCard group="Mockup" name="Statistiche — Dashboard componibile" subtitle="Card configurabili: donut, trend, cash flow, budget" -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--coral:#FF6F61;--teal:#0E7C86;--ink:#15181D;--paper:#F7F8FA;--surface:#fff;--muted:#6B7280;--line:#E5E7EB;--warn:#E0A800}
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9eaee;font-family:'Inter',system-ui,sans-serif;color:var(--ink);display:flex;justify-content:center;padding:20px}
+  .phone{width:390px;height:844px;background:var(--paper);border-radius:36px;border:8px solid var(--ink);overflow:hidden;display:flex;flex-direction:column}
+  .top{display:flex;align-items:center;padding:18px 20px 10px}
+  .top h1{font-family:'Space Grotesk',sans-serif;font-size:20px;margin:0;flex:1}
+  .per{font-size:12px;background:var(--ink);color:#fff;border-radius:999px;padding:6px 12px}
+  .list{flex:1;overflow:hidden;padding:4px 20px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;position:relative}
+  .card .h{display:flex;align-items:center;margin-bottom:10px}
+  .card .h .t{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:14px;flex:1}
+  .card .h .g{color:#C9CCD2;font-size:13px;letter-spacing:2px}
+  .card .h .cfg{color:var(--muted);font-size:13px;margin-left:8px}
+  .flex{display:flex;align-items:center;gap:14px}
+  .leg{font-size:11px;color:var(--muted);line-height:1.9}
+  .leg b{font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--ink)}
+  .leg .d{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+  .bars{display:flex;align-items:flex-end;gap:9px;height:80px;flex:1}
+  .bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;height:100%}
+  .bars .b i{width:100%;border-radius:4px 4px 0 0;display:block}
+  .bars .b span{font-size:9px;color:var(--muted)}
+  .kpi{display:flex;gap:10px}
+  .kpi div{flex:1;background:var(--paper);border-radius:12px;padding:10px}
+  .kpi .k{font-size:10px;color:var(--muted)}
+  .kpi .v{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;margin-top:2px}
+  .bar{height:6px;border-radius:3px;background:#EDEEF1;overflow:hidden;margin:4px 0 8px}
+  .bar i{display:block;height:100%;border-radius:3px}
+  .br{display:flex;justify-content:space-between;font-size:12px}
+  .br span:last-child{font-family:'JetBrains Mono',monospace;font-size:11px}
+  .add{border:2px dashed #C9CCD2;border-radius:16px;text-align:center;padding:14px;color:var(--muted);font-size:13px;font-family:'Space Grotesk',sans-serif}
+  .nav{height:64px;background:var(--surface);border-top:1px solid var(--line);display:flex}
+  .nav div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:var(--muted);gap:2px}
+  .nav div.on{color:var(--coral);font-weight:600}.nav span{font-size:18px}
+</style>
+<div class="phone">
+  <div class="top"><h1>Statistiche</h1><div class="per">Luglio 2026 ▾</div></div>
+  <div class="list">
+    <div class="card">
+      <div class="h"><span class="g">⠿</span>&nbsp;&nbsp;<span class="t">Spese per categoria</span><span class="cfg">⚙</span></div>
+      <div class="flex">
+        <svg width="110" height="110" viewBox="0 0 42 42">
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#EDEEF1" stroke-width="7"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#FF6F61" stroke-width="7" stroke-dasharray="34 66" stroke-dashoffset="25"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#0E7C86" stroke-width="7" stroke-dasharray="26 74" stroke-dashoffset="91"/>
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#7C5CBF" stroke-width="7" stroke-dasharray="18 82" stroke-dashoffset="65"/>
+          <text x="21" y="20" text-anchor="middle" font-size="6" font-weight="700" font-family="JetBrains Mono" fill="#15181D">1.213€</text>
+          <text x="21" y="27" text-anchor="middle" font-size="3.4" font-family="Inter" fill="#6B7280">uscite</text>
+        </svg>
+        <div class="leg">
+          <div><span class="d" style="background:#FF6F61"></span>Spesa <b>412 €</b></div>
+          <div><span class="d" style="background:#0E7C86"></span>Casa <b>315 €</b></div>
+          <div><span class="d" style="background:#7C5CBF"></span>Trasporti <b>218 €</b></div>
+          <div><span class="d" style="background:#C9CCD2"></span>Altro <b>268 €</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="h"><span class="g">⠿</span>&nbsp;&nbsp;<span class="t">Trend ultimi 6 mesi</span><span class="cfg">⚙</span></div>
+      <div class="bars">
+        <div class="b"><i style="height:45%;background:#FFB3AB"></i><span>feb</span></div>
+        <div class="b"><i style="height:60%;background:#FFB3AB"></i><span>mar</span></div>
+        <div class="b"><i style="height:38%;background:#FFB3AB"></i><span>apr</span></div>
+        <div class="b"><i style="height:72%;background:#FFB3AB"></i><span>mag</span></div>
+        <div class="b"><i style="height:55%;background:#FFB3AB"></i><span>giu</span></div>
+        <div class="b"><i style="height:64%;background:#FF6F61"></i><span>lug</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="h"><span class="g">⠿</span>&nbsp;&nbsp;<span class="t">Cash flow</span><span class="cfg">⚙</span></div>
+      <div class="kpi">
+        <div><div class="k">Entrate</div><div class="v" style="color:var(--teal)">+1.850</div></div>
+        <div><div class="k">Uscite</div><div class="v" style="color:var(--coral)">−1.213</div></div>
+        <div><div class="k">Netto</div><div class="v">+637</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="h"><span class="g">⠿</span>&nbsp;&nbsp;<span class="t">Budget</span><span class="cfg">⚙</span></div>
+      <div class="br"><span>🛒 Spesa</span><span>312 / 400 €</span></div>
+      <div class="bar"><i style="width:78%;background:var(--warn)"></i></div>
+      <div class="br"><span>🍽 Ristoranti</span><span>85 / 150 €</span></div>
+      <div class="bar"><i style="width:57%;background:var(--teal)"></i></div>
+    </div>
+    <div class="add">＋ Aggiungi card</div>
+  </div>
+  <div class="nav">
+    <div><span>⌂</span>Home</div>
+    <div><span>☰</span>Transazioni</div>
+    <div class="on"><span>◔</span>Statistiche</div>
+    <div><span>⚙</span>Altro</div>
+  </div>
+</div>
