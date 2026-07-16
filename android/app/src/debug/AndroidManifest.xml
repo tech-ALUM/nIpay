@@ -4,4 +4,13 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application>
+        <!-- Waydroid: il driver Vulkan (vulkan.intel.so) crasha in
+             CreateSwapchainKHR. Solo in debug forziamo Impeller su OpenGLES;
+             la release resta su Vulkan per i dispositivi reali. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.ImpellerBackend"
+            android:value="opengles" />
+    </application>
 </manifest>
