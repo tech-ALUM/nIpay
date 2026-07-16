@@ -12,7 +12,7 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
 
 ## Documenti di riferimento
 - [OVERVIEW.md](OVERVIEW.md) — visione, decisioni, architettura, modello dati.
-- [STEPS.md](STEPS.md) — piano milestone M0–M10, tutte ✅ (2026-07-16). Lì sono annotati anche i rimandati.
+- [STEPS.md](STEPS.md) — piano milestone M0–M11, tutte ✅ (2026-07-16). Lì sono annotati anche i rimandati.
 
 ## Modello concettuale (IMPORTANTE, deciso 2026-07-16)
 - **Portafogli = spazi separati**: categorie, tag, campi custom, budget e dashboard
@@ -22,8 +22,13 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
   la wallet card in home.
 - I **trasferimenti** sono cross-spazio (walletId → walletToId), senza categoria.
 - Ogni nuovo portafoglio riceve il **seed** delle categorie default.
-- Export JSON **v2**: globale (restore distruttivo) o per-portafoglio
+- Export JSON **v3**: globale (restore distruttivo) o per-portafoglio
   (**additivo**, con remap completo degli UUID → reimportabile più volte).
+- **Nota spese (v2 dell'app, M11)**: proprietà della singola spesa
+  (ExpenseReportEntries: centro di costo, rimborsabile, fattura elettronica);
+  schermata dedicata con export **PDF con giustificativi** per intervallo date
+  (`lib/data/export/expense_report_pdf.dart`), archivio note con stati
+  bozza→inviata→rimborsata, card "Da rimborsare" in home. Schema Drift **v3**.
 
 ## Regole di progetto
 - Stack: Flutter 3.44.6 + Riverpod 2.6 (v3 confligge con drift_dev) + Drift.
@@ -44,6 +49,11 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
 
 ## Build e ambienti
 - `flutter analyze && flutter test` prima di ogni commit; CI su GitHub Actions.
+- **iOS**: build in CI (`.github/workflows/ios.yml`, runner macOS, ipa NON
+  firmata come artifact); installazione sull'iPhone di Alberto via
+  `~/Documents/ALUM/altstore/sideloader-cli install -i nipay-unsigned.ipa`
+  (Dadoum Sideloader, Apple ID gratuito, rifirma ogni 7 giorni). AltServer-Linux
+  NON funziona (firma rifiutata da iOS 27, errore AMFI CoreTrust).
 - **Waydroid** (form factor telefono già configurato): usare l'APK **debug** —
   il driver Vulkan del container crasha, solo il manifest debug forza
   Impeller→OpenGLES. Install: `adb install -r build/app/outputs/flutter-apk/app-debug.apk`
