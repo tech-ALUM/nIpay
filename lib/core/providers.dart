@@ -5,6 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/repositories/attachment_repository.dart';
 
@@ -212,5 +213,27 @@ final statsTotalsProvider = FutureProvider.family<PeriodTotals, DateTime>((
       );
 });
 
-/// Preferenza tema: Sistema / Chiaro / Scuro (switch in Impostazioni).
-final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
+/// Iniettato in main() (e nei test) dopo SharedPreferences.getInstance().
+final sharedPreferencesProvider = Provider<SharedPreferences>(
+  (ref) => throw UnimplementedError('override in main()'),
+);
+
+/// Preferenza tema persistita: Sistema / Chiaro / Scuro.
+final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);
+
+class ThemeModeNotifier extends Notifier<ThemeMode> {
+  static const _key = 'themeMode';
+
+  @override
+  ThemeMode build() {
+    final saved = ref.watch(sharedPreferencesProvider).getString(_key);
+    return ThemeMode.values.asNameMap()[saved] ?? ThemeMode.system;
+  }
+
+  void set(ThemeMode mode) {
+    state = mode;
+    ref.read(sharedPreferencesProvider).setString(_key, mode.name);
+  }
+}

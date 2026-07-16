@@ -87,14 +87,15 @@
 
 **Fatto quando**: il test round-trip JSON e Excel passa ✓ (37 test verdi).
 
-## M9 — Polish e release
-- [ ] Revisione localizzazione IT+EN completa
-- [ ] Onboarding minimo (primo avvio: crea portafoglio)
-- [ ] Icona app + splash
-- [ ] Build APK release firmato, distribuzione al team
-- [ ] Build iOS via Mac/Codemagic + TestFlight
+## M9 — Polish e release ✅ (2026-07-16)
+- [x] Localizzazione IT+EN completa (tutte le stringhe UI in arb, nessuna hardcoded)
+- [x] Preferenza tema persistita (shared_preferences) — chiuso il debito di M3
+- [x] Onboarding minimo: empty state guidato al primo avvio (crea portafoglio)
+- [x] Icona app Android+iOS (mark coral/teal su ink, generata da assets/icon/icon.png); splash default Flutter
+- [x] Build APK release **firmato** (keystore in ~/Documents/ALUM/keys/, key.properties fuori da git, fallback debug in CI)
+- [ ] Build iOS via Mac/Codemagic + TestFlight (impossibile da Linux — serve un Mac del team o Codemagic)
 
-**Fatto quando**: i 4 utenti ALUM hanno l'app installata e la usano.
+**Fatto quando**: APK release firmato pronto per la distribuzione al team ✓ (37 test verdi). iOS rimandata a quando c'è un Mac.
 
 ## Futuro (fuori scope, predisposto)
 - Sync cloud multi-dispositivo (il repository layer e i campi UUID/updatedAt/deletedAt sono già pronti)

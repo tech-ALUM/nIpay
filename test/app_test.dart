@@ -6,13 +6,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nipay/app.dart';
 import 'package:nipay/core/money.dart';
 import 'package:nipay/core/providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-Widget _app() => ProviderScope(
-  overrides: [
-    databaseExecutorProvider.overrideWithValue(NativeDatabase.memory()),
-  ],
-  child: const NipayApp(),
-);
+Future<Widget> _app() async {
+  SharedPreferences.setMockInitialValues({});
+  final prefs = await SharedPreferences.getInstance();
+  return ProviderScope(
+    overrides: [
+      databaseExecutorProvider.overrideWithValue(NativeDatabase.memory()),
+      sharedPreferencesProvider.overrideWithValue(prefs),
+    ],
+    child: const NipayApp(),
+  );
+}
 
 /// Smonta l'albero dentro il corpo del test: lo StreamQueryStore di Drift
 /// schedula un Timer(0) alla dispose, che va consumato con un pump extra.
@@ -42,7 +48,7 @@ void main() {
   testWidgets('home shows empty state, creating a wallet shows its balance', (
     tester,
   ) async {
-    await tester.pumpWidget(_app());
+    await tester.pumpWidget(await _app());
     await tester.pumpAndSettle();
 
     // Stato vuoto (EN: locale di default nei test).
@@ -62,7 +68,7 @@ void main() {
   testWidgets('adding an expense updates balance and recent list', (
     tester,
   ) async {
-    await tester.pumpWidget(_app());
+    await tester.pumpWidget(await _app());
     await tester.pumpAndSettle();
 
     await _createWallet(tester);
@@ -89,7 +95,7 @@ void main() {
   testWidgets('creating a tag inline attaches it and the tag filter finds it', (
     tester,
   ) async {
-    await tester.pumpWidget(_app());
+    await tester.pumpWidget(await _app());
     await tester.pumpAndSettle();
 
     await _createWallet(tester);
@@ -129,7 +135,7 @@ void main() {
   testWidgets('budget shows in home and warns when nearly exhausted', (
     tester,
   ) async {
-    await tester.pumpWidget(_app());
+    await tester.pumpWidget(await _app());
     await tester.pumpAndSettle();
 
     await _createWallet(tester);
@@ -175,7 +181,7 @@ void main() {
   testWidgets('stats dashboard: adding a cashflow card shows KPIs', (
     tester,
   ) async {
-    await tester.pumpWidget(_app());
+    await tester.pumpWidget(await _app());
     await tester.pumpAndSettle();
 
     await _createWallet(tester);

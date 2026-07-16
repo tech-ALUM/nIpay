@@ -21,6 +21,17 @@ flutter run             # dispositivo/emulatore Android collegato
 
 Build APK debug: `flutter build apk --debug` (output in `build/app/outputs/flutter-apk/`).
 
+## Release
+
+`flutter build apk --release` produce l'APK firmato per il team. La firma legge
+`android/key.properties` (NON in git); il keystore è in
+`~/Documents/ALUM/keys/nipay-release.jks` sulla macchina di Alberto — da
+conservare: perderlo significa non poter più aggiornare l'app installata.
+Senza `key.properties` (es. in CI) la release usa la firma debug.
+
+Su **Waydroid** usare l'APK **debug**: il driver Vulkan del container crasha e
+solo il manifest debug forza Impeller su OpenGLES.
+
 Versione Flutter di riferimento: **3.44.6 stable** (la stessa usata in CI, vedi `.github/workflows/ci.yml`).
 
 ## Struttura

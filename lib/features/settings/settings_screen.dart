@@ -157,7 +157,7 @@ class SettingsScreen extends ConsumerWidget {
           Card(
             child: RadioGroup<ThemeMode>(
               groupValue: mode,
-              onChanged: (v) => ref.read(themeModeProvider.notifier).state = v!,
+              onChanged: (v) => ref.read(themeModeProvider.notifier).set(v!),
               child: Column(
                 children: [
                   for (final (value, label) in [
