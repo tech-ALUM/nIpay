@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+
+import '../data/repositories/attachment_repository.dart';
 
 import '../data/db/app_database.dart';
 import '../data/repositories/budget_repository.dart';
@@ -48,6 +53,20 @@ final budgetRepositoryProvider = Provider<BudgetRepository>(
 final dashboardRepositoryProvider = Provider<DashboardRepository>(
   (ref) => DriftDashboardRepository(ref.watch(databaseProvider)),
 );
+final attachmentRepositoryProvider = Provider<AttachmentRepository>(
+  (ref) => DriftAttachmentRepository(ref.watch(databaseProvider)),
+);
+
+/// Directory documenti dell'app (base per i path relativi degli allegati).
+final appDirProvider = FutureProvider<Directory>(
+  (ref) => getApplicationDocumentsDirectory(),
+);
+
+/// Allegati di una transazione.
+final attachmentsOfProvider = FutureProvider.family((ref, String txId) {
+  ref.watch(recentTransactionsProvider);
+  return ref.watch(attachmentRepositoryProvider).listOf(txId);
+});
 
 /// Bootstrap alla prima apertura: seed categorie + catch-up ricorrenze.
 final bootstrapProvider = FutureProvider<void>((ref) async {

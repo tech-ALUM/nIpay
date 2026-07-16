@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../core/money.dart';
 import '../../core/providers.dart';
@@ -62,6 +66,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   String? _error;
   final Set<String> _selectedTagIds = {};
   final Map<String, String> _fieldValues = {};
+  final List<XFile> _pendingImages = [];
 
   @override
   void dispose() {
@@ -131,6 +136,24 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       }
     }
 
+    // Copia le foto nella dir dell'app e registra gli allegati.
+    if (_pendingImages.isNotEmpty) {
+      final dir = await ref.read(appDirProvider.future);
+      final attachDir = Directory('${dir.path}/attachments');
+      await attachDir.create(recursive: true);
+      final attachRepo = ref.read(attachmentRepositoryProvider);
+      for (final img in _pendingImages) {
+        final ext = img.path.split('.').last;
+        final rel = 'attachments/${const Uuid().v4()}.$ext';
+        await File(img.path).copy('${dir.path}/$rel');
+        await attachRepo.add(
+          transactionId: txId,
+          relativePath: rel,
+          mimeType: img.mimeType ?? 'image/$ext',
+        );
+      }
+    }
+
     // Avviso budget: se la spesa porta la categoria oltre l'80% o il 100%.
     if (_type == TransactionType.expense && _categoryId != null && mounted) {
       final messenger = ScaffoldMessenger.of(context);
@@ -162,6 +185,19 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     }
 
     if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final img = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: 2000,
+        imageQuality: 85,
+      );
+      if (img != null) setState(() => _pendingImages.add(img));
+    } catch (_) {
+      // Sorgente non disponibile (es. niente camera su Waydroid): ignora.
+    }
   }
 
   /// Input per ogni campo custom definito, in base al tipo.
@@ -381,6 +417,37 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                 ],
               ),
               ..._buildCustomFields(l10n),
+              const SizedBox(height: 16),
+              Text(l10n.receipt, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.photo_camera_outlined, size: 16),
+                    label: Text(
+                      l10n.fromCamera,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    onPressed: () => _pickImage(ImageSource.camera),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.photo_library_outlined, size: 16),
+                    label: Text(
+                      l10n.fromGallery,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    onPressed: () => _pickImage(ImageSource.gallery),
+                  ),
+                  if (_pendingImages.isNotEmpty) ...[
+                    const SizedBox(width: 10),
+                    Text(
+                      '📎 ${_pendingImages.length}',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ],
+                ],
+              ),
             ],
             const SizedBox(height: 16),
             ListTile(

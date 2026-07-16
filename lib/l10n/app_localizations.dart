@@ -290,6 +290,42 @@ abstract class AppLocalizations {
   /// **'Search transactions…'**
   String get searchTransactions;
 
+  /// No description provided for @receipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get receipt;
+
+  /// No description provided for @fromCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get fromCamera;
+
+  /// No description provided for @fromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get fromGallery;
+
+  /// No description provided for @attachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get attachments;
+
+  /// No description provided for @transactionDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction'**
+  String get transactionDetail;
+
+  /// No description provided for @deleteTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete transaction'**
+  String get deleteTransaction;
+
   /// No description provided for @addCard.
   ///
   /// In en, this message translates to:

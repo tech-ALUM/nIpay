@@ -6,6 +6,7 @@ import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
+import 'transaction_detail_sheet.dart';
 
 class TransactionTile extends ConsumerWidget {
   const TransactionTile({super.key, required this.transaction});
@@ -43,6 +44,7 @@ class TransactionTile extends ConsumerWidget {
 
     return ListTile(
       dense: true,
+      onTap: () => showTransactionDetailSheet(context, transaction),
       leading: Container(
         width: 38,
         height: 38,

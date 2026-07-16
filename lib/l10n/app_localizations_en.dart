@@ -106,6 +106,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchTransactions => 'Search transactions…';
 
   @override
+  String get receipt => 'Receipt';
+
+  @override
+  String get fromCamera => 'Camera';
+
+  @override
+  String get fromGallery => 'Gallery';
+
+  @override
+  String get attachments => 'Attachments';
+
+  @override
+  String get transactionDetail => 'Transaction';
+
+  @override
+  String get deleteTransaction => 'Delete transaction';
+
+  @override
   String get addCard => 'Add card';
 
   @override
