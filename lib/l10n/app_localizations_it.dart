@@ -267,6 +267,34 @@ class AppLocalizationsIt extends AppLocalizations {
   String get noItems => 'Ancora niente qui.';
 
   @override
+  String get backup => 'Backup';
+
+  @override
+  String get exportJson => 'Esporta backup JSON';
+
+  @override
+  String get exportExcel => 'Esporta Excel';
+
+  @override
+  String get importJson => 'Importa backup JSON';
+
+  @override
+  String get importExcel => 'Importa Excel';
+
+  @override
+  String get importConfirmTitle => 'Sostituire tutti i dati?';
+
+  @override
+  String get importConfirmBody =>
+      'L\'import sostituisce ogni portafoglio, transazione e impostazione con il contenuto del file. Operazione irreversibile.';
+
+  @override
+  String get importDone => 'Importazione completata';
+
+  @override
+  String get importFailed => 'Import fallito: file non valido';
+
+  @override
   String get settingsTheme => 'Tema';
 
   @override

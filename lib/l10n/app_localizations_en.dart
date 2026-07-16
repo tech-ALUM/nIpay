@@ -266,6 +266,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noItems => 'Nothing here yet.';
 
   @override
+  String get backup => 'Backup';
+
+  @override
+  String get exportJson => 'Export JSON backup';
+
+  @override
+  String get exportExcel => 'Export Excel';
+
+  @override
+  String get importJson => 'Import JSON backup';
+
+  @override
+  String get importExcel => 'Import Excel';
+
+  @override
+  String get importConfirmTitle => 'Replace all data?';
+
+  @override
+  String get importConfirmBody =>
+      'Importing replaces every wallet, transaction and setting with the file contents. This cannot be undone.';
+
+  @override
+  String get importDone => 'Import completed';
+
+  @override
+  String get importFailed => 'Import failed: invalid file';
+
+  @override
   String get settingsTheme => 'Theme';
 
   @override

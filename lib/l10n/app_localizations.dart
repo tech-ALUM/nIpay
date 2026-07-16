@@ -602,6 +602,60 @@ abstract class AppLocalizations {
   /// **'Nothing here yet.'**
   String get noItems;
 
+  /// No description provided for @backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get backup;
+
+  /// No description provided for @exportJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Export JSON backup'**
+  String get exportJson;
+
+  /// No description provided for @exportExcel.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Excel'**
+  String get exportExcel;
+
+  /// No description provided for @importJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Import JSON backup'**
+  String get importJson;
+
+  /// No description provided for @importExcel.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Excel'**
+  String get importExcel;
+
+  /// No description provided for @importConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace all data?'**
+  String get importConfirmTitle;
+
+  /// No description provided for @importConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing replaces every wallet, transaction and setting with the file contents. This cannot be undone.'**
+  String get importConfirmBody;
+
+  /// No description provided for @importDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Import completed'**
+  String get importDone;
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Import failed: invalid file'**
+  String get importFailed;
+
   /// No description provided for @settingsTheme.
   ///
   /// In en, this message translates to:

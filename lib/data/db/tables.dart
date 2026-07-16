@@ -18,8 +18,17 @@ enum TransactionType { expense, income, transfer }
 
 enum CustomFieldType { text, number, choice, date }
 
-class StringListConverter extends TypeConverter<List<String>, String> {
+/// JsonTypeConverter2: nel JSON di export la lista resta la stringa SQL,
+/// così il round-trip export→import non dipende dal ValueSerializer.
+class StringListConverter extends TypeConverter<List<String>, String>
+    with JsonTypeConverter2<List<String>, String, String> {
   const StringListConverter();
+
+  @override
+  List<String> fromJson(String json) => fromSql(json);
+
+  @override
+  String toJson(List<String> value) => toSql(value);
 
   @override
   List<String> fromSql(String fromDb) =>

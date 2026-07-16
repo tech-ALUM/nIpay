@@ -5,9 +5,47 @@ import '../../core/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../budgets/budget_manager_screen.dart';
 import '../recurring/recurring_manager_screen.dart';
+import 'backup_actions.dart';
 import 'category_manager_screen.dart';
 import 'custom_field_manager_screen.dart';
 import 'tag_manager_screen.dart';
+
+/// Conferma distruttiva prima dell'import, poi esegue e notifica l'esito.
+Future<void> _confirmAndImport(
+  BuildContext context,
+  WidgetRef ref,
+  Future<bool> Function(WidgetRef) action,
+) async {
+  final l10n = AppLocalizations.of(context)!;
+  final messenger = ScaffoldMessenger.of(context);
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(l10n.importConfirmTitle),
+      content: Text(l10n.importConfirmBody),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: Text(l10n.save),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+
+  try {
+    final done = await action(ref);
+    if (done) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.importDone)));
+    }
+  } on FormatException {
+    messenger.showSnackBar(SnackBar(content: Text(l10n.importFailed)));
+  }
+}
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -63,6 +101,50 @@ class SettingsScreen extends ConsumerWidget {
                       context,
                     ).push(MaterialPageRoute(builder: (_) => screen)),
                   ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(l10n.backup, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 6),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.upload_file_outlined, size: 20),
+                  title: Text(
+                    l10n.exportJson,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  onTap: () => exportJsonBackup(ref),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.table_view_outlined, size: 20),
+                  title: Text(
+                    l10n.exportExcel,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  onTap: () => exportExcelBackup(ref),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.download_outlined, size: 20),
+                  title: Text(
+                    l10n.importJson,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  onTap: () =>
+                      _confirmAndImport(context, ref, importJsonBackup),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.grid_on_outlined, size: 20),
+                  title: Text(
+                    l10n.importExcel,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  onTap: () =>
+                      _confirmAndImport(context, ref, importExcelBackup),
+                ),
               ],
             ),
           ),

@@ -69,22 +69,23 @@
 
 **Fatto quando**: dashboard personale persistita ✓ (34 test verdi). Rimandato: confronto periodi come card dedicata e filtri per-card (portafogli/categorie) — il selettore periodo è per ora globale.
 
-## M7 — Allegati
-- [ ] Foto da camera/galleria e file per transazione
-- [ ] Storage nella directory dell'app, thumbnail nella lista
-- [ ] Pulizia file orfani
+## M7 — Allegati ✅ (2026-07-16)
+- [x] Foto da camera/galleria per transazione (image_picker, max 2000px q85)
+- [x] Storage in `<documents>/attachments/` con nome UUID; thumbnail e viewer zoom nel dettaglio transazione (tap su una riga)
+- [x] Dettaglio transazione con eliminazione (soft-delete)
+- [ ] Pulizia file orfani (rimandata: i file di transazioni eliminate restano su disco)
 
-**Fatto quando**: scontrino fotografabile e riapribile dalla transazione.
+**Fatto quando**: scontrino fotografabile e riapribile dalla transazione ✓.
 
-## M8 — Export / Import
-- [ ] Export JSON canonico versionato (`schemaVersion`); con allegati → archivio .zip
-- [ ] Import JSON: validazione schema, restore completo su DB vuoto
-- [ ] Export Excel multi-foglio (Transazioni, Portafogli, Categorie, Budget) — package `excel`
-- [ ] Import Excel round-trip (solo file generati da nIpay)
-- [ ] Condivisione file via share sheet di sistema
-- [ ] Test round-trip: export → wipe → import → dati identici
+## M8 — Export / Import ✅ (2026-07-16)
+- [x] Export JSON canonico versionato (`schemaVersion: 1`, tutte le 11 tabelle); con allegati → .zip (nipay.json + attachments/)
+- [x] Import JSON: validazione app+schema, wipe transazionale e restore completo, ripristino file allegati dallo zip
+- [x] Export Excel multi-foglio (Portafogli, Categorie, Transazioni, Budget) reimportabile
+- [x] Import Excel round-trip (solo file nIpay; ripristina le 4 tabelle dei fogli)
+- [x] Condivisione via share sheet (share_plus) e selezione file per l'import (file_selector), con dialog di conferma distruttiva
+- [x] Test round-trip TDD: JSON completo (11 tabelle + saldo ricalcolato) ed Excel
 
-**Fatto quando**: il test round-trip JSON e Excel passa in CI.
+**Fatto quando**: il test round-trip JSON e Excel passa ✓ (37 test verdi).
 
 ## M9 — Polish e release
 - [ ] Revisione localizzazione IT+EN completa

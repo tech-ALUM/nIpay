@@ -2807,10 +2807,10 @@ class $CustomFieldDefsTable extends CustomFieldDefs
 
   static JsonTypeConverter2<CustomFieldType, String, String> $convertertype =
       const EnumNameConverter<CustomFieldType>(CustomFieldType.values);
-  static TypeConverter<List<String>, String> $converteroptions =
+  static JsonTypeConverter2<List<String>, String, String> $converteroptions =
       const StringListConverter();
-  static TypeConverter<List<String>?, String?> $converteroptionsn =
-      NullAwareTypeConverter.wrap($converteroptions);
+  static JsonTypeConverter2<List<String>?, String?, String?>
+  $converteroptionsn = JsonTypeConverter2.asNullable($converteroptions);
 }
 
 class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
@@ -2889,7 +2889,9 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
       type: $CustomFieldDefsTable.$convertertype.fromJson(
         serializer.fromJson<String>(json['type']),
       ),
-      options: serializer.fromJson<List<String>?>(json['options']),
+      options: $CustomFieldDefsTable.$converteroptionsn.fromJson(
+        serializer.fromJson<String?>(json['options']),
+      ),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
     );
   }
@@ -2905,7 +2907,9 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
       'type': serializer.toJson<String>(
         $CustomFieldDefsTable.$convertertype.toJson(type),
       ),
-      'options': serializer.toJson<List<String>?>(options),
+      'options': serializer.toJson<String?>(
+        $CustomFieldDefsTable.$converteroptionsn.toJson(options),
+      ),
       'sortOrder': serializer.toJson<int>(sortOrder),
     };
   }
