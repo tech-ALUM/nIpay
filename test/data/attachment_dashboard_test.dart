@@ -12,10 +12,14 @@ void main() {
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
-    final wallet = await DriftWalletRepository(db)
-        .create(name: 'Conto', colorHex: '#0E7C86');
+    final wallet = await DriftWalletRepository(
+      db,
+    ).create(name: 'Conto', colorHex: '#0E7C86');
     txId = await DriftTransactionRepository(db).createExpense(
-        walletId: wallet, amountCents: 4250, date: DateTime(2026, 7, 15));
+      walletId: wallet,
+      amountCents: 4250,
+      date: DateTime(2026, 7, 15),
+    );
   });
 
   tearDown(() async => db.close());
@@ -23,9 +27,10 @@ void main() {
   test('adds an attachment and lists it for the transaction', () async {
     final repo = DriftAttachmentRepository(db);
     await repo.add(
-        transactionId: txId,
-        relativePath: 'attachments/scontrino1.jpg',
-        mimeType: 'image/jpeg');
+      transactionId: txId,
+      relativePath: 'attachments/scontrino1.jpg',
+      mimeType: 'image/jpeg',
+    );
 
     final list = await repo.listOf(txId);
     expect(list.single.relativePath, 'attachments/scontrino1.jpg');
@@ -34,8 +39,10 @@ void main() {
   test('dashboard cards persist type, order and config', () async {
     final repo = DriftDashboardRepository(db);
     await repo.addCard(type: 'categoryDonut', configJson: '{"period":"month"}');
-    final trendId =
-        await repo.addCard(type: 'trend', configJson: '{"months":6}');
+    final trendId = await repo.addCard(
+      type: 'trend',
+      configJson: '{"months":6}',
+    );
 
     var cards = await repo.getCards();
     expect(cards.map((c) => c.type), ['categoryDonut', 'trend']);

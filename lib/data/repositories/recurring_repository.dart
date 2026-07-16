@@ -29,7 +29,7 @@ abstract interface class RecurringRepository {
 
 class DriftRecurringRepository implements RecurringRepository {
   DriftRecurringRepository(this._db)
-      : _transactions = DriftTransactionRepository(_db);
+    : _transactions = DriftTransactionRepository(_db);
 
   final AppDatabase _db;
   final TransactionRepository _transactions;
@@ -48,45 +48,51 @@ class DriftRecurringRepository implements RecurringRepository {
   }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
-    await _db.into(_db.recurringRules).insert(RecurringRulesCompanion.insert(
-          id: id,
-          walletId: walletId,
-          categoryId: Value(categoryId),
-          type: type,
-          amountCents: amountCents,
-          description: Value(description),
-          frequency: frequency,
-          startAt: startAt,
-          nextRunAt: startAt,
-          endAt: Value(endAt),
-          createdAt: now,
-          updatedAt: now,
-        ));
+    await _db
+        .into(_db.recurringRules)
+        .insert(
+          RecurringRulesCompanion.insert(
+            id: id,
+            walletId: walletId,
+            categoryId: Value(categoryId),
+            type: type,
+            amountCents: amountCents,
+            description: Value(description),
+            frequency: frequency,
+            startAt: startAt,
+            nextRunAt: startAt,
+            endAt: Value(endAt),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
     return id;
   }
 
   @override
-  Future<List<RecurringRule>> getAll() =>
-      (_db.select(_db.recurringRules)..where((t) => t.deletedAt.isNull()))
-          .get();
+  Future<List<RecurringRule>> getAll() => (_db.select(
+    _db.recurringRules,
+  )..where((t) => t.deletedAt.isNull())).get();
 
   DateTime _advance(DateTime d, RecurrenceFrequency f) => switch (f) {
-        RecurrenceFrequency.daily => d.add(const Duration(days: 1)),
-        RecurrenceFrequency.weekly => d.add(const Duration(days: 7)),
-        // Il giorno viene riportato dal costruttore: 31 gen + 1 mese → 2/3 mar.
-        // Per il tracking personale è accettabile; rivedere se servirà "fine mese".
-        RecurrenceFrequency.monthly => DateTime(d.year, d.month + 1, d.day),
-        RecurrenceFrequency.yearly => DateTime(d.year + 1, d.month, d.day),
-      };
+    RecurrenceFrequency.daily => d.add(const Duration(days: 1)),
+    RecurrenceFrequency.weekly => d.add(const Duration(days: 7)),
+    // Il giorno viene riportato dal costruttore: 31 gen + 1 mese → 2/3 mar.
+    // Per il tracking personale è accettabile; rivedere se servirà "fine mese".
+    RecurrenceFrequency.monthly => DateTime(d.year, d.month + 1, d.day),
+    RecurrenceFrequency.yearly => DateTime(d.year + 1, d.month, d.day),
+  };
 
   @override
   Future<int> generateDue({required DateTime now}) async {
-    final due = await (_db.select(_db.recurringRules)
-          ..where((t) =>
-              t.deletedAt.isNull() &
-              t.pausedAt.isNull() &
-              t.nextRunAt.isSmallerOrEqualValue(now)))
-        .get();
+    final due =
+        await (_db.select(_db.recurringRules)..where(
+              (t) =>
+                  t.deletedAt.isNull() &
+                  t.pausedAt.isNull() &
+                  t.nextRunAt.isSmallerOrEqualValue(now),
+            ))
+            .get();
 
     var created = 0;
     for (final rule in due) {
@@ -96,31 +102,36 @@ class DriftRecurringRepository implements RecurringRepository {
         switch (rule.type) {
           case TransactionType.expense:
             await _transactions.createExpense(
-                walletId: rule.walletId,
-                amountCents: rule.amountCents,
-                date: next,
-                categoryId: rule.categoryId,
-                description: rule.description);
+              walletId: rule.walletId,
+              amountCents: rule.amountCents,
+              date: next,
+              categoryId: rule.categoryId,
+              description: rule.description,
+            );
           case TransactionType.income:
             await _transactions.createIncome(
-                walletId: rule.walletId,
-                amountCents: rule.amountCents,
-                date: next,
-                categoryId: rule.categoryId,
-                description: rule.description);
+              walletId: rule.walletId,
+              amountCents: rule.amountCents,
+              date: next,
+              categoryId: rule.categoryId,
+              description: rule.description,
+            );
           case TransactionType.transfer:
             throw UnsupportedError(
-                'Trasferimenti ricorrenti non supportati (serve walletTo)');
+              'Trasferimenti ricorrenti non supportati (serve walletTo)',
+            );
         }
         created++;
         next = _advance(next, rule.frequency);
       }
-      await (_db.update(_db.recurringRules)
-            ..where((t) => t.id.equals(rule.id)))
-          .write(RecurringRulesCompanion(
-        nextRunAt: Value(next),
-        updatedAt: Value(DateTime.now()),
-      ));
+      await (_db.update(
+        _db.recurringRules,
+      )..where((t) => t.id.equals(rule.id))).write(
+        RecurringRulesCompanion(
+          nextRunAt: Value(next),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
     }
     return created;
   }

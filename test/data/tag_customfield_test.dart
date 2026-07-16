@@ -16,10 +16,14 @@ void main() {
     db = AppDatabase(NativeDatabase.memory());
     tags = DriftTagRepository(db);
     fields = DriftCustomFieldRepository(db);
-    final wallet = await DriftWalletRepository(db)
-        .create(name: 'Conto', colorHex: '#0E7C86');
+    final wallet = await DriftWalletRepository(
+      db,
+    ).create(name: 'Conto', colorHex: '#0E7C86');
     txId = await DriftTransactionRepository(db).createExpense(
-        walletId: wallet, amountCents: 4250, date: DateTime(2026, 7, 15));
+      walletId: wallet,
+      amountCents: 4250,
+      date: DateTime(2026, 7, 15),
+    );
   });
 
   tearDown(() async => db.close());
@@ -43,10 +47,15 @@ void main() {
 
   test('defines a custom field and sets a value on a transaction', () async {
     final fieldId = await fields.define(
-        name: 'Metodo pagamento',
-        type: CustomFieldType.choice,
-        options: ['Carta', 'Contanti', 'Bonifico']);
-    await fields.setValue(transactionId: txId, fieldId: fieldId, value: 'Carta');
+      name: 'Metodo pagamento',
+      type: CustomFieldType.choice,
+      options: ['Carta', 'Contanti', 'Bonifico'],
+    );
+    await fields.setValue(
+      transactionId: txId,
+      fieldId: fieldId,
+      value: 'Carta',
+    );
 
     final values = await fields.valuesOf(txId);
     expect(values, hasLength(1));
@@ -57,10 +66,20 @@ void main() {
   });
 
   test('setValue overwrites the previous value for the same field', () async {
-    final fieldId =
-        await fields.define(name: 'Luogo', type: CustomFieldType.text);
-    await fields.setValue(transactionId: txId, fieldId: fieldId, value: 'Milano');
-    await fields.setValue(transactionId: txId, fieldId: fieldId, value: 'Lecco');
+    final fieldId = await fields.define(
+      name: 'Luogo',
+      type: CustomFieldType.text,
+    );
+    await fields.setValue(
+      transactionId: txId,
+      fieldId: fieldId,
+      value: 'Milano',
+    );
+    await fields.setValue(
+      transactionId: txId,
+      fieldId: fieldId,
+      value: 'Lecco',
+    );
 
     final values = await fields.valuesOf(txId);
     expect(values.single.value, 'Lecco');

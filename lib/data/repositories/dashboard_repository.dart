@@ -27,18 +27,25 @@ class DriftDashboardRepository implements DashboardRepository {
         ..orderBy([(t) => OrderingTerm.asc(t.position)]);
 
   @override
-  Future<String> addCard({required String type, String configJson = '{}'}) async {
+  Future<String> addCard({
+    required String type,
+    String configJson = '{}',
+  }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
     final count = (await _alive.get()).length;
-    await _db.into(_db.dashboardCards).insert(DashboardCardsCompanion.insert(
-          id: id,
-          type: type,
-          position: count,
-          configJson: Value(configJson),
-          createdAt: now,
-          updatedAt: now,
-        ));
+    await _db
+        .into(_db.dashboardCards)
+        .insert(
+          DashboardCardsCompanion.insert(
+            id: id,
+            type: type,
+            position: count,
+            configJson: Value(configJson),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
     return id;
   }
 

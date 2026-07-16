@@ -51,30 +51,36 @@ class DriftCategoryRepository implements CategoryRepository {
   }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
-    await _db.into(_db.categories).insert(CategoriesCompanion.insert(
-          id: id,
-          name: name,
-          icon: icon,
-          colorHex: colorHex,
-          kind: kind,
-          parentId: Value(parentId),
-          createdAt: now,
-          updatedAt: now,
-        ));
+    await _db
+        .into(_db.categories)
+        .insert(
+          CategoriesCompanion.insert(
+            id: id,
+            name: name,
+            icon: icon,
+            colorHex: colorHex,
+            kind: kind,
+            parentId: Value(parentId),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
     return id;
   }
 
   @override
-  Future<List<Category>> getAll() => (_db.select(_db.categories)
-        ..where((t) => t.deletedAt.isNull())
-        ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
-      .get();
+  Future<List<Category>> getAll() =>
+      (_db.select(_db.categories)
+            ..where((t) => t.deletedAt.isNull())
+            ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+          .get();
 
   @override
-  Stream<List<Category>> watchAll() => (_db.select(_db.categories)
-        ..where((t) => t.deletedAt.isNull())
-        ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
-      .watch();
+  Stream<List<Category>> watchAll() =>
+      (_db.select(_db.categories)
+            ..where((t) => t.deletedAt.isNull())
+            ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+          .watch();
 
   @override
   Future<void> softDelete(String id) =>
@@ -87,9 +93,9 @@ class DriftCategoryRepository implements CategoryRepository {
 
   @override
   Future<void> seedDefaults() async {
-    final existing = await (_db.select(_db.categories)
-          ..where((t) => t.isDefault.equals(true)))
-        .get();
+    final existing = await (_db.select(
+      _db.categories,
+    )..where((t) => t.isDefault.equals(true))).get();
     if (existing.isNotEmpty) return;
 
     final now = DateTime.now();

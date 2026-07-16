@@ -22,8 +22,16 @@ class DriftTagRepository implements TagRepository {
   Future<String> create(String name) async {
     final id = _uuid.v4();
     final now = DateTime.now();
-    await _db.into(_db.tags).insert(
-        TagsCompanion.insert(id: id, name: name, createdAt: now, updatedAt: now));
+    await _db
+        .into(_db.tags)
+        .insert(
+          TagsCompanion.insert(
+            id: id,
+            name: name,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
     return id;
   }
 
@@ -32,31 +40,37 @@ class DriftTagRepository implements TagRepository {
       (_db.select(_db.tags)..where((t) => t.deletedAt.isNull())).get();
 
   @override
-  Future<void> tagTransaction(String transactionId, String tagId) =>
-      _db.into(_db.transactionTags).insert(
-            TransactionTagsCompanion.insert(
-              transactionId: transactionId,
-              tagId: tagId,
-              createdAt: DateTime.now(),
-            ),
-            mode: InsertMode.insertOrIgnore,
-          );
+  Future<void> tagTransaction(String transactionId, String tagId) => _db
+      .into(_db.transactionTags)
+      .insert(
+        TransactionTagsCompanion.insert(
+          transactionId: transactionId,
+          tagId: tagId,
+          createdAt: DateTime.now(),
+        ),
+        mode: InsertMode.insertOrIgnore,
+      );
 
   @override
   Future<void> untagTransaction(String transactionId, String tagId) =>
-      (_db.delete(_db.transactionTags)
-            ..where((t) =>
-                t.transactionId.equals(transactionId) & t.tagId.equals(tagId)))
+      (_db.delete(_db.transactionTags)..where(
+            (t) =>
+                t.transactionId.equals(transactionId) & t.tagId.equals(tagId),
+          ))
           .go();
 
   @override
   Future<List<Tag>> tagsOf(String transactionId) {
-    final query = _db.select(_db.tags).join([
-      innerJoin(
-          _db.transactionTags, _db.transactionTags.tagId.equalsExp(_db.tags.id)),
-    ])
-      ..where(_db.transactionTags.transactionId.equals(transactionId) &
-          _db.tags.deletedAt.isNull());
+    final query =
+        _db.select(_db.tags).join([
+          innerJoin(
+            _db.transactionTags,
+            _db.transactionTags.tagId.equalsExp(_db.tags.id),
+          ),
+        ])..where(
+          _db.transactionTags.transactionId.equals(transactionId) &
+              _db.tags.deletedAt.isNull(),
+        );
     return query.map((row) => row.readTable(_db.tags)).get();
   }
 

@@ -62,18 +62,22 @@ class DriftTransactionRepository implements TransactionRepository {
     assert(amountCents > 0, 'amountCents deve essere positivo');
     final id = _uuid.v4();
     final now = DateTime.now();
-    await _db.into(_db.transactions).insert(TransactionsCompanion.insert(
-          id: id,
-          type: type,
-          amountCents: amountCents,
-          date: date,
-          walletId: walletId,
-          walletToId: Value(walletToId),
-          categoryId: Value(categoryId),
-          description: Value(description),
-          createdAt: now,
-          updatedAt: now,
-        ));
+    await _db
+        .into(_db.transactions)
+        .insert(
+          TransactionsCompanion.insert(
+            id: id,
+            type: type,
+            amountCents: amountCents,
+            date: date,
+            walletId: walletId,
+            walletToId: Value(walletToId),
+            categoryId: Value(categoryId),
+            description: Value(description),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
     return id;
   }
 
@@ -84,14 +88,14 @@ class DriftTransactionRepository implements TransactionRepository {
     required DateTime date,
     String? categoryId,
     String description = '',
-  }) =>
-      _insert(
-          type: TransactionType.expense,
-          walletId: walletId,
-          amountCents: amountCents,
-          date: date,
-          categoryId: categoryId,
-          description: description);
+  }) => _insert(
+    type: TransactionType.expense,
+    walletId: walletId,
+    amountCents: amountCents,
+    date: date,
+    categoryId: categoryId,
+    description: description,
+  );
 
   @override
   Future<String> createIncome({
@@ -100,14 +104,14 @@ class DriftTransactionRepository implements TransactionRepository {
     required DateTime date,
     String? categoryId,
     String description = '',
-  }) =>
-      _insert(
-          type: TransactionType.income,
-          walletId: walletId,
-          amountCents: amountCents,
-          date: date,
-          categoryId: categoryId,
-          description: description);
+  }) => _insert(
+    type: TransactionType.income,
+    walletId: walletId,
+    amountCents: amountCents,
+    date: date,
+    categoryId: categoryId,
+    description: description,
+  );
 
   @override
   Future<String> createTransfer({
@@ -116,26 +120,28 @@ class DriftTransactionRepository implements TransactionRepository {
     required int amountCents,
     required DateTime date,
     String description = '',
-  }) =>
-      _insert(
-          type: TransactionType.transfer,
-          walletId: fromWalletId,
-          walletToId: toWalletId,
-          amountCents: amountCents,
-          date: date,
-          description: description);
+  }) => _insert(
+    type: TransactionType.transfer,
+    walletId: fromWalletId,
+    walletToId: toWalletId,
+    amountCents: amountCents,
+    date: date,
+    description: description,
+  );
 
   @override
   Future<int> balanceOf(String walletId) async {
-    final wallet = await (_db.select(_db.wallets)
-          ..where((t) => t.id.equals(walletId)))
-        .getSingle();
+    final wallet = await (_db.select(
+      _db.wallets,
+    )..where((t) => t.id.equals(walletId))).getSingle();
 
-    final rows = await (_db.select(_db.transactions)
-          ..where((t) =>
-              t.deletedAt.isNull() &
-              (t.walletId.equals(walletId) | t.walletToId.equals(walletId))))
-        .get();
+    final rows =
+        await (_db.select(_db.transactions)..where(
+              (t) =>
+                  t.deletedAt.isNull() &
+                  (t.walletId.equals(walletId) | t.walletToId.equals(walletId)),
+            ))
+            .get();
 
     var balance = wallet.initialBalanceCents;
     for (final tx in rows) {
@@ -157,13 +163,15 @@ class DriftTransactionRepository implements TransactionRepository {
     required DateTime from,
     required DateTime to,
   }) async {
-    final rows = await (_db.select(_db.transactions)
-          ..where((t) =>
-              t.deletedAt.isNull() &
-              t.type.equalsValue(TransactionType.transfer).not() &
-              t.date.isBiggerOrEqualValue(from) &
-              t.date.isSmallerThanValue(to)))
-        .get();
+    final rows =
+        await (_db.select(_db.transactions)..where(
+              (t) =>
+                  t.deletedAt.isNull() &
+                  t.type.equalsValue(TransactionType.transfer).not() &
+                  t.date.isBiggerOrEqualValue(from) &
+                  t.date.isSmallerThanValue(to),
+            ))
+            .get();
 
     var expense = 0, income = 0;
     for (final tx in rows) {

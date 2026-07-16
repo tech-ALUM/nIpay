@@ -36,44 +36,48 @@ class DriftCustomFieldRepository implements CustomFieldRepository {
   }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
-    await _db.into(_db.customFieldDefs).insert(CustomFieldDefsCompanion.insert(
-          id: id,
-          name: name,
-          type: type,
-          options: Value(options),
-          createdAt: now,
-          updatedAt: now,
-        ));
+    await _db
+        .into(_db.customFieldDefs)
+        .insert(
+          CustomFieldDefsCompanion.insert(
+            id: id,
+            name: name,
+            type: type,
+            options: Value(options),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
     return id;
   }
 
   @override
-  Future<List<CustomFieldDef>> getDefinitions() => (_db
-        .select(_db.customFieldDefs)
-        ..where((t) => t.deletedAt.isNull())
-        ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
-      .get();
+  Future<List<CustomFieldDef>> getDefinitions() =>
+      (_db.select(_db.customFieldDefs)
+            ..where((t) => t.deletedAt.isNull())
+            ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+          .get();
 
   @override
   Future<void> setValue({
     required String transactionId,
     required String fieldId,
     required String value,
-  }) =>
-      _db.into(_db.customFieldValues).insertOnConflictUpdate(
-            CustomFieldValuesCompanion.insert(
-              transactionId: transactionId,
-              fieldId: fieldId,
-              value: value,
-              updatedAt: DateTime.now(),
-            ),
-          );
+  }) => _db
+      .into(_db.customFieldValues)
+      .insertOnConflictUpdate(
+        CustomFieldValuesCompanion.insert(
+          transactionId: transactionId,
+          fieldId: fieldId,
+          value: value,
+          updatedAt: DateTime.now(),
+        ),
+      );
 
   @override
-  Future<List<CustomFieldValue>> valuesOf(String transactionId) =>
-      (_db.select(_db.customFieldValues)
-            ..where((t) => t.transactionId.equals(transactionId)))
-          .get();
+  Future<List<CustomFieldValue>> valuesOf(String transactionId) => (_db.select(
+    _db.customFieldValues,
+  )..where((t) => t.transactionId.equals(transactionId))).get();
 
   @override
   Future<void> softDeleteDefinition(String id) =>

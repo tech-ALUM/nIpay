@@ -1,13 +1,88 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:nipay/main.dart';
+import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:nipay/app.dart';
+import 'package:nipay/core/money.dart';
+import 'package:nipay/core/providers.dart';
+
+Widget _app() => ProviderScope(
+  overrides: [
+    databaseExecutorProvider.overrideWithValue(NativeDatabase.memory()),
+  ],
+  child: const NipayApp(),
+);
+
+/// Smonta l'albero dentro il corpo del test: lo StreamQueryStore di Drift
+/// schedula un Timer(0) alla dispose, che va consumato con un pump extra.
+Future<void> _unmount(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox());
+  // Durata > 0: fa avanzare il clock fake e consuma il Timer(0) di Drift.
+  await tester.pump(const Duration(milliseconds: 100));
+}
+
+Future<void> _createWallet(
+  WidgetTester tester, {
+  String name = 'Conto',
+  String balance = '1000',
+}) async {
+  await tester.tap(find.byKey(const Key('addWalletButton')));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byKey(const Key('walletNameField')), name);
+  await tester.enterText(find.byKey(const Key('walletBalanceField')), balance);
+  await tester.ensureVisible(find.byKey(const Key('walletSaveButton')));
+  await tester.tap(find.byKey(const Key('walletSaveButton')));
+  await tester.pumpAndSettle();
+}
 
 void main() {
-  testWidgets('app starts and shows home placeholder', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: NipayApp()));
+  setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
+
+  testWidgets('home shows empty state, creating a wallet shows its balance', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
     await tester.pumpAndSettle();
 
-    expect(find.text('nIpay'), findsOneWidget);
-    expect(find.text('Welcome to nIpay'), findsOneWidget);
+    // Stato vuoto (EN: locale di default nei test).
+    expect(
+      find.text('Create your first wallet to get started.'),
+      findsOneWidget,
+    );
+
+    await _createWallet(tester);
+
+    expect(find.text('Conto'), findsOneWidget);
+    expect(find.text(formatCents(100000)), findsWidgets);
+
+    await _unmount(tester);
+  });
+
+  testWidgets('adding an expense updates balance and recent list', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    await _createWallet(tester);
+
+    // Nuova spesa dal FAB.
+    await tester.tap(find.byKey(const Key('addTransactionFab')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('amountField')), '42,50');
+    await tester.enterText(
+      find.byKey(const Key('descriptionField')),
+      'Esselunga',
+    );
+    await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+    await tester.tap(find.byKey(const Key('txSaveButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Esselunga'), findsOneWidget);
+    expect(find.text(formatCents(-4250)), findsOneWidget);
+    expect(find.text(formatCents(95750)), findsWidgets);
+
+    await _unmount(tester);
   });
 }

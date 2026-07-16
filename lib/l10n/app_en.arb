@@ -1,11 +1,40 @@
 {
   "@@locale": "en",
   "appTitle": "nIpay",
-  "@appTitle": {
-    "description": "Application name shown in the app bar and launcher"
-  },
-  "homePlaceholder": "Welcome to nIpay",
-  "@homePlaceholder": {
-    "description": "Placeholder text on the empty home screen (M0)"
-  }
+  "homeTab": "Home",
+  "transactionsTab": "Transactions",
+  "statsTab": "Stats",
+  "settingsTab": "More",
+  "totalBalance": "Total balance",
+  "thisMonth": "this month",
+  "wallets": "Wallets",
+  "newWallet": "New wallet",
+  "walletName": "Name",
+  "initialBalance": "Initial balance",
+  "recentTransactions": "Recent transactions",
+  "noTransactions": "No transactions yet. Tap + to add the first one.",
+  "noWallets": "Create your first wallet to get started.",
+  "newTransaction": "New transaction",
+  "expense": "Expense",
+  "income": "Income",
+  "transfer": "Transfer",
+  "amount": "Amount",
+  "invalidAmount": "Invalid amount",
+  "description": "Description",
+  "category": "Category",
+  "wallet": "Wallet",
+  "fromWallet": "From",
+  "toWallet": "To",
+  "date": "Date",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "allWallets": "All wallets",
+  "allCategories": "All categories",
+  "searchTransactions": "Search transactions…",
+  "statsSoon": "Configurable dashboard coming soon (M6)",
+  "settingsTheme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark"
 }

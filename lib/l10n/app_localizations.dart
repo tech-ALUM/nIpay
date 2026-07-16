@@ -98,17 +98,227 @@ abstract class AppLocalizations {
     Locale('it'),
   ];
 
-  /// Application name shown in the app bar and launcher
+  /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
   /// **'nIpay'**
   String get appTitle;
 
-  /// Placeholder text on the empty home screen (M0)
+  /// No description provided for @homeTab.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to nIpay'**
-  String get homePlaceholder;
+  /// **'Home'**
+  String get homeTab;
+
+  /// No description provided for @transactionsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get transactionsTab;
+
+  /// No description provided for @statsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get statsTab;
+
+  /// No description provided for @settingsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get settingsTab;
+
+  /// No description provided for @totalBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Total balance'**
+  String get totalBalance;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'this month'**
+  String get thisMonth;
+
+  /// No description provided for @wallets.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallets'**
+  String get wallets;
+
+  /// No description provided for @newWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'New wallet'**
+  String get newWallet;
+
+  /// No description provided for @walletName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get walletName;
+
+  /// No description provided for @initialBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial balance'**
+  String get initialBalance;
+
+  /// No description provided for @recentTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent transactions'**
+  String get recentTransactions;
+
+  /// No description provided for @noTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions yet. Tap + to add the first one.'**
+  String get noTransactions;
+
+  /// No description provided for @noWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first wallet to get started.'**
+  String get noWallets;
+
+  /// No description provided for @newTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'New transaction'**
+  String get newTransaction;
+
+  /// No description provided for @expense.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get expense;
+
+  /// No description provided for @income.
+  ///
+  /// In en, this message translates to:
+  /// **'Income'**
+  String get income;
+
+  /// No description provided for @transfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get transfer;
+
+  /// No description provided for @amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get amount;
+
+  /// No description provided for @invalidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid amount'**
+  String get invalidAmount;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet'**
+  String get wallet;
+
+  /// No description provided for @fromWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get fromWallet;
+
+  /// No description provided for @toWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get toWallet;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @allWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'All wallets'**
+  String get allWallets;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All categories'**
+  String get allCategories;
+
+  /// No description provided for @searchTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Search transactions…'**
+  String get searchTransactions;
+
+  /// No description provided for @statsSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Configurable dashboard coming soon (M6)'**
+  String get statsSoon;
+
+  /// No description provided for @settingsTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsTheme;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
 }
 
 class _AppLocalizationsDelegate

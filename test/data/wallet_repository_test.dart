@@ -15,7 +15,11 @@ void main() {
   tearDown(() async => db.close());
 
   test('creates a wallet and reads it back', () async {
-    final id = await repo.create(name: 'Conto', colorHex: '#0E7C86', initialBalanceCents: 100000);
+    final id = await repo.create(
+      name: 'Conto',
+      colorHex: '#0E7C86',
+      initialBalanceCents: 100000,
+    );
 
     final wallets = await repo.getAll();
     expect(wallets, hasLength(1));
@@ -26,7 +30,11 @@ void main() {
   });
 
   test('updates a wallet and bumps updatedAt', () async {
-    final id = await repo.create(name: 'Conto', colorHex: '#0E7C86', initialBalanceCents: 0);
+    final id = await repo.create(
+      name: 'Conto',
+      colorHex: '#0E7C86',
+      initialBalanceCents: 0,
+    );
     final before = (await repo.getAll()).first.updatedAt;
 
     await Future<void>.delayed(const Duration(milliseconds: 10));
@@ -38,7 +46,11 @@ void main() {
   });
 
   test('soft delete hides the wallet but keeps the row', () async {
-    final id = await repo.create(name: 'Contanti', colorHex: '#FF6F61', initialBalanceCents: 5000);
+    final id = await repo.create(
+      name: 'Contanti',
+      colorHex: '#FF6F61',
+      initialBalanceCents: 5000,
+    );
     await repo.softDelete(id);
 
     expect(await repo.getAll(), isEmpty);
@@ -52,7 +64,11 @@ void main() {
     final first = await stream.first;
     expect(first, isEmpty);
 
-    await repo.create(name: 'Risparmi', colorHex: '#7C5CBF', initialBalanceCents: 0);
+    await repo.create(
+      name: 'Risparmi',
+      colorHex: '#7C5CBF',
+      initialBalanceCents: 0,
+    );
     final second = await stream.firstWhere((l) => l.isNotEmpty);
     expect(second.single.name, 'Risparmi');
   });

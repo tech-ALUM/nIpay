@@ -34,15 +34,16 @@
 
 **Fatto quando**: CRUD completo da test per ogni entità ✓, zero accessi a Drift fuori dal layer dati ✓. Nota: trasferimenti ricorrenti non supportati (UnsupportedError), ricorrenza mensile con riporto giorno (31 gen + 1 mese → inizio marzo) — rivedere se servirà "ultimo giorno del mese".
 
-## M3 — Portafogli e transazioni (MVP usabile)
-- [ ] CRUD portafogli (nome, colore/icona, saldo iniziale, archivio)
-- [ ] CRUD transazioni: spesa/entrata con importo, data, categoria, note, tag
-- [ ] Trasferimenti tra portafogli (esclusi dai totali spesa/entrata)
-- [ ] Lista transazioni con filtri (periodo, portafoglio, categoria, tag, ricerca testo)
-- [ ] Saldo per portafoglio e totale
-- [ ] Widget test dei flussi principali
+## M3 — Portafogli e transazioni (MVP usabile) ✅ (2026-07-16)
+- [x] CRUD portafogli: crea (nome, colore, saldo iniziale), rinomina/elimina con long-press sulla card (archivio UI rimandato)
+- [x] CRUD transazioni: spesa/entrata con importo, data, categoria, descrizione (tag in inserimento arrivano con M4)
+- [x] Trasferimenti tra portafogli (esclusi dai totali spesa/entrata)
+- [x] Lista transazioni con filtri: mese, portafoglio, categoria, ricerca testo (filtro tag in M4; filtro client-side, query dedicata in M6)
+- [x] Saldo per portafoglio e totale + entrate/uscite del mese in home
+- [x] Widget test dei flussi principali (crea portafoglio → saldo; aggiungi spesa → saldo e lista aggiornati)
+- [x] Extra da M1: tema Bold Ink dark+light in Flutter (`lib/core/theme/app_theme.dart`) con switch Sistema/Chiaro/Scuro nelle impostazioni
 
-**Fatto quando**: uso quotidiano reale possibile (inserire spese e vedere i saldi).
+**Fatto quando**: uso quotidiano reale possibile ✓ (24 test verdi, analyze pulito). Nota: preferenza tema non ancora persistita (StateProvider in-memory, serve shared_preferences).
 
 ## M4 — Customizzazione
 - [ ] Gestione categorie: crea/modifica/elimina, gerarchia, colore+icona, riordino

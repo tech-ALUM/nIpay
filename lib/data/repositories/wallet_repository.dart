@@ -32,14 +32,18 @@ class DriftWalletRepository implements WalletRepository {
   }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
-    await _db.into(_db.wallets).insert(WalletsCompanion.insert(
-          id: id,
-          name: name,
-          colorHex: colorHex,
-          initialBalanceCents: Value(initialBalanceCents),
-          createdAt: now,
-          updatedAt: now,
-        ));
+    await _db
+        .into(_db.wallets)
+        .insert(
+          WalletsCompanion.insert(
+            id: id,
+            name: name,
+            colorHex: colorHex,
+            initialBalanceCents: Value(initialBalanceCents),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
     return id;
   }
 

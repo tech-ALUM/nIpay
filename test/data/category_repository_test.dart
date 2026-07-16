@@ -16,10 +16,18 @@ void main() {
 
   test('creates a custom category with parent (hierarchy)', () async {
     final parentId = await repo.create(
-        name: 'Trasporti', icon: '⛽', colorHex: '#7C5CBF', kind: CategoryKind.expense);
+      name: 'Trasporti',
+      icon: '⛽',
+      colorHex: '#7C5CBF',
+      kind: CategoryKind.expense,
+    );
     final childId = await repo.create(
-        name: 'Carburante', icon: '⛽', colorHex: '#7C5CBF',
-        kind: CategoryKind.expense, parentId: parentId);
+      name: 'Carburante',
+      icon: '⛽',
+      colorHex: '#7C5CBF',
+      kind: CategoryKind.expense,
+      parentId: parentId,
+    );
 
     final all = await repo.getAll();
     final child = all.singleWhere((c) => c.id == childId);
@@ -38,7 +46,11 @@ void main() {
 
   test('soft-deleted categories are hidden from getAll', () async {
     final id = await repo.create(
-        name: 'Svago', icon: '🎬', colorHex: '#FF6F61', kind: CategoryKind.expense);
+      name: 'Svago',
+      icon: '🎬',
+      colorHex: '#FF6F61',
+      kind: CategoryKind.expense,
+    );
     await repo.softDelete(id);
     expect(await repo.getAll(), isEmpty);
   });

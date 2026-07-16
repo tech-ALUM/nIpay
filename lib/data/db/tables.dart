@@ -99,8 +99,8 @@ class Budgets extends Table with SyncColumns {
 
   @override
   List<Set<Column>> get uniqueKeys => [
-        {categoryId},
-      ];
+    {categoryId},
+  ];
 }
 
 enum RecurrenceFrequency { daily, weekly, monthly, yearly }
@@ -140,6 +140,7 @@ class Wallets extends Table with SyncColumns {
   TextColumn get icon => text().withDefault(const Constant('wallet'))();
 
   /// Importi sempre in centesimi (int).
-  IntColumn get initialBalanceCents => integer().withDefault(const Constant(0))();
+  IntColumn get initialBalanceCents =>
+      integer().withDefault(const Constant(0))();
   DateTimeColumn get archivedAt => dateTime().nullable()();
 }

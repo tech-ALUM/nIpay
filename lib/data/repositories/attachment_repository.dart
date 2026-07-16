@@ -27,22 +27,26 @@ class DriftAttachmentRepository implements AttachmentRepository {
   }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
-    await _db.into(_db.attachments).insert(AttachmentsCompanion.insert(
-          id: id,
-          transactionId: transactionId,
-          relativePath: relativePath,
-          mimeType: mimeType,
-          createdAt: now,
-          updatedAt: now,
-        ));
+    await _db
+        .into(_db.attachments)
+        .insert(
+          AttachmentsCompanion.insert(
+            id: id,
+            transactionId: transactionId,
+            relativePath: relativePath,
+            mimeType: mimeType,
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
     return id;
   }
 
   @override
   Future<List<Attachment>> listOf(String transactionId) =>
-      (_db.select(_db.attachments)
-            ..where((t) =>
-                t.deletedAt.isNull() & t.transactionId.equals(transactionId)))
+      (_db.select(_db.attachments)..where(
+            (t) => t.deletedAt.isNull() & t.transactionId.equals(transactionId),
+          ))
           .get();
 
   @override
