@@ -154,6 +154,12 @@ void main() {
     await tester.enterText(find.byKey(const Key('budgetLimitField')), '100');
     await tester.tap(find.byKey(const Key('budgetSaveButton')));
     await tester.pumpAndSettle();
+    // Il manager mostra subito la barra appena creato.
+    expect(
+      find.text('🛒 Spesa'),
+      findsOneWidget,
+      reason: 'budget non creato nel manager',
+    );
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
@@ -200,6 +206,37 @@ void main() {
 
     expect(find.text('Net'), findsOneWidget);
     expect(find.text('Income'), findsOneWidget);
+
+    await _unmount(tester);
+  });
+
+  testWidgets('wallets are separate spaces: switching changes transactions', (
+    tester,
+  ) async {
+    await tester.pumpWidget(await _app());
+    await tester.pumpAndSettle();
+
+    // Spazio A con una spesa.
+    await _createWallet(tester, name: 'Personale', balance: '500');
+    await tester.tap(find.byKey(const Key('addTransactionFab')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('amountField')), '20');
+    await tester.enterText(find.byKey(const Key('descriptionField')), 'Caffè');
+    await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+    await tester.tap(find.byKey(const Key('txSaveButton')));
+    await tester.pumpAndSettle();
+    expect(find.text('Caffè'), findsOneWidget);
+
+    // Spazio B: appena creato diventa attivo, vuoto e col suo saldo.
+    await _createWallet(tester, name: 'ALUM', balance: '2000');
+    expect(find.text('Caffè'), findsNothing);
+    expect(find.text(formatCents(200000)), findsWidgets);
+
+    // Tap sulla card di A: torna lo spazio A con la sua spesa.
+    await tester.tap(find.text('Personale'));
+    await tester.pumpAndSettle();
+    expect(find.text('Caffè'), findsOneWidget);
+    expect(find.text(formatCents(48000)), findsWidgets); // 500 − 20
 
     await _unmount(tester);
   });

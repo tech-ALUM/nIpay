@@ -19,6 +19,7 @@ void main() {
       db,
     ).create(name: 'Conto', colorHex: '#0E7C86');
     catSpesa = await DriftCategoryRepository(db).create(
+      walletId: wallet,
       name: 'Spesa',
       icon: '🛒',
       colorHex: '#FF6F61',
@@ -32,7 +33,11 @@ void main() {
   group('budget', () {
     test('progress = spent in month vs monthly limit', () async {
       final budgets = DriftBudgetRepository(db);
-      await budgets.setMonthlyLimit(categoryId: catSpesa, limitCents: 40000);
+      await budgets.setMonthlyLimit(
+        walletId: wallet,
+        categoryId: catSpesa,
+        limitCents: 40000,
+      );
 
       await txs.createExpense(
         walletId: wallet,

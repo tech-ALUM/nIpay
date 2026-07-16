@@ -25,7 +25,7 @@ Tracciare spese e entrate mensili in modo flessibile per uso **personale/team AL
 ## Funzionalità
 
 ### Core
-- **Portafogli multipli** (Wallet): nome, colore/icona, saldo iniziale, archiviabili.
+- **Portafogli multipli = spazi separati** (decisione 2026-07-16): ogni portafoglio è un libro contabile indipendente con le SUE categorie, tag, campi custom, budget e dashboard. In home si cambia spazio toccando la card del portafoglio (attivo persistito). I trasferimenti restano possibili tra spazi diversi.
 - **Transazioni**: spesa, entrata, **trasferimento** tra portafogli (origine → destinazione, escluso dai totali di spesa/entrata).
 - **Categorie custom**: gerarchiche (categoria/sottocategoria), colore + icona, create/modificate/riordinate dall'utente. Set di default alla prima apertura.
 - **Tag liberi** sulle transazioni.

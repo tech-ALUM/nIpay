@@ -59,7 +59,6 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   final _amount = TextEditingController();
   final _description = TextEditingController();
   TransactionType _type = TransactionType.expense;
-  String? _walletId;
   String? _walletToId;
   String? _categoryId;
   DateTime _date = DateTime.now();
@@ -79,7 +78,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     final l10n = AppLocalizations.of(context)!;
     final cents = parseCents(_amount.text);
     final wallets = ref.read(walletsProvider).valueOrNull ?? [];
-    final walletId = _walletId ?? wallets.firstOrNull?.id;
+    final walletId = ref.read(activeWalletProvider)?.id;
     if (cents == null || cents <= 0 || walletId == null) {
       setState(() => _error = l10n.invalidAmount);
       return;
@@ -157,7 +156,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     // Avviso budget: se la spesa porta la categoria oltre l'80% o il 100%.
     if (_type == TransactionType.expense && _categoryId != null && mounted) {
       final messenger = ScaffoldMessenger.of(context);
-      final budgets = await ref.read(budgetRepositoryProvider).getAll();
+      final budgets = await ref.read(budgetRepositoryProvider).getAll(walletId);
       if (budgets.any((b) => b.categoryId == _categoryId)) {
         final p = await ref
             .read(budgetRepositoryProvider)
@@ -269,7 +268,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           },
         )
         .toList();
-    final walletId = _walletId ?? wallets.firstOrNull?.id;
+    final walletId = ref.watch(activeWalletProvider)?.id;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -328,21 +327,6 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
               decoration: InputDecoration(labelText: l10n.description),
             ),
             const SizedBox(height: 12),
-            if (wallets.isNotEmpty)
-              DropdownButtonFormField<String>(
-                key: const Key('walletDropdown'),
-                initialValue: walletId,
-                decoration: InputDecoration(
-                  labelText: _type == TransactionType.transfer
-                      ? l10n.fromWallet
-                      : l10n.wallet,
-                ),
-                items: [
-                  for (final w in wallets)
-                    DropdownMenuItem(value: w.id, child: Text(w.name)),
-                ],
-                onChanged: (v) => setState(() => _walletId = v),
-              ),
             if (_type == TransactionType.transfer && wallets.length > 1) ...[
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
@@ -407,9 +391,11 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                     onPressed: () async {
                       final name = await _promptNewTag(context, l10n);
                       if (name == null || name.isEmpty) return;
+                      final active = ref.read(activeWalletProvider);
+                      if (active == null) return;
                       final id = await ref
                           .read(tagRepositoryProvider)
-                          .create(name);
+                          .create(name, walletId: active.id);
                       ref.invalidate(tagsProvider);
                       setState(() => _selectedTagIds.add(id));
                     },

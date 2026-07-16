@@ -615,6 +615,20 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _walletIdMeta = const VerificationMeta(
+    'walletId',
+  );
+  @override
+  late final GeneratedColumn<String> walletId = GeneratedColumn<String>(
+    'wallet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES wallets (id)',
+    ),
+  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -700,6 +714,7 @@ class $CategoriesTable extends Categories
     createdAt,
     updatedAt,
     deletedAt,
+    walletId,
     name,
     icon,
     colorHex,
@@ -745,6 +760,12 @@ class $CategoriesTable extends Categories
       context.handle(
         _deletedAtMeta,
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('wallet_id')) {
+      context.handle(
+        _walletIdMeta,
+        walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta),
       );
     }
     if (data.containsKey('name')) {
@@ -814,6 +835,10 @@ class $CategoriesTable extends Categories
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
       ),
+      walletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wallet_id'],
+      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -861,6 +886,10 @@ class Category extends DataClass implements Insertable<Category> {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
+
+  /// Spazio di appartenenza: ogni portafoglio ha la sua taxonomy.
+  /// Nullable solo per la migrazione v1→v2; il codice lo valorizza sempre.
+  final String? walletId;
   final String name;
   final String icon;
   final String colorHex;
@@ -873,6 +902,7 @@ class Category extends DataClass implements Insertable<Category> {
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
+    this.walletId,
     required this.name,
     required this.icon,
     required this.colorHex,
@@ -889,6 +919,9 @@ class Category extends DataClass implements Insertable<Category> {
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || walletId != null) {
+      map['wallet_id'] = Variable<String>(walletId);
     }
     map['name'] = Variable<String>(name);
     map['icon'] = Variable<String>(icon);
@@ -914,6 +947,9 @@ class Category extends DataClass implements Insertable<Category> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      walletId: walletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletId),
       name: Value(name),
       icon: Value(icon),
       colorHex: Value(colorHex),
@@ -936,6 +972,7 @@ class Category extends DataClass implements Insertable<Category> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      walletId: serializer.fromJson<String?>(json['walletId']),
       name: serializer.fromJson<String>(json['name']),
       icon: serializer.fromJson<String>(json['icon']),
       colorHex: serializer.fromJson<String>(json['colorHex']),
@@ -955,6 +992,7 @@ class Category extends DataClass implements Insertable<Category> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'walletId': serializer.toJson<String?>(walletId),
       'name': serializer.toJson<String>(name),
       'icon': serializer.toJson<String>(icon),
       'colorHex': serializer.toJson<String>(colorHex),
@@ -972,6 +1010,7 @@ class Category extends DataClass implements Insertable<Category> {
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<String?> walletId = const Value.absent(),
     String? name,
     String? icon,
     String? colorHex,
@@ -984,6 +1023,7 @@ class Category extends DataClass implements Insertable<Category> {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    walletId: walletId.present ? walletId.value : this.walletId,
     name: name ?? this.name,
     icon: icon ?? this.icon,
     colorHex: colorHex ?? this.colorHex,
@@ -998,6 +1038,7 @@ class Category extends DataClass implements Insertable<Category> {
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
       name: data.name.present ? data.name.value : this.name,
       icon: data.icon.present ? data.icon.value : this.icon,
       colorHex: data.colorHex.present ? data.colorHex.value : this.colorHex,
@@ -1015,6 +1056,7 @@ class Category extends DataClass implements Insertable<Category> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('name: $name, ')
           ..write('icon: $icon, ')
           ..write('colorHex: $colorHex, ')
@@ -1032,6 +1074,7 @@ class Category extends DataClass implements Insertable<Category> {
     createdAt,
     updatedAt,
     deletedAt,
+    walletId,
     name,
     icon,
     colorHex,
@@ -1048,6 +1091,7 @@ class Category extends DataClass implements Insertable<Category> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
+          other.walletId == this.walletId &&
           other.name == this.name &&
           other.icon == this.icon &&
           other.colorHex == this.colorHex &&
@@ -1062,6 +1106,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
+  final Value<String?> walletId;
   final Value<String> name;
   final Value<String> icon;
   final Value<String> colorHex;
@@ -1075,6 +1120,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     this.name = const Value.absent(),
     this.icon = const Value.absent(),
     this.colorHex = const Value.absent(),
@@ -1089,6 +1135,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     required String name,
     required String icon,
     required String colorHex,
@@ -1109,6 +1156,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
+    Expression<String>? walletId,
     Expression<String>? name,
     Expression<String>? icon,
     Expression<String>? colorHex,
@@ -1123,6 +1171,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (walletId != null) 'wallet_id': walletId,
       if (name != null) 'name': name,
       if (icon != null) 'icon': icon,
       if (colorHex != null) 'color_hex': colorHex,
@@ -1139,6 +1188,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
+    Value<String?>? walletId,
     Value<String>? name,
     Value<String>? icon,
     Value<String>? colorHex,
@@ -1153,6 +1203,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      walletId: walletId ?? this.walletId,
       name: name ?? this.name,
       icon: icon ?? this.icon,
       colorHex: colorHex ?? this.colorHex,
@@ -1178,6 +1229,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     }
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<String>(walletId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -1215,6 +1269,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('name: $name, ')
           ..write('icon: $icon, ')
           ..write('colorHex: $colorHex, ')
@@ -2010,6 +2065,20 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _walletIdMeta = const VerificationMeta(
+    'walletId',
+  );
+  @override
+  late final GeneratedColumn<String> walletId = GeneratedColumn<String>(
+    'wallet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES wallets (id)',
+    ),
+  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -2025,6 +2094,7 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
     createdAt,
     updatedAt,
     deletedAt,
+    walletId,
     name,
   ];
   @override
@@ -2066,6 +2136,12 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('wallet_id')) {
+      context.handle(
+        _walletIdMeta,
+        walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta),
+      );
+    }
     if (data.containsKey('name')) {
       context.handle(
         _nameMeta,
@@ -2099,6 +2175,10 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
       ),
+      walletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wallet_id'],
+      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -2117,12 +2197,14 @@ class Tag extends DataClass implements Insertable<Tag> {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
+  final String? walletId;
   final String name;
   const Tag({
     required this.id,
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
+    this.walletId,
     required this.name,
   });
   @override
@@ -2133,6 +2215,9 @@ class Tag extends DataClass implements Insertable<Tag> {
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || walletId != null) {
+      map['wallet_id'] = Variable<String>(walletId);
     }
     map['name'] = Variable<String>(name);
     return map;
@@ -2146,6 +2231,9 @@ class Tag extends DataClass implements Insertable<Tag> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      walletId: walletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletId),
       name: Value(name),
     );
   }
@@ -2160,6 +2248,7 @@ class Tag extends DataClass implements Insertable<Tag> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      walletId: serializer.fromJson<String?>(json['walletId']),
       name: serializer.fromJson<String>(json['name']),
     );
   }
@@ -2171,6 +2260,7 @@ class Tag extends DataClass implements Insertable<Tag> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'walletId': serializer.toJson<String?>(walletId),
       'name': serializer.toJson<String>(name),
     };
   }
@@ -2180,12 +2270,14 @@ class Tag extends DataClass implements Insertable<Tag> {
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<String?> walletId = const Value.absent(),
     String? name,
   }) => Tag(
     id: id ?? this.id,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    walletId: walletId.present ? walletId.value : this.walletId,
     name: name ?? this.name,
   );
   Tag copyWithCompanion(TagsCompanion data) {
@@ -2194,6 +2286,7 @@ class Tag extends DataClass implements Insertable<Tag> {
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
       name: data.name.present ? data.name.value : this.name,
     );
   }
@@ -2205,13 +2298,15 @@ class Tag extends DataClass implements Insertable<Tag> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('name: $name')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, createdAt, updatedAt, deletedAt, name);
+  int get hashCode =>
+      Object.hash(id, createdAt, updatedAt, deletedAt, walletId, name);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2220,6 +2315,7 @@ class Tag extends DataClass implements Insertable<Tag> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
+          other.walletId == this.walletId &&
           other.name == this.name);
 }
 
@@ -2228,6 +2324,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
+  final Value<String?> walletId;
   final Value<String> name;
   final Value<int> rowid;
   const TagsCompanion({
@@ -2235,6 +2332,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     this.name = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -2243,6 +2341,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     required String name,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -2254,6 +2353,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
+    Expression<String>? walletId,
     Expression<String>? name,
     Expression<int>? rowid,
   }) {
@@ -2262,6 +2362,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (walletId != null) 'wallet_id': walletId,
       if (name != null) 'name': name,
       if (rowid != null) 'rowid': rowid,
     });
@@ -2272,6 +2373,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
+    Value<String?>? walletId,
     Value<String>? name,
     Value<int>? rowid,
   }) {
@@ -2280,6 +2382,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      walletId: walletId ?? this.walletId,
       name: name ?? this.name,
       rowid: rowid ?? this.rowid,
     );
@@ -2300,6 +2403,9 @@ class TagsCompanion extends UpdateCompanion<Tag> {
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<String>(walletId.value);
+    }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
@@ -2316,6 +2422,7 @@ class TagsCompanion extends UpdateCompanion<Tag> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('name: $name, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2649,6 +2756,20 @@ class $CustomFieldDefsTable extends CustomFieldDefs
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _walletIdMeta = const VerificationMeta(
+    'walletId',
+  );
+  @override
+  late final GeneratedColumn<String> walletId = GeneratedColumn<String>(
+    'wallet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES wallets (id)',
+    ),
+  );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -2694,6 +2815,7 @@ class $CustomFieldDefsTable extends CustomFieldDefs
     createdAt,
     updatedAt,
     deletedAt,
+    walletId,
     name,
     type,
     options,
@@ -2738,6 +2860,12 @@ class $CustomFieldDefsTable extends CustomFieldDefs
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('wallet_id')) {
+      context.handle(
+        _walletIdMeta,
+        walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta),
+      );
+    }
     if (data.containsKey('name')) {
       context.handle(
         _nameMeta,
@@ -2776,6 +2904,10 @@ class $CustomFieldDefsTable extends CustomFieldDefs
       deletedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
+      ),
+      walletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wallet_id'],
       ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -2818,6 +2950,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
+  final String? walletId;
   final String name;
   final CustomFieldType type;
 
@@ -2829,6 +2962,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
+    this.walletId,
     required this.name,
     required this.type,
     this.options,
@@ -2842,6 +2976,9 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || walletId != null) {
+      map['wallet_id'] = Variable<String>(walletId);
     }
     map['name'] = Variable<String>(name);
     {
@@ -2866,6 +3003,9 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      walletId: walletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletId),
       name: Value(name),
       type: Value(type),
       options: options == null && nullToAbsent
@@ -2885,6 +3025,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      walletId: serializer.fromJson<String?>(json['walletId']),
       name: serializer.fromJson<String>(json['name']),
       type: $CustomFieldDefsTable.$convertertype.fromJson(
         serializer.fromJson<String>(json['type']),
@@ -2903,6 +3044,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'walletId': serializer.toJson<String?>(walletId),
       'name': serializer.toJson<String>(name),
       'type': serializer.toJson<String>(
         $CustomFieldDefsTable.$convertertype.toJson(type),
@@ -2919,6 +3061,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<String?> walletId = const Value.absent(),
     String? name,
     CustomFieldType? type,
     Value<List<String>?> options = const Value.absent(),
@@ -2928,6 +3071,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    walletId: walletId.present ? walletId.value : this.walletId,
     name: name ?? this.name,
     type: type ?? this.type,
     options: options.present ? options.value : this.options,
@@ -2939,6 +3083,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
       name: data.name.present ? data.name.value : this.name,
       type: data.type.present ? data.type.value : this.type,
       options: data.options.present ? data.options.value : this.options,
@@ -2953,6 +3098,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('options: $options, ')
@@ -2967,6 +3113,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
     createdAt,
     updatedAt,
     deletedAt,
+    walletId,
     name,
     type,
     options,
@@ -2980,6 +3127,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
+          other.walletId == this.walletId &&
           other.name == this.name &&
           other.type == this.type &&
           other.options == this.options &&
@@ -2991,6 +3139,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
+  final Value<String?> walletId;
   final Value<String> name;
   final Value<CustomFieldType> type;
   final Value<List<String>?> options;
@@ -3001,6 +3150,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     this.name = const Value.absent(),
     this.type = const Value.absent(),
     this.options = const Value.absent(),
@@ -3012,6 +3162,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     required String name,
     required CustomFieldType type,
     this.options = const Value.absent(),
@@ -3027,6 +3178,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
+    Expression<String>? walletId,
     Expression<String>? name,
     Expression<String>? type,
     Expression<String>? options,
@@ -3038,6 +3190,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (walletId != null) 'wallet_id': walletId,
       if (name != null) 'name': name,
       if (type != null) 'type': type,
       if (options != null) 'options': options,
@@ -3051,6 +3204,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
+    Value<String?>? walletId,
     Value<String>? name,
     Value<CustomFieldType>? type,
     Value<List<String>?>? options,
@@ -3062,6 +3216,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      walletId: walletId ?? this.walletId,
       name: name ?? this.name,
       type: type ?? this.type,
       options: options ?? this.options,
@@ -3084,6 +3239,9 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
     }
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<String>(walletId.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -3114,6 +3272,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('options: $options, ')
@@ -3501,6 +3660,20 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _walletIdMeta = const VerificationMeta(
+    'walletId',
+  );
+  @override
+  late final GeneratedColumn<String> walletId = GeneratedColumn<String>(
+    'wallet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES wallets (id)',
+    ),
+  );
   static const VerificationMeta _categoryIdMeta = const VerificationMeta(
     'categoryId',
   );
@@ -3532,6 +3705,7 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
     createdAt,
     updatedAt,
     deletedAt,
+    walletId,
     categoryId,
     limitCents,
   ];
@@ -3572,6 +3746,12 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
       context.handle(
         _deletedAtMeta,
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('wallet_id')) {
+      context.handle(
+        _walletIdMeta,
+        walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta),
       );
     }
     if (data.containsKey('category_id')) {
@@ -3619,6 +3799,10 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
       ),
+      walletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wallet_id'],
+      ),
       categoryId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}category_id'],
@@ -3641,6 +3825,7 @@ class Budget extends DataClass implements Insertable<Budget> {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
+  final String? walletId;
   final String categoryId;
   final int limitCents;
   const Budget({
@@ -3648,6 +3833,7 @@ class Budget extends DataClass implements Insertable<Budget> {
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
+    this.walletId,
     required this.categoryId,
     required this.limitCents,
   });
@@ -3659,6 +3845,9 @@ class Budget extends DataClass implements Insertable<Budget> {
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || walletId != null) {
+      map['wallet_id'] = Variable<String>(walletId);
     }
     map['category_id'] = Variable<String>(categoryId);
     map['limit_cents'] = Variable<int>(limitCents);
@@ -3673,6 +3862,9 @@ class Budget extends DataClass implements Insertable<Budget> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      walletId: walletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletId),
       categoryId: Value(categoryId),
       limitCents: Value(limitCents),
     );
@@ -3688,6 +3880,7 @@ class Budget extends DataClass implements Insertable<Budget> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      walletId: serializer.fromJson<String?>(json['walletId']),
       categoryId: serializer.fromJson<String>(json['categoryId']),
       limitCents: serializer.fromJson<int>(json['limitCents']),
     );
@@ -3700,6 +3893,7 @@ class Budget extends DataClass implements Insertable<Budget> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'walletId': serializer.toJson<String?>(walletId),
       'categoryId': serializer.toJson<String>(categoryId),
       'limitCents': serializer.toJson<int>(limitCents),
     };
@@ -3710,6 +3904,7 @@ class Budget extends DataClass implements Insertable<Budget> {
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<String?> walletId = const Value.absent(),
     String? categoryId,
     int? limitCents,
   }) => Budget(
@@ -3717,6 +3912,7 @@ class Budget extends DataClass implements Insertable<Budget> {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    walletId: walletId.present ? walletId.value : this.walletId,
     categoryId: categoryId ?? this.categoryId,
     limitCents: limitCents ?? this.limitCents,
   );
@@ -3726,6 +3922,7 @@ class Budget extends DataClass implements Insertable<Budget> {
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
       categoryId: data.categoryId.present
           ? data.categoryId.value
           : this.categoryId,
@@ -3742,6 +3939,7 @@ class Budget extends DataClass implements Insertable<Budget> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('categoryId: $categoryId, ')
           ..write('limitCents: $limitCents')
           ..write(')'))
@@ -3749,8 +3947,15 @@ class Budget extends DataClass implements Insertable<Budget> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, createdAt, updatedAt, deletedAt, categoryId, limitCents);
+  int get hashCode => Object.hash(
+    id,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    walletId,
+    categoryId,
+    limitCents,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3759,6 +3964,7 @@ class Budget extends DataClass implements Insertable<Budget> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
+          other.walletId == this.walletId &&
           other.categoryId == this.categoryId &&
           other.limitCents == this.limitCents);
 }
@@ -3768,6 +3974,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
+  final Value<String?> walletId;
   final Value<String> categoryId;
   final Value<int> limitCents;
   final Value<int> rowid;
@@ -3776,6 +3983,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.limitCents = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3785,6 +3993,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     required String categoryId,
     required int limitCents,
     this.rowid = const Value.absent(),
@@ -3798,6 +4007,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
+    Expression<String>? walletId,
     Expression<String>? categoryId,
     Expression<int>? limitCents,
     Expression<int>? rowid,
@@ -3807,6 +4017,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (walletId != null) 'wallet_id': walletId,
       if (categoryId != null) 'category_id': categoryId,
       if (limitCents != null) 'limit_cents': limitCents,
       if (rowid != null) 'rowid': rowid,
@@ -3818,6 +4029,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
+    Value<String?>? walletId,
     Value<String>? categoryId,
     Value<int>? limitCents,
     Value<int>? rowid,
@@ -3827,6 +4039,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      walletId: walletId ?? this.walletId,
       categoryId: categoryId ?? this.categoryId,
       limitCents: limitCents ?? this.limitCents,
       rowid: rowid ?? this.rowid,
@@ -3848,6 +4061,9 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<String>(walletId.value);
+    }
     if (categoryId.present) {
       map['category_id'] = Variable<String>(categoryId.value);
     }
@@ -3867,6 +4083,7 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('categoryId: $categoryId, ')
           ..write('limitCents: $limitCents, ')
           ..write('rowid: $rowid')
@@ -5233,6 +5450,20 @@ class $DashboardCardsTable extends DashboardCards
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _walletIdMeta = const VerificationMeta(
+    'walletId',
+  );
+  @override
+  late final GeneratedColumn<String> walletId = GeneratedColumn<String>(
+    'wallet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES wallets (id)',
+    ),
+  );
   static const VerificationMeta _typeMeta = const VerificationMeta('type');
   @override
   late final GeneratedColumn<String> type = GeneratedColumn<String>(
@@ -5271,6 +5502,7 @@ class $DashboardCardsTable extends DashboardCards
     createdAt,
     updatedAt,
     deletedAt,
+    walletId,
     type,
     position,
     configJson,
@@ -5312,6 +5544,12 @@ class $DashboardCardsTable extends DashboardCards
       context.handle(
         _deletedAtMeta,
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('wallet_id')) {
+      context.handle(
+        _walletIdMeta,
+        walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta),
       );
     }
     if (data.containsKey('type')) {
@@ -5361,6 +5599,10 @@ class $DashboardCardsTable extends DashboardCards
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
       ),
+      walletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wallet_id'],
+      ),
       type: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}type'],
@@ -5387,6 +5629,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
+  final String? walletId;
   final String type;
   final int position;
   final String configJson;
@@ -5395,6 +5638,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
+    this.walletId,
     required this.type,
     required this.position,
     required this.configJson,
@@ -5407,6 +5651,9 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || walletId != null) {
+      map['wallet_id'] = Variable<String>(walletId);
     }
     map['type'] = Variable<String>(type);
     map['position'] = Variable<int>(position);
@@ -5422,6 +5669,9 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      walletId: walletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletId),
       type: Value(type),
       position: Value(position),
       configJson: Value(configJson),
@@ -5438,6 +5688,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      walletId: serializer.fromJson<String?>(json['walletId']),
       type: serializer.fromJson<String>(json['type']),
       position: serializer.fromJson<int>(json['position']),
       configJson: serializer.fromJson<String>(json['configJson']),
@@ -5451,6 +5702,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'walletId': serializer.toJson<String?>(walletId),
       'type': serializer.toJson<String>(type),
       'position': serializer.toJson<int>(position),
       'configJson': serializer.toJson<String>(configJson),
@@ -5462,6 +5714,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<String?> walletId = const Value.absent(),
     String? type,
     int? position,
     String? configJson,
@@ -5470,6 +5723,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    walletId: walletId.present ? walletId.value : this.walletId,
     type: type ?? this.type,
     position: position ?? this.position,
     configJson: configJson ?? this.configJson,
@@ -5480,6 +5734,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
       type: data.type.present ? data.type.value : this.type,
       position: data.position.present ? data.position.value : this.position,
       configJson: data.configJson.present
@@ -5495,6 +5750,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('type: $type, ')
           ..write('position: $position, ')
           ..write('configJson: $configJson')
@@ -5508,6 +5764,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
     createdAt,
     updatedAt,
     deletedAt,
+    walletId,
     type,
     position,
     configJson,
@@ -5520,6 +5777,7 @@ class DashboardCard extends DataClass implements Insertable<DashboardCard> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
+          other.walletId == this.walletId &&
           other.type == this.type &&
           other.position == this.position &&
           other.configJson == this.configJson);
@@ -5530,6 +5788,7 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
+  final Value<String?> walletId;
   final Value<String> type;
   final Value<int> position;
   final Value<String> configJson;
@@ -5539,6 +5798,7 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     this.type = const Value.absent(),
     this.position = const Value.absent(),
     this.configJson = const Value.absent(),
@@ -5549,6 +5809,7 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
     required String type,
     required int position,
     this.configJson = const Value.absent(),
@@ -5563,6 +5824,7 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
+    Expression<String>? walletId,
     Expression<String>? type,
     Expression<int>? position,
     Expression<String>? configJson,
@@ -5573,6 +5835,7 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (walletId != null) 'wallet_id': walletId,
       if (type != null) 'type': type,
       if (position != null) 'position': position,
       if (configJson != null) 'config_json': configJson,
@@ -5585,6 +5848,7 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
+    Value<String?>? walletId,
     Value<String>? type,
     Value<int>? position,
     Value<String>? configJson,
@@ -5595,6 +5859,7 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      walletId: walletId ?? this.walletId,
       type: type ?? this.type,
       position: position ?? this.position,
       configJson: configJson ?? this.configJson,
@@ -5616,6 +5881,9 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
     }
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<String>(walletId.value);
     }
     if (type.present) {
       map['type'] = Variable<String>(type.value);
@@ -5639,6 +5907,7 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
           ..write('type: $type, ')
           ..write('position: $position, ')
           ..write('configJson: $configJson, ')
@@ -5720,6 +5989,82 @@ final class $$WalletsTableReferences
     extends BaseReferences<_$AppDatabase, $WalletsTable, Wallet> {
   $$WalletsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
+  static MultiTypedResultKey<$CategoriesTable, List<Category>>
+  _categoriesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.categories,
+    aliasName: 'wallets__id__categories__wallet_id',
+  );
+
+  $$CategoriesTableProcessedTableManager get categoriesRefs {
+    final manager = $$CategoriesTableTableManager(
+      $_db,
+      $_db.categories,
+    ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_categoriesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TagsTable, List<Tag>> _tagsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.tags,
+    aliasName: 'wallets__id__tags__wallet_id',
+  );
+
+  $$TagsTableProcessedTableManager get tagsRefs {
+    final manager = $$TagsTableTableManager(
+      $_db,
+      $_db.tags,
+    ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_tagsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CustomFieldDefsTable, List<CustomFieldDef>>
+  _customFieldDefsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.customFieldDefs,
+    aliasName: 'wallets__id__custom_field_defs__wallet_id',
+  );
+
+  $$CustomFieldDefsTableProcessedTableManager get customFieldDefsRefs {
+    final manager = $$CustomFieldDefsTableTableManager(
+      $_db,
+      $_db.customFieldDefs,
+    ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _customFieldDefsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$BudgetsTable, List<Budget>> _budgetsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.budgets,
+    aliasName: 'wallets__id__budgets__wallet_id',
+  );
+
+  $$BudgetsTableProcessedTableManager get budgetsRefs {
+    final manager = $$BudgetsTableTableManager(
+      $_db,
+      $_db.budgets,
+    ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_budgetsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$RecurringRulesTable, List<RecurringRule>>
   _recurringRulesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.recurringRules,
@@ -5733,6 +6078,24 @@ final class $$WalletsTableReferences
     ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_recurringRulesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$DashboardCardsTable, List<DashboardCard>>
+  _dashboardCardsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.dashboardCards,
+    aliasName: 'wallets__id__dashboard_cards__wallet_id',
+  );
+
+  $$DashboardCardsTableProcessedTableManager get dashboardCardsRefs {
+    final manager = $$DashboardCardsTableTableManager(
+      $_db,
+      $_db.dashboardCards,
+    ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_dashboardCardsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -5793,6 +6156,106 @@ class $$WalletsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  Expression<bool> categoriesRefs(
+    Expression<bool> Function($$CategoriesTableFilterComposer f) f,
+  ) {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> tagsRefs(
+    Expression<bool> Function($$TagsTableFilterComposer f) f,
+  ) {
+    final $$TagsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableFilterComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> customFieldDefsRefs(
+    Expression<bool> Function($$CustomFieldDefsTableFilterComposer f) f,
+  ) {
+    final $$CustomFieldDefsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.customFieldDefs,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CustomFieldDefsTableFilterComposer(
+            $db: $db,
+            $table: $db.customFieldDefs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> budgetsRefs(
+    Expression<bool> Function($$BudgetsTableFilterComposer f) f,
+  ) {
+    final $$BudgetsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.budgets,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BudgetsTableFilterComposer(
+            $db: $db,
+            $table: $db.budgets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<bool> recurringRulesRefs(
     Expression<bool> Function($$RecurringRulesTableFilterComposer f) f,
   ) {
@@ -5809,6 +6272,31 @@ class $$WalletsTableFilterComposer
           }) => $$RecurringRulesTableFilterComposer(
             $db: $db,
             $table: $db.recurringRules,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> dashboardCardsRefs(
+    Expression<bool> Function($$DashboardCardsTableFilterComposer f) f,
+  ) {
+    final $$DashboardCardsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.dashboardCards,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DashboardCardsTableFilterComposer(
+            $db: $db,
+            $table: $db.dashboardCards,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5914,6 +6402,106 @@ class $$WalletsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  Expression<T> categoriesRefs<T extends Object>(
+    Expression<T> Function($$CategoriesTableAnnotationComposer a) f,
+  ) {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> tagsRefs<T extends Object>(
+    Expression<T> Function($$TagsTableAnnotationComposer a) f,
+  ) {
+    final $$TagsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.tags,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TagsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.tags,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> customFieldDefsRefs<T extends Object>(
+    Expression<T> Function($$CustomFieldDefsTableAnnotationComposer a) f,
+  ) {
+    final $$CustomFieldDefsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.customFieldDefs,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CustomFieldDefsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.customFieldDefs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> budgetsRefs<T extends Object>(
+    Expression<T> Function($$BudgetsTableAnnotationComposer a) f,
+  ) {
+    final $$BudgetsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.budgets,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$BudgetsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.budgets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> recurringRulesRefs<T extends Object>(
     Expression<T> Function($$RecurringRulesTableAnnotationComposer a) f,
   ) {
@@ -5938,6 +6526,31 @@ class $$WalletsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> dashboardCardsRefs<T extends Object>(
+    Expression<T> Function($$DashboardCardsTableAnnotationComposer a) f,
+  ) {
+    final $$DashboardCardsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.dashboardCards,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DashboardCardsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.dashboardCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$WalletsTableTableManager
@@ -5953,7 +6566,14 @@ class $$WalletsTableTableManager
           $$WalletsTableUpdateCompanionBuilder,
           (Wallet, $$WalletsTableReferences),
           Wallet,
-          PrefetchHooks Function({bool recurringRulesRefs})
+          PrefetchHooks Function({
+            bool categoriesRefs,
+            bool tagsRefs,
+            bool customFieldDefsRefs,
+            bool budgetsRefs,
+            bool recurringRulesRefs,
+            bool dashboardCardsRefs,
+          })
         > {
   $$WalletsTableTableManager(_$AppDatabase db, $WalletsTable table)
     : super(
@@ -6022,37 +6642,150 @@ class $$WalletsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({recurringRulesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (recurringRulesRefs) db.recurringRules,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (recurringRulesRefs)
-                    await $_getPrefetchedData<
-                      Wallet,
-                      $WalletsTable,
-                      RecurringRule
-                    >(
-                      currentTable: table,
-                      referencedTable: $$WalletsTableReferences
-                          ._recurringRulesRefsTable(db),
-                      managerFromTypedResult: (p0) => $$WalletsTableReferences(
-                        db,
-                        table,
-                        p0,
-                      ).recurringRulesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.walletId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({
+                categoriesRefs = false,
+                tagsRefs = false,
+                customFieldDefsRefs = false,
+                budgetsRefs = false,
+                recurringRulesRefs = false,
+                dashboardCardsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (categoriesRefs) db.categories,
+                    if (tagsRefs) db.tags,
+                    if (customFieldDefsRefs) db.customFieldDefs,
+                    if (budgetsRefs) db.budgets,
+                    if (recurringRulesRefs) db.recurringRules,
+                    if (dashboardCardsRefs) db.dashboardCards,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (categoriesRefs)
+                        await $_getPrefetchedData<
+                          Wallet,
+                          $WalletsTable,
+                          Category
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._categoriesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).categoriesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (tagsRefs)
+                        await $_getPrefetchedData<Wallet, $WalletsTable, Tag>(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._tagsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(db, table, p0).tagsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (customFieldDefsRefs)
+                        await $_getPrefetchedData<
+                          Wallet,
+                          $WalletsTable,
+                          CustomFieldDef
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._customFieldDefsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).customFieldDefsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (budgetsRefs)
+                        await $_getPrefetchedData<
+                          Wallet,
+                          $WalletsTable,
+                          Budget
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._budgetsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).budgetsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (recurringRulesRefs)
+                        await $_getPrefetchedData<
+                          Wallet,
+                          $WalletsTable,
+                          RecurringRule
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._recurringRulesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).recurringRulesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (dashboardCardsRefs)
+                        await $_getPrefetchedData<
+                          Wallet,
+                          $WalletsTable,
+                          DashboardCard
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._dashboardCardsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).dashboardCardsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -6069,7 +6802,14 @@ typedef $$WalletsTableProcessedTableManager =
       $$WalletsTableUpdateCompanionBuilder,
       (Wallet, $$WalletsTableReferences),
       Wallet,
-      PrefetchHooks Function({bool recurringRulesRefs})
+      PrefetchHooks Function({
+        bool categoriesRefs,
+        bool tagsRefs,
+        bool customFieldDefsRefs,
+        bool budgetsRefs,
+        bool recurringRulesRefs,
+        bool dashboardCardsRefs,
+      })
     >;
 typedef $$CategoriesTableCreateCompanionBuilder =
     CategoriesCompanion Function({
@@ -6077,6 +6817,7 @@ typedef $$CategoriesTableCreateCompanionBuilder =
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       required String name,
       required String icon,
       required String colorHex,
@@ -6092,6 +6833,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       Value<String> name,
       Value<String> icon,
       Value<String> colorHex,
@@ -6105,6 +6847,23 @@ typedef $$CategoriesTableUpdateCompanionBuilder =
 final class $$CategoriesTableReferences
     extends BaseReferences<_$AppDatabase, $CategoriesTable, Category> {
   $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WalletsTable _walletIdTable(_$AppDatabase db) =>
+      db.wallets.createAlias('categories__wallet_id__wallets__id');
+
+  $$WalletsTableProcessedTableManager? get walletId {
+    final $_column = $_itemColumn<String>('wallet_id');
+    if ($_column == null) return null;
+    final manager = $$WalletsTableTableManager(
+      $_db,
+      $_db.wallets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_walletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static $CategoriesTable _parentIdTable(_$AppDatabase db) =>
       db.categories.createAlias('categories__parent_id__categories__id');
@@ -6238,6 +6997,29 @@ class $$CategoriesTableFilterComposer
     column: $table.isDefault,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$WalletsTableFilterComposer get walletId {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableFilterComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$CategoriesTableFilterComposer get parentId {
     final $$CategoriesTableFilterComposer composer = $composerBuilder(
@@ -6397,6 +7179,29 @@ class $$CategoriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  $$WalletsTableOrderingComposer get walletId {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   $$CategoriesTableOrderingComposer get parentId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -6459,6 +7264,29 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<bool> get isDefault =>
       $composableBuilder(column: $table.isDefault, builder: (column) => column);
+
+  $$WalletsTableAnnotationComposer get walletId {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$CategoriesTableAnnotationComposer get parentId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
@@ -6573,6 +7401,7 @@ class $$CategoriesTableTableManager
           (Category, $$CategoriesTableReferences),
           Category,
           PrefetchHooks Function({
+            bool walletId,
             bool parentId,
             bool transactionsRefs,
             bool budgetsRefs,
@@ -6596,6 +7425,7 @@ class $$CategoriesTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<String> icon = const Value.absent(),
                 Value<String> colorHex = const Value.absent(),
@@ -6609,6 +7439,7 @@ class $$CategoriesTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 name: name,
                 icon: icon,
                 colorHex: colorHex,
@@ -6624,6 +7455,7 @@ class $$CategoriesTableTableManager
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 required String name,
                 required String icon,
                 required String colorHex,
@@ -6637,6 +7469,7 @@ class $$CategoriesTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 name: name,
                 icon: icon,
                 colorHex: colorHex,
@@ -6656,6 +7489,7 @@ class $$CategoriesTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                walletId = false,
                 parentId = false,
                 transactionsRefs = false,
                 budgetsRefs = false,
@@ -6684,6 +7518,20 @@ class $$CategoriesTableTableManager
                           dynamic
                         >
                       >(state) {
+                        if (walletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.walletId,
+                                    referencedTable: $$CategoriesTableReferences
+                                        ._walletIdTable(db),
+                                    referencedColumn:
+                                        $$CategoriesTableReferences
+                                            ._walletIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
                         if (parentId) {
                           state =
                               state.withJoin(
@@ -6787,6 +7635,7 @@ typedef $$CategoriesTableProcessedTableManager =
       (Category, $$CategoriesTableReferences),
       Category,
       PrefetchHooks Function({
+        bool walletId,
         bool parentId,
         bool transactionsRefs,
         bool budgetsRefs,
@@ -7732,6 +8581,7 @@ typedef $$TagsTableCreateCompanionBuilder =
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       required String name,
       Value<int> rowid,
     });
@@ -7741,6 +8591,7 @@ typedef $$TagsTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       Value<String> name,
       Value<int> rowid,
     });
@@ -7748,6 +8599,23 @@ typedef $$TagsTableUpdateCompanionBuilder =
 final class $$TagsTableReferences
     extends BaseReferences<_$AppDatabase, $TagsTable, Tag> {
   $$TagsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WalletsTable _walletIdTable(_$AppDatabase db) =>
+      db.wallets.createAlias('tags__wallet_id__wallets__id');
+
+  $$WalletsTableProcessedTableManager? get walletId {
+    final $_column = $_itemColumn<String>('wallet_id');
+    if ($_column == null) return null;
+    final manager = $$WalletsTableTableManager(
+      $_db,
+      $_db.wallets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_walletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static MultiTypedResultKey<$TransactionTagsTable, List<TransactionTag>>
   _transactionTagsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
@@ -7802,6 +8670,29 @@ class $$TagsTableFilterComposer extends Composer<_$AppDatabase, $TagsTable> {
     column: $table.name,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$WalletsTableFilterComposer get walletId {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableFilterComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<bool> transactionTagsRefs(
     Expression<bool> Function($$TransactionTagsTableFilterComposer f) f,
@@ -7861,6 +8752,29 @@ class $$TagsTableOrderingComposer extends Composer<_$AppDatabase, $TagsTable> {
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$WalletsTableOrderingComposer get walletId {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$TagsTableAnnotationComposer
@@ -7886,6 +8800,29 @@ class $$TagsTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  $$WalletsTableAnnotationComposer get walletId {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<T> transactionTagsRefs<T extends Object>(
     Expression<T> Function($$TransactionTagsTableAnnotationComposer a) f,
@@ -7926,7 +8863,7 @@ class $$TagsTableTableManager
           $$TagsTableUpdateCompanionBuilder,
           (Tag, $$TagsTableReferences),
           Tag,
-          PrefetchHooks Function({bool transactionTagsRefs})
+          PrefetchHooks Function({bool walletId, bool transactionTagsRefs})
         > {
   $$TagsTableTableManager(_$AppDatabase db, $TagsTable table)
     : super(
@@ -7945,6 +8882,7 @@ class $$TagsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TagsCompanion(
@@ -7952,6 +8890,7 @@ class $$TagsTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 name: name,
                 rowid: rowid,
               ),
@@ -7961,6 +8900,7 @@ class $$TagsTableTableManager
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 required String name,
                 Value<int> rowid = const Value.absent(),
               }) => TagsCompanion.insert(
@@ -7968,6 +8908,7 @@ class $$TagsTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 name: name,
                 rowid: rowid,
               ),
@@ -7977,33 +8918,71 @@ class $$TagsTableTableManager
                     (e.readTable(table), $$TagsTableReferences(db, table, e)),
               )
               .toList(),
-          prefetchHooksCallback: ({transactionTagsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (transactionTagsRefs) db.transactionTags,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (transactionTagsRefs)
-                    await $_getPrefetchedData<Tag, $TagsTable, TransactionTag>(
-                      currentTable: table,
-                      referencedTable: $$TagsTableReferences
-                          ._transactionTagsRefsTable(db),
-                      managerFromTypedResult: (p0) => $$TagsTableReferences(
-                        db,
-                        table,
-                        p0,
-                      ).transactionTagsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.tagId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({walletId = false, transactionTagsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (transactionTagsRefs) db.transactionTags,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (walletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.walletId,
+                                    referencedTable: $$TagsTableReferences
+                                        ._walletIdTable(db),
+                                    referencedColumn: $$TagsTableReferences
+                                        ._walletIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (transactionTagsRefs)
+                        await $_getPrefetchedData<
+                          Tag,
+                          $TagsTable,
+                          TransactionTag
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TagsTableReferences
+                              ._transactionTagsRefsTable(db),
+                          managerFromTypedResult: (p0) => $$TagsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).transactionTagsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.tagId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -8020,7 +8999,7 @@ typedef $$TagsTableProcessedTableManager =
       $$TagsTableUpdateCompanionBuilder,
       (Tag, $$TagsTableReferences),
       Tag,
-      PrefetchHooks Function({bool transactionTagsRefs})
+      PrefetchHooks Function({bool walletId, bool transactionTagsRefs})
     >;
 typedef $$TransactionTagsTableCreateCompanionBuilder =
     TransactionTagsCompanion Function({
@@ -8405,6 +9384,7 @@ typedef $$CustomFieldDefsTableCreateCompanionBuilder =
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       required String name,
       required CustomFieldType type,
       Value<List<String>?> options,
@@ -8417,6 +9397,7 @@ typedef $$CustomFieldDefsTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       Value<String> name,
       Value<CustomFieldType> type,
       Value<List<String>?> options,
@@ -8432,6 +9413,23 @@ final class $$CustomFieldDefsTableReferences
     super.$_table,
     super.$_typedResult,
   );
+
+  static $WalletsTable _walletIdTable(_$AppDatabase db) =>
+      db.wallets.createAlias('custom_field_defs__wallet_id__wallets__id');
+
+  $$WalletsTableProcessedTableManager? get walletId {
+    final $_column = $_itemColumn<String>('wallet_id');
+    if ($_column == null) return null;
+    final manager = $$WalletsTableTableManager(
+      $_db,
+      $_db.wallets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_walletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static MultiTypedResultKey<$CustomFieldValuesTable, List<CustomFieldValue>>
   _customFieldValuesRefsTable(_$AppDatabase db) =>
@@ -8505,6 +9503,29 @@ class $$CustomFieldDefsTableFilterComposer
     column: $table.sortOrder,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$WalletsTableFilterComposer get walletId {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableFilterComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<bool> customFieldValuesRefs(
     Expression<bool> Function($$CustomFieldValuesTableFilterComposer f) f,
@@ -8580,6 +9601,29 @@ class $$CustomFieldDefsTableOrderingComposer
     column: $table.sortOrder,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$WalletsTableOrderingComposer get walletId {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$CustomFieldDefsTableAnnotationComposer
@@ -8614,6 +9658,29 @@ class $$CustomFieldDefsTableAnnotationComposer
 
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  $$WalletsTableAnnotationComposer get walletId {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<T> customFieldValuesRefs<T extends Object>(
     Expression<T> Function($$CustomFieldValuesTableAnnotationComposer a) f,
@@ -8655,7 +9722,7 @@ class $$CustomFieldDefsTableTableManager
           $$CustomFieldDefsTableUpdateCompanionBuilder,
           (CustomFieldDef, $$CustomFieldDefsTableReferences),
           CustomFieldDef,
-          PrefetchHooks Function({bool customFieldValuesRefs})
+          PrefetchHooks Function({bool walletId, bool customFieldValuesRefs})
         > {
   $$CustomFieldDefsTableTableManager(
     _$AppDatabase db,
@@ -8676,6 +9743,7 @@ class $$CustomFieldDefsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<CustomFieldType> type = const Value.absent(),
                 Value<List<String>?> options = const Value.absent(),
@@ -8686,6 +9754,7 @@ class $$CustomFieldDefsTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 name: name,
                 type: type,
                 options: options,
@@ -8698,6 +9767,7 @@ class $$CustomFieldDefsTableTableManager
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 required String name,
                 required CustomFieldType type,
                 Value<List<String>?> options = const Value.absent(),
@@ -8708,6 +9778,7 @@ class $$CustomFieldDefsTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 name: name,
                 type: type,
                 options: options,
@@ -8722,38 +9793,74 @@ class $$CustomFieldDefsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({customFieldValuesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (customFieldValuesRefs) db.customFieldValues,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (customFieldValuesRefs)
-                    await $_getPrefetchedData<
-                      CustomFieldDef,
-                      $CustomFieldDefsTable,
-                      CustomFieldValue
-                    >(
-                      currentTable: table,
-                      referencedTable: $$CustomFieldDefsTableReferences
-                          ._customFieldValuesRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$CustomFieldDefsTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).customFieldValuesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.fieldId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({walletId = false, customFieldValuesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (customFieldValuesRefs) db.customFieldValues,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (walletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.walletId,
+                                    referencedTable:
+                                        $$CustomFieldDefsTableReferences
+                                            ._walletIdTable(db),
+                                    referencedColumn:
+                                        $$CustomFieldDefsTableReferences
+                                            ._walletIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (customFieldValuesRefs)
+                        await $_getPrefetchedData<
+                          CustomFieldDef,
+                          $CustomFieldDefsTable,
+                          CustomFieldValue
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CustomFieldDefsTableReferences
+                              ._customFieldValuesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CustomFieldDefsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).customFieldValuesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.fieldId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -8770,7 +9877,7 @@ typedef $$CustomFieldDefsTableProcessedTableManager =
       $$CustomFieldDefsTableUpdateCompanionBuilder,
       (CustomFieldDef, $$CustomFieldDefsTableReferences),
       CustomFieldDef,
-      PrefetchHooks Function({bool customFieldValuesRefs})
+      PrefetchHooks Function({bool walletId, bool customFieldValuesRefs})
     >;
 typedef $$CustomFieldValuesTableCreateCompanionBuilder =
     CustomFieldValuesCompanion Function({
@@ -9182,6 +10289,7 @@ typedef $$BudgetsTableCreateCompanionBuilder =
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       required String categoryId,
       required int limitCents,
       Value<int> rowid,
@@ -9192,6 +10300,7 @@ typedef $$BudgetsTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       Value<String> categoryId,
       Value<int> limitCents,
       Value<int> rowid,
@@ -9200,6 +10309,23 @@ typedef $$BudgetsTableUpdateCompanionBuilder =
 final class $$BudgetsTableReferences
     extends BaseReferences<_$AppDatabase, $BudgetsTable, Budget> {
   $$BudgetsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WalletsTable _walletIdTable(_$AppDatabase db) =>
+      db.wallets.createAlias('budgets__wallet_id__wallets__id');
+
+  $$WalletsTableProcessedTableManager? get walletId {
+    final $_column = $_itemColumn<String>('wallet_id');
+    if ($_column == null) return null;
+    final manager = $$WalletsTableTableManager(
+      $_db,
+      $_db.wallets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_walletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static $CategoriesTable _categoryIdTable(_$AppDatabase db) =>
       db.categories.createAlias('budgets__category_id__categories__id');
@@ -9252,6 +10378,29 @@ class $$BudgetsTableFilterComposer
     column: $table.limitCents,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$WalletsTableFilterComposer get walletId {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableFilterComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   $$CategoriesTableFilterComposer get categoryId {
     final $$CategoriesTableFilterComposer composer = $composerBuilder(
@@ -9311,6 +10460,29 @@ class $$BudgetsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  $$WalletsTableOrderingComposer get walletId {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   $$CategoriesTableOrderingComposer get categoryId {
     final $$CategoriesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -9361,6 +10533,29 @@ class $$BudgetsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  $$WalletsTableAnnotationComposer get walletId {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
   $$CategoriesTableAnnotationComposer get categoryId {
     final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -9398,7 +10593,7 @@ class $$BudgetsTableTableManager
           $$BudgetsTableUpdateCompanionBuilder,
           (Budget, $$BudgetsTableReferences),
           Budget,
-          PrefetchHooks Function({bool categoryId})
+          PrefetchHooks Function({bool walletId, bool categoryId})
         > {
   $$BudgetsTableTableManager(_$AppDatabase db, $BudgetsTable table)
     : super(
@@ -9417,6 +10612,7 @@ class $$BudgetsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
                 Value<int> limitCents = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -9425,6 +10621,7 @@ class $$BudgetsTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 categoryId: categoryId,
                 limitCents: limitCents,
                 rowid: rowid,
@@ -9435,6 +10632,7 @@ class $$BudgetsTableTableManager
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 required String categoryId,
                 required int limitCents,
                 Value<int> rowid = const Value.absent(),
@@ -9443,6 +10641,7 @@ class $$BudgetsTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 categoryId: categoryId,
                 limitCents: limitCents,
                 rowid: rowid,
@@ -9455,7 +10654,7 @@ class $$BudgetsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({categoryId = false}) {
+          prefetchHooksCallback: ({walletId = false, categoryId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -9475,6 +10674,19 @@ class $$BudgetsTableTableManager
                       dynamic
                     >
                   >(state) {
+                    if (walletId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.walletId,
+                                referencedTable: $$BudgetsTableReferences
+                                    ._walletIdTable(db),
+                                referencedColumn: $$BudgetsTableReferences
+                                    ._walletIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
                     if (categoryId) {
                       state =
                           state.withJoin(
@@ -9512,7 +10724,7 @@ typedef $$BudgetsTableProcessedTableManager =
       $$BudgetsTableUpdateCompanionBuilder,
       (Budget, $$BudgetsTableReferences),
       Budget,
-      PrefetchHooks Function({bool categoryId})
+      PrefetchHooks Function({bool walletId, bool categoryId})
     >;
 typedef $$RecurringRulesTableCreateCompanionBuilder =
     RecurringRulesCompanion Function({
@@ -10470,6 +11682,7 @@ typedef $$DashboardCardsTableCreateCompanionBuilder =
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       required String type,
       required int position,
       Value<String> configJson,
@@ -10481,11 +11694,38 @@ typedef $$DashboardCardsTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
+      Value<String?> walletId,
       Value<String> type,
       Value<int> position,
       Value<String> configJson,
       Value<int> rowid,
     });
+
+final class $$DashboardCardsTableReferences
+    extends BaseReferences<_$AppDatabase, $DashboardCardsTable, DashboardCard> {
+  $$DashboardCardsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $WalletsTable _walletIdTable(_$AppDatabase db) =>
+      db.wallets.createAlias('dashboard_cards__wallet_id__wallets__id');
+
+  $$WalletsTableProcessedTableManager? get walletId {
+    final $_column = $_itemColumn<String>('wallet_id');
+    if ($_column == null) return null;
+    final manager = $$WalletsTableTableManager(
+      $_db,
+      $_db.wallets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_walletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
 
 class $$DashboardCardsTableFilterComposer
     extends Composer<_$AppDatabase, $DashboardCardsTable> {
@@ -10530,6 +11770,29 @@ class $$DashboardCardsTableFilterComposer
     column: $table.configJson,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$WalletsTableFilterComposer get walletId {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableFilterComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$DashboardCardsTableOrderingComposer
@@ -10575,6 +11838,29 @@ class $$DashboardCardsTableOrderingComposer
     column: $table.configJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$WalletsTableOrderingComposer get walletId {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$DashboardCardsTableAnnotationComposer
@@ -10608,6 +11894,29 @@ class $$DashboardCardsTableAnnotationComposer
     column: $table.configJson,
     builder: (column) => column,
   );
+
+  $$WalletsTableAnnotationComposer get walletId {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$DashboardCardsTableTableManager
@@ -10621,12 +11930,9 @@ class $$DashboardCardsTableTableManager
           $$DashboardCardsTableAnnotationComposer,
           $$DashboardCardsTableCreateCompanionBuilder,
           $$DashboardCardsTableUpdateCompanionBuilder,
-          (
-            DashboardCard,
-            BaseReferences<_$AppDatabase, $DashboardCardsTable, DashboardCard>,
-          ),
+          (DashboardCard, $$DashboardCardsTableReferences),
           DashboardCard,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool walletId})
         > {
   $$DashboardCardsTableTableManager(
     _$AppDatabase db,
@@ -10647,6 +11953,7 @@ class $$DashboardCardsTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 Value<String> type = const Value.absent(),
                 Value<int> position = const Value.absent(),
                 Value<String> configJson = const Value.absent(),
@@ -10656,6 +11963,7 @@ class $$DashboardCardsTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 type: type,
                 position: position,
                 configJson: configJson,
@@ -10667,6 +11975,7 @@ class $$DashboardCardsTableTableManager
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
                 required String type,
                 required int position,
                 Value<String> configJson = const Value.absent(),
@@ -10676,15 +11985,62 @@ class $$DashboardCardsTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
+                walletId: walletId,
                 type: type,
                 position: position,
                 configJson: configJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$DashboardCardsTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({walletId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (walletId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.walletId,
+                                referencedTable: $$DashboardCardsTableReferences
+                                    ._walletIdTable(db),
+                                referencedColumn:
+                                    $$DashboardCardsTableReferences
+                                        ._walletIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
@@ -10699,12 +12055,9 @@ typedef $$DashboardCardsTableProcessedTableManager =
       $$DashboardCardsTableAnnotationComposer,
       $$DashboardCardsTableCreateCompanionBuilder,
       $$DashboardCardsTableUpdateCompanionBuilder,
-      (
-        DashboardCard,
-        BaseReferences<_$AppDatabase, $DashboardCardsTable, DashboardCard>,
-      ),
+      (DashboardCard, $$DashboardCardsTableReferences),
       DashboardCard,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool walletId})
     >;
 
 class $AppDatabaseManager {

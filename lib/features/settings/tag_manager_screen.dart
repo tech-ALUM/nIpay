@@ -24,8 +24,9 @@ class _TagManagerScreenState extends ConsumerState<TagManagerScreen> {
 
   Future<void> _add() async {
     final name = _controller.text.trim();
-    if (name.isEmpty) return;
-    await ref.read(tagRepositoryProvider).create(name);
+    final active = ref.read(activeWalletProvider);
+    if (name.isEmpty || active == null) return;
+    await ref.read(tagRepositoryProvider).create(name, walletId: active.id);
     _controller.clear();
     ref.invalidate(tagsProvider);
   }

@@ -18,6 +18,7 @@ Future<void> seed(AppDatabase db) async {
     db,
   ).create(name: 'Conto', colorHex: '#0E7C86', initialBalanceCents: 100000);
   final cat = await DriftCategoryRepository(db).create(
+    walletId: wallet,
     name: 'Spesa',
     icon: '🛒',
     colorHex: '#FF6F61',
@@ -37,10 +38,11 @@ Future<void> seed(AppDatabase db) async {
     date: DateTime(2026, 7, 1),
   );
   final tags = DriftTagRepository(db);
-  final tag = await tags.create('casa');
+  final tag = await tags.create('casa', walletId: wallet);
   await tags.tagTransaction(tx, tag);
   final fields = DriftCustomFieldRepository(db);
   final field = await fields.define(
+    walletId: wallet,
     name: 'Metodo',
     type: CustomFieldType.choice,
     options: ['Carta'],
@@ -48,7 +50,7 @@ Future<void> seed(AppDatabase db) async {
   await fields.setValue(transactionId: tx, fieldId: field, value: 'Carta');
   await DriftBudgetRepository(
     db,
-  ).setMonthlyLimit(categoryId: cat, limitCents: 40000);
+  ).setMonthlyLimit(walletId: wallet, categoryId: cat, limitCents: 40000);
   await DriftRecurringRepository(db).create(
     walletId: wallet,
     type: TransactionType.expense,
@@ -59,7 +61,7 @@ Future<void> seed(AppDatabase db) async {
   );
   await DriftDashboardRepository(
     db,
-  ).addCard(type: 'cashflow', configJson: '{"x":1}');
+  ).addCard(walletId: wallet, type: 'cashflow', configJson: '{"x":1}');
 }
 
 void main() {
@@ -68,7 +70,7 @@ void main() {
     await seed(source);
 
     final json = await exportToJson(source);
-    expect(json['schemaVersion'], 1);
+    expect(json['schemaVersion'], 2);
 
     final target = AppDatabase(NativeDatabase.memory());
     await importFromJson(target, json);
@@ -113,6 +115,35 @@ void main() {
 
     await source.close();
     await target.close();
+  });
+
+  test('wallet export → additive import with fresh ids', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    await seed(db);
+    final walletId = (await db.select(db.wallets).get()).single.id;
+
+    final json = await exportWalletToJson(db, walletId);
+    expect(json['kind'], 'wallet');
+
+    // Import nello STESSO db: aggiunge un secondo spazio, senza collisioni.
+    final newWalletId = await importWalletFromJson(db, json);
+    expect(newWalletId, isNot(walletId));
+    expect(await db.select(db.wallets).get(), hasLength(2));
+    expect(await db.select(db.categories).get(), hasLength(2));
+    expect(await db.select(db.transactions).get(), hasLength(4));
+
+    // Lo spazio importato è coerente: saldo identico all'originale.
+    final txRepo = DriftTransactionRepository(db);
+    expect(
+      await txRepo.balanceOf(newWalletId),
+      await txRepo.balanceOf(walletId),
+    );
+
+    // Reimportare ANCORA lo stesso file funziona (id sempre freschi).
+    await importWalletFromJson(db, json);
+    expect(await db.select(db.wallets).get(), hasLength(3));
+
+    await db.close();
   });
 
   test(

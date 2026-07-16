@@ -281,6 +281,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importExcel => 'Import Excel';
 
   @override
+  String get exportWalletJson => 'Export active wallet (JSON)';
+
+  @override
+  String get exportWalletExcel => 'Export active wallet (Excel)';
+
+  @override
+  String get importWallet => 'Import wallet (adds a new space)';
+
+  @override
+  String get walletImported => 'Wallet imported';
+
+  @override
   String get importConfirmTitle => 'Replace all data?';
 
   @override

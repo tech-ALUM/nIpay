@@ -28,7 +28,10 @@ class HomeScreen extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
         children: [
-          Text(l10n.totalBalance, style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            '${l10n.totalBalance}${ref.watch(activeWalletProvider) != null ? ' · ${ref.watch(activeWalletProvider)!.name}' : ''}',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: 4),
           Text(
             total == null ? '…' : formatCents(total),
@@ -200,18 +203,31 @@ class _WalletCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final balance = ref.watch(walletBalanceProvider(wallet.id)).valueOrNull;
     final base = _parseHex(wallet.colorHex);
+    final isActive = ref.watch(activeWalletProvider)?.id == wallet.id;
 
     return GestureDetector(
+      // Tap: rende il portafoglio lo spazio attivo; long-press: azioni.
+      onTap: () => ref.read(activeWalletIdProvider.notifier).set(wallet.id),
       onLongPress: () => showWalletActionsSheet(context, wallet),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
         width: 158,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
+          border: isActive
+              ? Border.all(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  width: 2.5,
+                )
+              : null,
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [base.withValues(alpha: .92), _darken(base)],
+            colors: [
+              base.withValues(alpha: isActive ? 1 : .55),
+              _darken(base).withValues(alpha: isActive ? 1 : .55),
+            ],
           ),
         ),
         child: Column(
@@ -219,14 +235,20 @@ class _WalletCard extends ConsumerWidget {
           children: [
             Text(
               wallet.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.white.withValues(alpha: .9),
               ),
             ),
             const Spacer(),
-            Text(
-              balance == null ? '…' : formatCents(balance),
-              style: moneyStyle(size: 19, color: Colors.white),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                balance == null ? '…' : formatCents(balance),
+                maxLines: 1,
+                style: moneyStyle(size: 19, color: Colors.white),
+              ),
             ),
           ],
         ),

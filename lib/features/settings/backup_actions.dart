@@ -49,6 +49,99 @@ Future<void> exportJsonBackup(WidgetRef ref) async {
   await SharePlus.instance.share(ShareParams(files: [XFile(out.path)]));
 }
 
+/// Export JSON del solo portafoglio attivo (zip se ha allegati).
+Future<void> exportWalletBackup(WidgetRef ref) async {
+  final active = ref.read(activeWalletProvider);
+  if (active == null) return;
+  final db = ref.read(databaseProvider);
+  final json = await exportWalletToJson(db, active.id);
+  final jsonBytes = utf8.encode(
+    const JsonEncoder.withIndent('  ').convert(json),
+  );
+  final attachmentPaths = [
+    for (final a in (json['attachments'] as List))
+      (a as Map)['relativePath'] as String,
+  ];
+  final tmp = await getTemporaryDirectory();
+  final safeName = active.name.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
+
+  final File out;
+  if (attachmentPaths.isEmpty) {
+    out = File('${tmp.path}/nipay-$safeName-${_stamp()}.json');
+    await out.writeAsBytes(jsonBytes);
+  } else {
+    final appDir = await ref.read(appDirProvider.future);
+    final archive = Archive()
+      ..addFile(ArchiveFile('nipay.json', jsonBytes.length, jsonBytes));
+    for (final rel in attachmentPaths) {
+      final f = File('${appDir.path}/$rel');
+      if (await f.exists()) {
+        final bytes = await f.readAsBytes();
+        archive.addFile(ArchiveFile(rel, bytes.length, bytes));
+      }
+    }
+    out = File('${tmp.path}/nipay-$safeName-${_stamp()}.zip');
+    await out.writeAsBytes(ZipEncoder().encode(archive)!);
+  }
+  await SharePlus.instance.share(ShareParams(files: [XFile(out.path)]));
+}
+
+/// Import ADDITIVO di un portafoglio (json o zip). Non tocca gli altri spazi.
+Future<bool> importWalletBackup(WidgetRef ref) async {
+  final file = await openFile(
+    acceptedTypeGroups: const [
+      XTypeGroup(label: 'nIpay wallet', extensions: ['json', 'zip']),
+    ],
+  );
+  if (file == null) return false;
+  final db = ref.read(databaseProvider);
+  final bytes = await file.readAsBytes();
+
+  Map<String, dynamic> json;
+  if (file.name.toLowerCase().endsWith('.zip')) {
+    final archive = ZipDecoder().decodeBytes(bytes);
+    final entry = archive.files
+        .where((f) => f.name == 'nipay.json')
+        .firstOrNull;
+    if (entry == null) {
+      throw const FormatException('nipay.json mancante nello zip');
+    }
+    json =
+        jsonDecode(utf8.decode(entry.content as List<int>))
+            as Map<String, dynamic>;
+    final appDir = await ref.read(appDirProvider.future);
+    for (final f in archive.files) {
+      if (f.isFile && f.name.startsWith('attachments/')) {
+        final target = File('${appDir.path}/${f.name}');
+        await target.create(recursive: true);
+        await target.writeAsBytes(f.content as List<int>);
+      }
+    }
+  } else {
+    json = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
+  }
+
+  final newId = await importWalletFromJson(db, json);
+  ref.read(activeWalletIdProvider.notifier).set(newId);
+  _invalidateAll(ref);
+  return true;
+}
+
+/// Export Excel del solo portafoglio attivo.
+Future<void> exportWalletExcelBackup(WidgetRef ref) async {
+  final active = ref.read(activeWalletProvider);
+  if (active == null) return;
+  final bytes = await exportToExcel(
+    ref.read(databaseProvider),
+    walletId: active.id,
+  );
+  final tmp = await getTemporaryDirectory();
+  final safeName = active.name.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
+  final out = File('${tmp.path}/nipay-$safeName-${_stamp()}.xlsx');
+  await out.writeAsBytes(bytes);
+  await SharePlus.instance.share(ShareParams(files: [XFile(out.path)]));
+}
+
 Future<void> exportExcelBackup(WidgetRef ref) async {
   final bytes = await exportToExcel(ref.read(databaseProvider));
   final tmp = await getTemporaryDirectory();

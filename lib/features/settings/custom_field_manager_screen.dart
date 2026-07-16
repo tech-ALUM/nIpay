@@ -137,9 +137,16 @@ Future<void> _showFieldSheet(BuildContext context, WidgetRef ref) {
                             .where((s) => s.isNotEmpty)
                             .toList()
                       : null;
+                  final active = ref.read(activeWalletProvider);
+                  if (active == null) return;
                   await ref
                       .read(customFieldRepositoryProvider)
-                      .define(name: n, type: type, options: opts);
+                      .define(
+                        walletId: active.id,
+                        name: n,
+                        type: type,
+                        options: opts,
+                      );
                   ref.invalidate(customFieldDefsProvider);
                   if (sheetContext.mounted) {
                     Navigator.of(sheetContext).pop();

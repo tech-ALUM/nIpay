@@ -19,7 +19,6 @@ class TransactionsScreen extends ConsumerStatefulWidget {
 class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   String _query = '';
-  String? _walletId;
   String? _categoryId;
   String? _tagId;
 
@@ -47,9 +46,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       (t) =>
           t.date.year == _month.year &&
           t.date.month == _month.month &&
-          (_walletId == null ||
-              t.walletId == _walletId ||
-              t.walletToId == _walletId) &&
           (_categoryId == null || t.categoryId == _categoryId) &&
           (tagIds == null || tagIds.contains(t.id)) &&
           (_query.isEmpty ||
@@ -94,20 +90,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(
-                      child: _FilterDropdown<String>(
-                        value: _walletId,
-                        nullLabel: l10n.allWallets,
-                        items: [
-                          for (final w
-                              in ref.watch(walletsProvider).valueOrNull ??
-                                  const <Wallet>[])
-                            (w.id, w.name),
-                        ],
-                        onChanged: (v) => setState(() => _walletId = v),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     Expanded(
                       child: _FilterDropdown<String>(
                         value: _categoryId,

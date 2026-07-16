@@ -7,7 +7,8 @@ import '../db/app_database.dart';
 /// l'import riusa le stesse factory `fromJson` dei data class Drift.
 const _sheets = ['Portafogli', 'Categorie', 'Transazioni', 'Budget'];
 
-Future<List<int>> exportToExcel(AppDatabase db) async {
+/// Con [walletId] esporta solo lo spazio di quel portafoglio.
+Future<List<int>> exportToExcel(AppDatabase db, {String? walletId}) async {
   final excel = Excel.createExcel();
 
   Future<void> writeSheet(String name, List<Map<String, dynamic>> rows) async {
@@ -21,16 +22,23 @@ Future<List<int>> exportToExcel(AppDatabase db) async {
   }
 
   await writeSheet('Portafogli', [
-    for (final r in await db.select(db.wallets).get()) r.toJson(),
+    for (final r in await db.select(db.wallets).get())
+      if (walletId == null || r.id == walletId) r.toJson(),
   ]);
   await writeSheet('Categorie', [
-    for (final r in await db.select(db.categories).get()) r.toJson(),
+    for (final r in await db.select(db.categories).get())
+      if (walletId == null || r.walletId == walletId) r.toJson(),
   ]);
   await writeSheet('Transazioni', [
-    for (final r in await db.select(db.transactions).get()) r.toJson(),
+    for (final r in await db.select(db.transactions).get())
+      if (walletId == null ||
+          r.walletId == walletId ||
+          r.walletToId == walletId)
+        r.toJson(),
   ]);
   await writeSheet('Budget', [
-    for (final r in await db.select(db.budgets).get()) r.toJson(),
+    for (final r in await db.select(db.budgets).get())
+      if (walletId == null || r.walletId == walletId) r.toJson(),
   ]);
 
   excel.delete('Sheet1');

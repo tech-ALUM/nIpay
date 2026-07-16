@@ -10,13 +10,14 @@ void main() {
   late AppDatabase db;
   late TagRepository tags;
   late CustomFieldRepository fields;
+  late String wallet;
   late String txId;
 
   setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
     tags = DriftTagRepository(db);
     fields = DriftCustomFieldRepository(db);
-    final wallet = await DriftWalletRepository(
+    wallet = await DriftWalletRepository(
       db,
     ).create(name: 'Conto', colorHex: '#0E7C86');
     txId = await DriftTransactionRepository(db).createExpense(
@@ -29,8 +30,8 @@ void main() {
   tearDown(() async => db.close());
 
   test('tags a transaction and reads tags back', () async {
-    final casa = await tags.create('casa');
-    await tags.create('auto');
+    final casa = await tags.create('casa', walletId: wallet);
+    await tags.create('auto', walletId: wallet);
     await tags.tagTransaction(txId, casa);
 
     final ofTx = await tags.tagsOf(txId);
@@ -38,7 +39,7 @@ void main() {
   });
 
   test('tagging is idempotent per (transaction, tag)', () async {
-    final casa = await tags.create('casa');
+    final casa = await tags.create('casa', walletId: wallet);
     await tags.tagTransaction(txId, casa);
     await tags.tagTransaction(txId, casa);
 
@@ -47,6 +48,7 @@ void main() {
 
   test('defines a custom field and sets a value on a transaction', () async {
     final fieldId = await fields.define(
+      walletId: wallet,
       name: 'Metodo pagamento',
       type: CustomFieldType.choice,
       options: ['Carta', 'Contanti', 'Bonifico'],
@@ -61,16 +63,16 @@ void main() {
     expect(values, hasLength(1));
     expect(values.first.value, 'Carta');
 
-    final defs = await fields.getDefinitions();
+    final defs = await fields.getDefinitions(wallet);
     expect(defs.single.options, ['Carta', 'Contanti', 'Bonifico']);
   });
 
   test('transactionIdsWithTag returns only tagged transactions', () async {
-    final casa = await tags.create('casa');
+    final casa = await tags.create('casa', walletId: wallet);
     await tags.tagTransaction(txId, casa);
 
     expect(await tags.transactionIdsWithTag(casa), {txId});
-    final altro = await tags.create('altro');
+    final altro = await tags.create('altro', walletId: wallet);
     expect(await tags.transactionIdsWithTag(altro), isEmpty);
   });
 
@@ -78,6 +80,7 @@ void main() {
     'transactionIdsMatching finds transactions by custom field value',
     () async {
       final fieldId = await fields.define(
+        walletId: wallet,
         name: 'Luogo',
         type: CustomFieldType.text,
       );
@@ -94,6 +97,7 @@ void main() {
 
   test('setValue overwrites the previous value for the same field', () async {
     final fieldId = await fields.define(
+      walletId: wallet,
       name: 'Luogo',
       type: CustomFieldType.text,
     );

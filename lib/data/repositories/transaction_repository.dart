@@ -42,15 +42,18 @@ abstract interface class TransactionRepository {
   Future<int> balanceOf(String walletId);
 
   /// Totali spese/entrate nel periodo [from, to). I trasferimenti sono esclusi.
+  /// Con [walletId] limita al singolo portafoglio.
   Future<PeriodTotals> totalsForPeriod({
     required DateTime from,
     required DateTime to,
+    String? walletId,
   });
 
   /// Totale spese per categoria in [from, to), ordinato per totale decrescente.
   Future<List<CategoryTotal>> expensesByCategory({
     required DateTime from,
     required DateTime to,
+    String? walletId,
   });
 
   /// Entrate/uscite per ciascuno degli ultimi [months] mesi fino a [until]
@@ -58,9 +61,11 @@ abstract interface class TransactionRepository {
   Future<List<MonthTotals>> monthlySeries({
     required int months,
     required DateTime until,
+    String? walletId,
   });
 
-  Stream<List<Transaction>> watchRecent({int limit});
+  /// Con [walletId] include anche i trasferimenti in arrivo (walletToId).
+  Stream<List<Transaction>> watchRecent({int limit, String? walletId});
   Future<void> softDelete(String id);
 }
 
@@ -182,6 +187,7 @@ class DriftTransactionRepository implements TransactionRepository {
   Future<PeriodTotals> totalsForPeriod({
     required DateTime from,
     required DateTime to,
+    String? walletId,
   }) async {
     final rows =
         await (_db.select(_db.transactions)..where(
@@ -189,7 +195,10 @@ class DriftTransactionRepository implements TransactionRepository {
                   t.deletedAt.isNull() &
                   t.type.equalsValue(TransactionType.transfer).not() &
                   t.date.isBiggerOrEqualValue(from) &
-                  t.date.isSmallerThanValue(to),
+                  t.date.isSmallerThanValue(to) &
+                  (walletId == null
+                      ? const Constant(true)
+                      : t.walletId.equals(walletId)),
             ))
             .get();
 
@@ -205,6 +214,7 @@ class DriftTransactionRepository implements TransactionRepository {
   Future<List<CategoryTotal>> expensesByCategory({
     required DateTime from,
     required DateTime to,
+    String? walletId,
   }) async {
     final sum = _db.transactions.amountCents.sum();
     final rows =
@@ -214,7 +224,10 @@ class DriftTransactionRepository implements TransactionRepository {
                 _db.transactions.deletedAt.isNull() &
                     _db.transactions.type.equalsValue(TransactionType.expense) &
                     _db.transactions.date.isBiggerOrEqualValue(from) &
-                    _db.transactions.date.isSmallerThanValue(to),
+                    _db.transactions.date.isSmallerThanValue(to) &
+                    (walletId == null
+                        ? const Constant(true)
+                        : _db.transactions.walletId.equals(walletId)),
               )
               ..groupBy([_db.transactions.categoryId])
               ..orderBy([OrderingTerm.desc(sum)]))
@@ -232,6 +245,7 @@ class DriftTransactionRepository implements TransactionRepository {
   Future<List<MonthTotals>> monthlySeries({
     required int months,
     required DateTime until,
+    String? walletId,
   }) async {
     final from = DateTime(until.year, until.month - months + 1);
     final to = DateTime(until.year, until.month + 1);
@@ -241,7 +255,10 @@ class DriftTransactionRepository implements TransactionRepository {
                   t.deletedAt.isNull() &
                   t.type.equalsValue(TransactionType.transfer).not() &
                   t.date.isBiggerOrEqualValue(from) &
-                  t.date.isSmallerThanValue(to),
+                  t.date.isSmallerThanValue(to) &
+                  (walletId == null
+                      ? const Constant(true)
+                      : t.walletId.equals(walletId)),
             ))
             .get();
 
@@ -267,9 +284,16 @@ class DriftTransactionRepository implements TransactionRepository {
   }
 
   @override
-  Stream<List<Transaction>> watchRecent({int limit = 20}) =>
+  Stream<List<Transaction>> watchRecent({int limit = 20, String? walletId}) =>
       (_db.select(_db.transactions)
-            ..where((t) => t.deletedAt.isNull())
+            ..where(
+              (t) =>
+                  t.deletedAt.isNull() &
+                  (walletId == null
+                      ? const Constant(true)
+                      : (t.walletId.equals(walletId) |
+                            t.walletToId.equals(walletId))),
+            )
             ..orderBy([(t) => OrderingTerm.desc(t.date)])
             ..limit(limit))
           .watch();

@@ -39,6 +39,7 @@ class StringListConverter extends TypeConverter<List<String>, String>
 }
 
 class Tags extends Table with SyncColumns {
+  TextColumn get walletId => text().nullable().references(Wallets, #id)();
   TextColumn get name => text()();
 }
 
@@ -53,6 +54,7 @@ class TransactionTags extends Table {
 }
 
 class CustomFieldDefs extends Table with SyncColumns {
+  TextColumn get walletId => text().nullable().references(Wallets, #id)();
   TextColumn get name => text()();
   TextColumn get type => textEnum<CustomFieldType>()();
 
@@ -92,6 +94,9 @@ class Transactions extends Table with SyncColumns {
 enum CategoryKind { expense, income, both }
 
 class Categories extends Table with SyncColumns {
+  /// Spazio di appartenenza: ogni portafoglio ha la sua taxonomy.
+  /// Nullable solo per la migrazione v1→v2; il codice lo valorizza sempre.
+  TextColumn get walletId => text().nullable().references(Wallets, #id)();
   TextColumn get name => text()();
   TextColumn get icon => text()();
   TextColumn get colorHex => text()();
@@ -103,6 +108,7 @@ class Categories extends Table with SyncColumns {
 
 /// Tetto di spesa mensile per categoria (un budget per categoria).
 class Budgets extends Table with SyncColumns {
+  TextColumn get walletId => text().nullable().references(Wallets, #id)();
   TextColumn get categoryId => text().references(Categories, #id)();
   IntColumn get limitCents => integer()();
 
@@ -138,6 +144,7 @@ class Attachments extends Table with SyncColumns {
 
 /// Card della dashboard statistiche: tipo, posizione e config (JSON).
 class DashboardCards extends Table with SyncColumns {
+  TextColumn get walletId => text().nullable().references(Wallets, #id)();
   TextColumn get type => text()();
   IntColumn get position => integer()();
   TextColumn get configJson => text().withDefault(const Constant('{}'))();

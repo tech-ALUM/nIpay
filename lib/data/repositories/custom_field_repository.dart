@@ -8,11 +8,12 @@ export '../db/tables.dart' show CustomFieldType;
 
 abstract interface class CustomFieldRepository {
   Future<String> define({
+    required String walletId,
     required String name,
     required CustomFieldType type,
     List<String>? options,
   });
-  Future<List<CustomFieldDef>> getDefinitions();
+  Future<List<CustomFieldDef>> getDefinitions(String walletId);
   Future<void> setValue({
     required String transactionId,
     required String fieldId,
@@ -34,6 +35,7 @@ class DriftCustomFieldRepository implements CustomFieldRepository {
 
   @override
   Future<String> define({
+    required String walletId,
     required String name,
     required CustomFieldType type,
     List<String>? options,
@@ -45,6 +47,7 @@ class DriftCustomFieldRepository implements CustomFieldRepository {
         .insert(
           CustomFieldDefsCompanion.insert(
             id: id,
+            walletId: Value(walletId),
             name: name,
             type: type,
             options: Value(options),
@@ -56,9 +59,9 @@ class DriftCustomFieldRepository implements CustomFieldRepository {
   }
 
   @override
-  Future<List<CustomFieldDef>> getDefinitions() =>
+  Future<List<CustomFieldDef>> getDefinitions(String walletId) =>
       (_db.select(_db.customFieldDefs)
-            ..where((t) => t.deletedAt.isNull())
+            ..where((t) => t.deletedAt.isNull() & t.walletId.equals(walletId))
             ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
           .get();
 

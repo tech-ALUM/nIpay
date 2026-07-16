@@ -4,8 +4,8 @@ import 'package:uuid/uuid.dart';
 import '../db/app_database.dart';
 
 abstract interface class TagRepository {
-  Future<String> create(String name);
-  Future<List<Tag>> getAll();
+  Future<String> create(String name, {required String walletId});
+  Future<List<Tag>> getAll(String walletId);
   Future<void> tagTransaction(String transactionId, String tagId);
   Future<void> untagTransaction(String transactionId, String tagId);
   Future<List<Tag>> tagsOf(String transactionId);
@@ -22,7 +22,7 @@ class DriftTagRepository implements TagRepository {
   final Uuid _uuid = const Uuid();
 
   @override
-  Future<String> create(String name) async {
+  Future<String> create(String name, {required String walletId}) async {
     final id = _uuid.v4();
     final now = DateTime.now();
     await _db
@@ -30,6 +30,7 @@ class DriftTagRepository implements TagRepository {
         .insert(
           TagsCompanion.insert(
             id: id,
+            walletId: Value(walletId),
             name: name,
             createdAt: now,
             updatedAt: now,
@@ -39,8 +40,9 @@ class DriftTagRepository implements TagRepository {
   }
 
   @override
-  Future<List<Tag>> getAll() =>
-      (_db.select(_db.tags)..where((t) => t.deletedAt.isNull())).get();
+  Future<List<Tag>> getAll(String walletId) => (_db.select(
+    _db.tags,
+  )..where((t) => t.deletedAt.isNull() & t.walletId.equals(walletId))).get();
 
   @override
   Future<void> tagTransaction(String transactionId, String tagId) => _db

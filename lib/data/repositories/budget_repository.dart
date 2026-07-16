@@ -9,10 +9,11 @@ typedef BudgetProgress = ({int spentCents, int limitCents});
 abstract interface class BudgetRepository {
   /// Crea o aggiorna il tetto mensile della categoria.
   Future<void> setMonthlyLimit({
+    required String walletId,
     required String categoryId,
     required int limitCents,
   });
-  Future<List<Budget>> getAll();
+  Future<List<Budget>> getAll(String walletId);
 
   /// Speso nel mese (solo spese vive della categoria) vs tetto.
   Future<BudgetProgress> progressFor({
@@ -30,6 +31,7 @@ class DriftBudgetRepository implements BudgetRepository {
 
   @override
   Future<void> setMonthlyLimit({
+    required String walletId,
     required String categoryId,
     required int limitCents,
   }) async {
@@ -43,6 +45,7 @@ class DriftBudgetRepository implements BudgetRepository {
           .insert(
             BudgetsCompanion.insert(
               id: _uuid.v4(),
+              walletId: Value(walletId),
               categoryId: categoryId,
               limitCents: limitCents,
               createdAt: now,
@@ -63,8 +66,9 @@ class DriftBudgetRepository implements BudgetRepository {
   }
 
   @override
-  Future<List<Budget>> getAll() =>
-      (_db.select(_db.budgets)..where((t) => t.deletedAt.isNull())).get();
+  Future<List<Budget>> getAll(String walletId) => (_db.select(
+    _db.budgets,
+  )..where((t) => t.deletedAt.isNull() & t.walletId.equals(walletId))).get();
 
   @override
   Future<BudgetProgress> progressFor({

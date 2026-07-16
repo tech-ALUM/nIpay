@@ -4,10 +4,14 @@ import 'package:uuid/uuid.dart';
 import '../db/app_database.dart';
 
 abstract interface class DashboardRepository {
-  /// Aggiunge una card in coda alla dashboard.
-  Future<String> addCard({required String type, String configJson});
-  Future<List<DashboardCard>> getCards();
-  Stream<List<DashboardCard>> watchCards();
+  /// Aggiunge una card in coda alla dashboard del portafoglio.
+  Future<String> addCard({
+    required String walletId,
+    required String type,
+    String configJson,
+  });
+  Future<List<DashboardCard>> getCards(String walletId);
+  Stream<List<DashboardCard>> watchCards(String walletId);
 
   /// Sposta la card a [newIndex] ricompattando le posizioni.
   Future<void> moveCard(String id, int newIndex);
@@ -21,24 +25,27 @@ class DriftDashboardRepository implements DashboardRepository {
   final AppDatabase _db;
   final Uuid _uuid = const Uuid();
 
-  SimpleSelectStatement<$DashboardCardsTable, DashboardCard> get _alive =>
-      _db.select(_db.dashboardCards)
-        ..where((t) => t.deletedAt.isNull())
-        ..orderBy([(t) => OrderingTerm.asc(t.position)]);
+  SimpleSelectStatement<$DashboardCardsTable, DashboardCard> _alive(
+    String walletId,
+  ) => _db.select(_db.dashboardCards)
+    ..where((t) => t.deletedAt.isNull() & t.walletId.equals(walletId))
+    ..orderBy([(t) => OrderingTerm.asc(t.position)]);
 
   @override
   Future<String> addCard({
+    required String walletId,
     required String type,
     String configJson = '{}',
   }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
-    final count = (await _alive.get()).length;
+    final count = (await _alive(walletId).get()).length;
     await _db
         .into(_db.dashboardCards)
         .insert(
           DashboardCardsCompanion.insert(
             id: id,
+            walletId: Value(walletId),
             type: type,
             position: count,
             configJson: Value(configJson),
@@ -50,14 +57,19 @@ class DriftDashboardRepository implements DashboardRepository {
   }
 
   @override
-  Future<List<DashboardCard>> getCards() => _alive.get();
+  Future<List<DashboardCard>> getCards(String walletId) =>
+      _alive(walletId).get();
 
   @override
-  Stream<List<DashboardCard>> watchCards() => _alive.watch();
+  Stream<List<DashboardCard>> watchCards(String walletId) =>
+      _alive(walletId).watch();
 
   @override
   Future<void> moveCard(String id, int newIndex) async {
-    final cards = await _alive.get();
+    final moving0 = await (_db.select(
+      _db.dashboardCards,
+    )..where((t) => t.id.equals(id))).getSingle();
+    final cards = await _alive(moving0.walletId!).get();
     final moving = cards.firstWhere((c) => c.id == id);
     final reordered = [...cards]..remove(moving);
     reordered.insert(newIndex.clamp(0, reordered.length), moving);

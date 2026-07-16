@@ -112,6 +112,44 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               children: [
                 ListTile(
+                  leading: const Icon(Icons.wallet_outlined, size: 20),
+                  title: Text(
+                    l10n.exportWalletJson,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  onTap: () => exportWalletBackup(ref),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.wallet_outlined, size: 20),
+                  title: Text(
+                    l10n.exportWalletExcel,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  onTap: () => exportWalletExcelBackup(ref),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.move_to_inbox_outlined, size: 20),
+                  title: Text(
+                    l10n.importWallet,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  onTap: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    try {
+                      if (await importWalletBackup(ref) && context.mounted) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(l10n.walletImported)),
+                        );
+                      }
+                    } on FormatException {
+                      messenger.showSnackBar(
+                        SnackBar(content: Text(l10n.importFailed)),
+                      );
+                    }
+                  },
+                ),
+                const Divider(),
+                ListTile(
                   leading: const Icon(Icons.upload_file_outlined, size: 20),
                   title: Text(
                     l10n.exportJson,

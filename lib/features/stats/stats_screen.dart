@@ -164,8 +164,11 @@ class _AddCardButton extends ConsumerWidget {
                 ],
               ),
             );
-            if (type != null) {
-              await ref.read(dashboardRepositoryProvider).addCard(type: type);
+            final active = ref.read(activeWalletProvider);
+            if (type != null && active != null) {
+              await ref
+                  .read(dashboardRepositoryProvider)
+                  .addCard(walletId: active.id, type: type);
             }
           },
           child: Container(

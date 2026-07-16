@@ -97,6 +97,15 @@
 
 **Fatto quando**: APK release firmato pronto per la distribuzione al team ✓ (37 test verdi). iOS rimandata a quando c'è un Mac.
 
+## M10 — Portafogli come spazi separati ✅ (2026-07-16)
+Richiesta di Alberto post-M9: categorie, tag, campi custom, budget, dashboard ed export/import per-portafoglio.
+- [x] Schema v2: `walletId` su Categories/Tags/CustomFieldDefs/Budgets/DashboardCards + migrazione con backfill al portafoglio più vecchio
+- [x] Portafoglio attivo persistito (tap sulla card in home per cambiare spazio; card attiva evidenziata, le altre attenuate)
+- [x] Tutta l'app scoped allo spazio attivo: home, transazioni, statistiche, manager; sheet transazione usa il portafoglio attivo (dropdown solo per la destinazione dei trasferimenti, che restano cross-spazio)
+- [x] Seed categorie default per ogni nuovo portafoglio
+- [x] Export/import per-portafoglio: JSON (+zip con allegati) additivo con ID rigenerati (reimportabile più volte), Excel del solo spazio attivo; backup globale invariato (schema export v2, i backup v1 non sono più importabili)
+- [x] TDD: scoping categorie, round-trip portafoglio con remap, switch di spazio in widget test (40 test verdi)
+
 ## Futuro (fuori scope, predisposto)
 - Sync cloud multi-dispositivo (il repository layer e i campi UUID/updatedAt/deletedAt sono già pronti)
 - Import da export bancari (CSV home banking) con mappatura colonne

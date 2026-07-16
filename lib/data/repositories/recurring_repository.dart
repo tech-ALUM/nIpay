@@ -18,7 +18,7 @@ abstract interface class RecurringRepository {
     required DateTime startAt,
     DateTime? endAt,
   });
-  Future<List<RecurringRule>> getAll();
+  Future<List<RecurringRule>> getAll({String? walletId});
 
   /// Genera tutte le occorrenze scadute fino a [now] (catch-up) e avanza
   /// [RecurringRule.nextRunAt]. Ritorna quante transazioni ha creato.
@@ -71,9 +71,15 @@ class DriftRecurringRepository implements RecurringRepository {
   }
 
   @override
-  Future<List<RecurringRule>> getAll() => (_db.select(
-    _db.recurringRules,
-  )..where((t) => t.deletedAt.isNull())).get();
+  Future<List<RecurringRule>> getAll({String? walletId}) =>
+      (_db.select(_db.recurringRules)..where(
+            (t) =>
+                t.deletedAt.isNull() &
+                (walletId == null
+                    ? const Constant(true)
+                    : t.walletId.equals(walletId)),
+          ))
+          .get();
 
   DateTime _advance(DateTime d, RecurrenceFrequency f) => switch (f) {
     RecurrenceFrequency.daily => d.add(const Duration(days: 1)),

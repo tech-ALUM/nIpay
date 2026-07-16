@@ -632,6 +632,30 @@ abstract class AppLocalizations {
   /// **'Import Excel'**
   String get importExcel;
 
+  /// No description provided for @exportWalletJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Export active wallet (JSON)'**
+  String get exportWalletJson;
+
+  /// No description provided for @exportWalletExcel.
+  ///
+  /// In en, this message translates to:
+  /// **'Export active wallet (Excel)'**
+  String get exportWalletExcel;
+
+  /// No description provided for @importWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Import wallet (adds a new space)'**
+  String get importWallet;
+
+  /// No description provided for @walletImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet imported'**
+  String get walletImported;
+
   /// No description provided for @importConfirmTitle.
   ///
   /// In en, this message translates to:

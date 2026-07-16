@@ -8,14 +8,15 @@ export '../db/tables.dart' show CategoryKind;
 
 abstract interface class CategoryRepository {
   Future<String> create({
+    required String walletId,
     required String name,
     required String icon,
     required String colorHex,
     required CategoryKind kind,
     String? parentId,
   });
-  Future<List<Category>> getAll();
-  Stream<List<Category>> watchAll();
+  Future<List<Category>> getAll(String walletId);
+  Stream<List<Category>> watchAll(String walletId);
   Future<void> update(
     String id, {
     String? name,
@@ -27,8 +28,8 @@ abstract interface class CategoryRepository {
   Future<void> reorder(List<String> orderedIds);
   Future<void> softDelete(String id);
 
-  /// Popola le categorie di default alla prima apertura. Idempotente.
-  Future<void> seedDefaults();
+  /// Popola le categorie di default del portafoglio. Idempotente.
+  Future<void> seedDefaults(String walletId);
 }
 
 class DriftCategoryRepository implements CategoryRepository {
@@ -52,6 +53,7 @@ class DriftCategoryRepository implements CategoryRepository {
 
   @override
   Future<String> create({
+    required String walletId,
     required String name,
     required String icon,
     required String colorHex,
@@ -65,6 +67,7 @@ class DriftCategoryRepository implements CategoryRepository {
         .insert(
           CategoriesCompanion.insert(
             id: id,
+            walletId: Value(walletId),
             name: name,
             icon: icon,
             colorHex: colorHex,
@@ -78,16 +81,16 @@ class DriftCategoryRepository implements CategoryRepository {
   }
 
   @override
-  Future<List<Category>> getAll() =>
+  Future<List<Category>> getAll(String walletId) =>
       (_db.select(_db.categories)
-            ..where((t) => t.deletedAt.isNull())
+            ..where((t) => t.deletedAt.isNull() & t.walletId.equals(walletId))
             ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
           .get();
 
   @override
-  Stream<List<Category>> watchAll() =>
+  Stream<List<Category>> watchAll(String walletId) =>
       (_db.select(_db.categories)
-            ..where((t) => t.deletedAt.isNull())
+            ..where((t) => t.deletedAt.isNull() & t.walletId.equals(walletId))
             ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
           .watch();
 
@@ -130,10 +133,12 @@ class DriftCategoryRepository implements CategoryRepository {
       );
 
   @override
-  Future<void> seedDefaults() async {
-    final existing = await (_db.select(
-      _db.categories,
-    )..where((t) => t.isDefault.equals(true))).get();
+  Future<void> seedDefaults(String walletId) async {
+    final existing =
+        await (_db.select(_db.categories)..where(
+              (t) => t.isDefault.equals(true) & t.walletId.equals(walletId),
+            ))
+            .get();
     if (existing.isNotEmpty) return;
 
     final now = DateTime.now();
@@ -143,6 +148,7 @@ class DriftCategoryRepository implements CategoryRepository {
           _db.categories,
           CategoriesCompanion.insert(
             id: _uuid.v4(),
+            walletId: Value(walletId),
             name: name,
             icon: icon,
             colorHex: kind == CategoryKind.income ? '#0E7C86' : '#FF6F61',

@@ -119,9 +119,13 @@ class _WalletFormSheetState extends ConsumerState<_WalletFormSheet> {
     final name = _name.text.trim();
     if (name.isEmpty) return;
     final cents = parseCents(_balance.text) ?? 0;
-    await ref
+    final id = await ref
         .read(walletRepositoryProvider)
         .create(name: name, colorHex: _color, initialBalanceCents: cents);
+    // Ogni nuovo portafoglio nasce col set di categorie di default
+    // e diventa lo spazio attivo.
+    await ref.read(categoryRepositoryProvider).seedDefaults(id);
+    ref.read(activeWalletIdProvider.notifier).set(id);
     if (mounted) Navigator.of(context).pop();
   }
 

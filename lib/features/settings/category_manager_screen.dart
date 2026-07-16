@@ -190,8 +190,11 @@ Future<void> _showCategorySheet(
                   if (n.isEmpty) return;
                   final i = icon.text.trim().isEmpty ? '📦' : icon.text.trim();
                   final repo = ref.read(categoryRepositoryProvider);
+                  final active = ref.read(activeWalletProvider);
                   if (existing == null) {
+                    if (active == null) return;
                     await repo.create(
+                      walletId: active.id,
                       name: n,
                       icon: i,
                       colorHex: color,

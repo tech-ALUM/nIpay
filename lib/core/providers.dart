@@ -69,23 +69,61 @@ final attachmentsOfProvider = FutureProvider.family((ref, String txId) {
   return ref.watch(attachmentRepositoryProvider).listOf(txId);
 });
 
-/// Bootstrap alla prima apertura: seed categorie + catch-up ricorrenze.
+/// Bootstrap alla prima apertura: ogni portafoglio senza categorie riceve
+/// il seed (copre anche la migrazione v1→v2) + catch-up ricorrenze.
 final bootstrapProvider = FutureProvider<void>((ref) async {
-  await ref.read(categoryRepositoryProvider).seedDefaults();
+  final wallets = await ref.read(walletRepositoryProvider).getAll();
+  final categories = ref.read(categoryRepositoryProvider);
+  for (final w in wallets) {
+    await categories.seedDefaults(w.id);
+  }
   await ref.read(recurringRepositoryProvider).generateDue(now: DateTime.now());
+});
+
+/// Id del portafoglio attivo, persistito. La UI usa [activeWalletProvider].
+final activeWalletIdProvider = NotifierProvider<ActiveWalletNotifier, String?>(
+  ActiveWalletNotifier.new,
+);
+
+class ActiveWalletNotifier extends Notifier<String?> {
+  static const _key = 'activeWalletId';
+
+  @override
+  String? build() => ref.watch(sharedPreferencesProvider).getString(_key);
+
+  void set(String walletId) {
+    state = walletId;
+    ref.read(sharedPreferencesProvider).setString(_key, walletId);
+  }
+}
+
+/// Il portafoglio attivo risolto: quello scelto, o il primo esistente.
+final activeWalletProvider = Provider<Wallet?>((ref) {
+  final wallets = ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[];
+  if (wallets.isEmpty) return null;
+  final id = ref.watch(activeWalletIdProvider);
+  return wallets.where((w) => w.id == id).firstOrNull ?? wallets.first;
 });
 
 final walletsProvider = StreamProvider(
   (ref) => ref.watch(walletRepositoryProvider).watchAll(),
 );
 
-final categoriesProvider = StreamProvider(
-  (ref) => ref.watch(categoryRepositoryProvider).watchAll(),
-);
+/// Categorie del portafoglio attivo.
+final categoriesProvider = StreamProvider((ref) {
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return Stream.value(const <Category>[]);
+  return ref.watch(categoryRepositoryProvider).watchAll(active.id);
+});
 
-final recentTransactionsProvider = StreamProvider(
-  (ref) => ref.watch(transactionRepositoryProvider).watchRecent(limit: 50),
-);
+/// Transazioni del portafoglio attivo (inclusi trasferimenti in arrivo).
+final recentTransactionsProvider = StreamProvider((ref) {
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return Stream.value(const <Transaction>[]);
+  return ref
+      .watch(transactionRepositoryProvider)
+      .watchRecent(limit: 200, walletId: active.id);
+});
 
 /// Saldo di un portafoglio, ricalcolato a ogni variazione delle transazioni.
 final walletBalanceProvider = FutureProvider.family<int, String>((
@@ -96,17 +134,14 @@ final walletBalanceProvider = FutureProvider.family<int, String>((
   return ref.watch(transactionRepositoryProvider).balanceOf(walletId);
 });
 
-/// Saldo totale su tutti i portafogli vivi.
+/// Saldo del portafoglio attivo (la home è per-spazio).
 final totalBalanceProvider = FutureProvider<int>((ref) async {
-  final wallets = await ref.watch(walletsProvider.future);
-  var total = 0;
-  for (final w in wallets) {
-    total += await ref.watch(walletBalanceProvider(w.id).future);
-  }
-  return total;
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return 0;
+  return ref.watch(walletBalanceProvider(active.id).future);
 });
 
-/// Totali del mese corrente (entrate/uscite, trasferimenti esclusi).
+/// Totali del mese corrente del portafoglio attivo.
 final monthTotalsProvider = FutureProvider<PeriodTotals>((ref) {
   ref.watch(recentTransactionsProvider);
   final now = DateTime.now();
@@ -115,6 +150,7 @@ final monthTotalsProvider = FutureProvider<PeriodTotals>((ref) {
       .totalsForPeriod(
         from: DateTime(now.year, now.month),
         to: DateTime(now.year, now.month + 1),
+        walletId: ref.watch(activeWalletProvider)?.id,
       );
 });
 
@@ -122,12 +158,16 @@ final monthTotalsProvider = FutureProvider<PeriodTotals>((ref) {
 /// perché tag/valori possono nascere dal sheet di inserimento).
 final tagsProvider = FutureProvider((ref) {
   ref.watch(recentTransactionsProvider);
-  return ref.watch(tagRepositoryProvider).getAll();
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return Future.value(const <Tag>[]);
+  return ref.watch(tagRepositoryProvider).getAll(active.id);
 });
 
-final customFieldDefsProvider = FutureProvider(
-  (ref) => ref.watch(customFieldRepositoryProvider).getDefinitions(),
-);
+final customFieldDefsProvider = FutureProvider((ref) {
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return Future.value(const <CustomFieldDef>[]);
+  return ref.watch(customFieldRepositoryProvider).getDefinitions(active.id);
+});
 
 /// Id transazioni con un certo tag (per il filtro della lista).
 final txIdsWithTagProvider = FutureProvider.family<Set<String>, String>((
@@ -147,10 +187,12 @@ final txIdsMatchingFieldProvider = FutureProvider.family<Set<String>, String>((
   return ref.watch(customFieldRepositoryProvider).transactionIdsMatching(query);
 });
 
-/// Budget attivi (invalidato dai manager dopo le modifiche).
-final budgetsProvider = FutureProvider(
-  (ref) => ref.watch(budgetRepositoryProvider).getAll(),
-);
+/// Budget del portafoglio attivo (invalidato dai manager dopo le modifiche).
+final budgetsProvider = FutureProvider((ref) {
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return Future.value(const <Budget>[]);
+  return ref.watch(budgetRepositoryProvider).getAll(active.id);
+});
 
 /// Avanzamento budget del mese corrente per categoria.
 final budgetProgressProvider = FutureProvider.family<BudgetProgress, String>((
@@ -163,15 +205,18 @@ final budgetProgressProvider = FutureProvider.family<BudgetProgress, String>((
       .progressFor(categoryId: categoryId, month: DateTime.now());
 });
 
-/// Regole ricorrenti (invalidato dal manager dopo le modifiche).
-final recurringRulesProvider = FutureProvider(
-  (ref) => ref.watch(recurringRepositoryProvider).getAll(),
-);
+/// Regole ricorrenti del portafoglio attivo.
+final recurringRulesProvider = FutureProvider((ref) {
+  final active = ref.watch(activeWalletProvider);
+  return ref.watch(recurringRepositoryProvider).getAll(walletId: active?.id);
+});
 
-/// Card della dashboard statistiche (reattivo: riordino/aggiunte via stream).
-final dashboardCardsProvider = StreamProvider(
-  (ref) => ref.watch(dashboardRepositoryProvider).watchCards(),
-);
+/// Card della dashboard del portafoglio attivo.
+final dashboardCardsProvider = StreamProvider((ref) {
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return Stream.value(const <DashboardCard>[]);
+  return ref.watch(dashboardRepositoryProvider).watchCards(active.id);
+});
 
 /// Mese selezionato nella tab Statistiche.
 final statsMonthProvider = StateProvider<DateTime>(

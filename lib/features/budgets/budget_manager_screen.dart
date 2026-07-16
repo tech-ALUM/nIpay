@@ -155,9 +155,12 @@ Future<void> _showBudgetSheet(
                     if (cents == null || cents <= 0 || categoryId == null) {
                       return;
                     }
+                    final active = ref.read(activeWalletProvider);
+                    if (active == null) return;
                     await ref
                         .read(budgetRepositoryProvider)
                         .setMonthlyLimit(
+                          walletId: active.id,
                           categoryId: categoryId!,
                           limitCents: cents,
                         );

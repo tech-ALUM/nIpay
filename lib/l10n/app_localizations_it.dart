@@ -282,6 +282,18 @@ class AppLocalizationsIt extends AppLocalizations {
   String get importExcel => 'Importa Excel';
 
   @override
+  String get exportWalletJson => 'Esporta portafoglio attivo (JSON)';
+
+  @override
+  String get exportWalletExcel => 'Esporta portafoglio attivo (Excel)';
+
+  @override
+  String get importWallet => 'Importa portafoglio (aggiunge uno spazio)';
+
+  @override
+  String get walletImported => 'Portafoglio importato';
+
+  @override
   String get importConfirmTitle => 'Sostituire tutti i dati?';
 
   @override
