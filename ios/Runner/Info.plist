@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>nIpay usa la fotocamera per fotografare gli scontrini da allegare alle transazioni.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>nIpay accede alla galleria per allegare foto di scontrini alle transazioni.</string>
 </dict>
 </plist>
