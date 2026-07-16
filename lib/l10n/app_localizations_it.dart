@@ -106,7 +106,29 @@ class AppLocalizationsIt extends AppLocalizations {
   String get searchTransactions => 'Cerca transazioni…';
 
   @override
-  String get statsSoon => 'Dashboard componibile in arrivo (M6)';
+  String get addCard => 'Aggiungi card';
+
+  @override
+  String get cardCategoryDonut => 'Spese per categoria';
+
+  @override
+  String get cardTrend => 'Trend 6 mesi';
+
+  @override
+  String get cardCashflow => 'Cash flow';
+
+  @override
+  String get cardBudget => 'Budget';
+
+  @override
+  String get netLabel => 'Netto';
+
+  @override
+  String get noStatsData => 'Nessun dato nel periodo.';
+
+  @override
+  String get emptyDashboard =>
+      'Componi la tua dashboard: aggiungi la prima card.';
 
   @override
   String get customization => 'Personalizzazione';

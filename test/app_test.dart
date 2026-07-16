@@ -171,4 +171,30 @@ void main() {
 
     await _unmount(tester);
   });
+
+  testWidgets('stats dashboard: adding a cashflow card shows KPIs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    await _createWallet(tester);
+
+    await tester.tap(find.text('Stats'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Compose your dashboard: add your first card.'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('addCardButton')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cash flow'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Net'), findsOneWidget);
+    expect(find.text('Income'), findsOneWidget);
+
+    await _unmount(tester);
+  });
 }

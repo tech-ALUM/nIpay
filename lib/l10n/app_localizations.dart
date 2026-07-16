@@ -290,11 +290,53 @@ abstract class AppLocalizations {
   /// **'Search transactions…'**
   String get searchTransactions;
 
-  /// No description provided for @statsSoon.
+  /// No description provided for @addCard.
   ///
   /// In en, this message translates to:
-  /// **'Configurable dashboard coming soon (M6)'**
-  String get statsSoon;
+  /// **'Add card'**
+  String get addCard;
+
+  /// No description provided for @cardCategoryDonut.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses by category'**
+  String get cardCategoryDonut;
+
+  /// No description provided for @cardTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'6-month trend'**
+  String get cardTrend;
+
+  /// No description provided for @cardCashflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash flow'**
+  String get cardCashflow;
+
+  /// No description provided for @cardBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget'**
+  String get cardBudget;
+
+  /// No description provided for @netLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Net'**
+  String get netLabel;
+
+  /// No description provided for @noStatsData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data for this period.'**
+  String get noStatsData;
+
+  /// No description provided for @emptyDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Compose your dashboard: add your first card.'**
+  String get emptyDashboard;
 
   /// No description provided for @customization.
   ///

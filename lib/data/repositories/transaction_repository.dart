@@ -7,6 +7,13 @@ import '../db/tables.dart';
 export '../db/tables.dart' show TransactionType;
 
 typedef PeriodTotals = ({int expenseCents, int incomeCents});
+typedef CategoryTotal = ({String? categoryId, int totalCents});
+typedef MonthTotals = ({
+  int year,
+  int month,
+  int incomeCents,
+  int expenseCents,
+});
 
 abstract interface class TransactionRepository {
   Future<String> createExpense({
@@ -38,6 +45,19 @@ abstract interface class TransactionRepository {
   Future<PeriodTotals> totalsForPeriod({
     required DateTime from,
     required DateTime to,
+  });
+
+  /// Totale spese per categoria in [from, to), ordinato per totale decrescente.
+  Future<List<CategoryTotal>> expensesByCategory({
+    required DateTime from,
+    required DateTime to,
+  });
+
+  /// Entrate/uscite per ciascuno degli ultimi [months] mesi fino a [until]
+  /// incluso, dal più vecchio al più recente.
+  Future<List<MonthTotals>> monthlySeries({
+    required int months,
+    required DateTime until,
   });
 
   Stream<List<Transaction>> watchRecent({int limit});
@@ -179,6 +199,71 @@ class DriftTransactionRepository implements TransactionRepository {
       if (tx.type == TransactionType.income) income += tx.amountCents;
     }
     return (expenseCents: expense, incomeCents: income);
+  }
+
+  @override
+  Future<List<CategoryTotal>> expensesByCategory({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    final sum = _db.transactions.amountCents.sum();
+    final rows =
+        await (_db.selectOnly(_db.transactions)
+              ..addColumns([_db.transactions.categoryId, sum])
+              ..where(
+                _db.transactions.deletedAt.isNull() &
+                    _db.transactions.type.equalsValue(TransactionType.expense) &
+                    _db.transactions.date.isBiggerOrEqualValue(from) &
+                    _db.transactions.date.isSmallerThanValue(to),
+              )
+              ..groupBy([_db.transactions.categoryId])
+              ..orderBy([OrderingTerm.desc(sum)]))
+            .get();
+    return [
+      for (final r in rows)
+        (
+          categoryId: r.read(_db.transactions.categoryId),
+          totalCents: r.read(sum) ?? 0,
+        ),
+    ];
+  }
+
+  @override
+  Future<List<MonthTotals>> monthlySeries({
+    required int months,
+    required DateTime until,
+  }) async {
+    final from = DateTime(until.year, until.month - months + 1);
+    final to = DateTime(until.year, until.month + 1);
+    final rows =
+        await (_db.select(_db.transactions)..where(
+              (t) =>
+                  t.deletedAt.isNull() &
+                  t.type.equalsValue(TransactionType.transfer).not() &
+                  t.date.isBiggerOrEqualValue(from) &
+                  t.date.isSmallerThanValue(to),
+            ))
+            .get();
+
+    return [
+      for (var i = months - 1; i >= 0; i--)
+        () {
+          final m = DateTime(until.year, until.month - i);
+          var income = 0, expense = 0;
+          for (final tx in rows.where(
+            (t) => t.date.year == m.year && t.date.month == m.month,
+          )) {
+            if (tx.type == TransactionType.income) income += tx.amountCents;
+            if (tx.type == TransactionType.expense) expense += tx.amountCents;
+          }
+          return (
+            year: m.year,
+            month: m.month,
+            incomeCents: income,
+            expenseCents: expense,
+          );
+        }(),
+    ];
   }
 
   @override

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/db/app_database.dart';
 import '../data/repositories/budget_repository.dart';
 import '../data/repositories/category_repository.dart';
+import '../data/repositories/dashboard_repository.dart';
 import '../data/repositories/custom_field_repository.dart';
 import '../data/repositories/recurring_repository.dart';
 import '../data/repositories/tag_repository.dart';
@@ -43,6 +44,9 @@ final customFieldRepositoryProvider = Provider<CustomFieldRepository>(
 );
 final budgetRepositoryProvider = Provider<BudgetRepository>(
   (ref) => DriftBudgetRepository(ref.watch(databaseProvider)),
+);
+final dashboardRepositoryProvider = Provider<DashboardRepository>(
+  (ref) => DriftDashboardRepository(ref.watch(databaseProvider)),
 );
 
 /// Bootstrap alla prima apertura: seed categorie + catch-up ricorrenze.
@@ -143,6 +147,51 @@ final budgetProgressProvider = FutureProvider.family<BudgetProgress, String>((
 final recurringRulesProvider = FutureProvider(
   (ref) => ref.watch(recurringRepositoryProvider).getAll(),
 );
+
+/// Card della dashboard statistiche (reattivo: riordino/aggiunte via stream).
+final dashboardCardsProvider = StreamProvider(
+  (ref) => ref.watch(dashboardRepositoryProvider).watchCards(),
+);
+
+/// Mese selezionato nella tab Statistiche.
+final statsMonthProvider = StateProvider<DateTime>(
+  (ref) => DateTime(DateTime.now().year, DateTime.now().month),
+);
+
+/// Spese per categoria del mese (chiave: primo giorno del mese).
+final expensesByCategoryProvider =
+    FutureProvider.family<List<CategoryTotal>, DateTime>((ref, month) {
+      ref.watch(recentTransactionsProvider);
+      return ref
+          .watch(transactionRepositoryProvider)
+          .expensesByCategory(
+            from: DateTime(month.year, month.month),
+            to: DateTime(month.year, month.month + 1),
+          );
+    });
+
+/// Serie mensile entrate/uscite degli ultimi 6 mesi fino al mese scelto.
+final monthlySeriesProvider =
+    FutureProvider.family<List<MonthTotals>, DateTime>((ref, month) {
+      ref.watch(recentTransactionsProvider);
+      return ref
+          .watch(transactionRepositoryProvider)
+          .monthlySeries(months: 6, until: month);
+    });
+
+/// Totali del mese scelto nelle statistiche.
+final statsTotalsProvider = FutureProvider.family<PeriodTotals, DateTime>((
+  ref,
+  month,
+) {
+  ref.watch(recentTransactionsProvider);
+  return ref
+      .watch(transactionRepositoryProvider)
+      .totalsForPeriod(
+        from: DateTime(month.year, month.month),
+        to: DateTime(month.year, month.month + 1),
+      );
+});
 
 /// Preferenza tema: Sistema / Chiaro / Scuro (switch in Impostazioni).
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);

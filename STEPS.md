@@ -61,13 +61,13 @@
 
 **Fatto quando**: stipendio/affitto si generano da soli ✓; sforare un budget è visibile e avvisato ✓ (31 test verdi).
 
-## M6 — Statistiche (dashboard componibile)
-- [ ] Motore di aggregazione (query Drift: per categoria, per mese, cash flow, per portafoglio)
-- [ ] Card: torta per categoria, trend mensile, cash flow, avanzamento budget, confronto periodi (fl_chart)
-- [ ] Dashboard componibile: aggiungi/rimuovi/riordina card, filtri per card (periodo, portafogli, categorie)
-- [ ] Persistenza configurazione dashboard (tabella DashboardCard)
+## M6 — Statistiche (dashboard componibile) ✅ (2026-07-16)
+- [x] Motore di aggregazione TDD: spese per categoria e serie mensile 6 mesi (query Drift), cash flow da totalsForPeriod
+- [x] Card fl_chart: donut per categoria (top-5 + altro), trend mensile a barre, cash flow KPI, avanzamento budget
+- [x] Dashboard componibile: aggiungi (dialog), rimuovi (✕), riordina (drag), selettore mese globale della tab
+- [x] Persistenza configurazione dashboard (tabella DashboardCard, stream reattivo)
 
-**Fatto quando**: ognuno dei 4 utenti può comporsi una dashboard diversa e la ritrova al riavvio.
+**Fatto quando**: dashboard personale persistita ✓ (34 test verdi). Rimandato: confronto periodi come card dedicata e filtri per-card (portafogli/categorie) — il selettore periodo è per ora globale.
 
 ## M7 — Allegati
 - [ ] Foto da camera/galleria e file per transazione
