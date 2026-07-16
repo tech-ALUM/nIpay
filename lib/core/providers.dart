@@ -13,7 +13,9 @@ import '../data/db/app_database.dart';
 import '../data/repositories/budget_repository.dart';
 import '../data/repositories/category_repository.dart';
 import '../data/repositories/dashboard_repository.dart';
+import '../data/repositories/cost_center_repository.dart';
 import '../data/repositories/custom_field_repository.dart';
+import '../data/repositories/expense_report_repository.dart';
 import '../data/repositories/recurring_repository.dart';
 import '../data/repositories/tag_repository.dart';
 import '../data/repositories/transaction_repository.dart';
@@ -56,6 +58,12 @@ final dashboardRepositoryProvider = Provider<DashboardRepository>(
 );
 final attachmentRepositoryProvider = Provider<AttachmentRepository>(
   (ref) => DriftAttachmentRepository(ref.watch(databaseProvider)),
+);
+final costCenterRepositoryProvider = Provider<CostCenterRepository>(
+  (ref) => DriftCostCenterRepository(ref.watch(databaseProvider)),
+);
+final expenseReportRepositoryProvider = Provider<ExpenseReportRepository>(
+  (ref) => DriftExpenseReportRepository(ref.watch(databaseProvider)),
 );
 
 /// Directory documenti dell'app (base per i path relativi degli allegati).
@@ -262,6 +270,40 @@ final statsTotalsProvider = FutureProvider.family<PeriodTotals, DateTime>((
 final sharedPreferencesProvider = Provider<SharedPreferences>(
   (ref) => throw UnimplementedError('override in main()'),
 );
+
+/// Centri di costo del portafoglio attivo.
+final costCentersProvider = FutureProvider((ref) {
+  ref.watch(recentTransactionsProvider);
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return Future.value(const <CostCenter>[]);
+  return ref.watch(costCenterRepositoryProvider).getAll(active.id);
+});
+
+/// Note spese del portafoglio attivo.
+final expenseReportsProvider = FutureProvider((ref) {
+  ref.watch(recentTransactionsProvider);
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return Future.value(const <ExpenseReport>[]);
+  return ref.watch(expenseReportRepositoryProvider).getReports(active.id);
+});
+
+/// Totale rimborsabile non ancora rimborsato (card in home).
+final pendingReimbursementProvider = FutureProvider<int>((ref) {
+  ref.watch(recentTransactionsProvider);
+  ref.watch(expenseReportsProvider);
+  final active = ref.watch(activeWalletProvider);
+  if (active == null) return Future.value(0);
+  return ref
+      .watch(expenseReportRepositoryProvider)
+      .pendingReimbursementCents(active.id);
+});
+
+/// Dati nota-spese di una transazione (per dettaglio/edit).
+final expenseDataOfProvider =
+    FutureProvider.family<ExpenseReportEntry?, String>((ref, txId) {
+      ref.watch(recentTransactionsProvider);
+      return ref.watch(expenseReportRepositoryProvider).dataOf(txId);
+    });
 
 /// Preferenza tema persistita: Sistema / Chiaro / Scuro.
 final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(

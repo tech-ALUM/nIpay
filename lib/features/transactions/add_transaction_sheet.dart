@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -40,15 +41,23 @@ Future<String?> _promptNewTag(BuildContext context, AppLocalizations l10n) {
   );
 }
 
-Future<void> showAddTransactionSheet(BuildContext context) =>
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => const _AddTransactionSheet(),
-    );
+/// [existing] apre il form in modalità modifica (retroattiva).
+Future<void> showAddTransactionSheet(
+  BuildContext context, {
+  Transaction? existing,
+  ExpenseReportEntry? existingEntry,
+}) => showModalBottomSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  builder: (_) =>
+      _AddTransactionSheet(existing: existing, existingEntry: existingEntry),
+);
 
 class _AddTransactionSheet extends ConsumerStatefulWidget {
-  const _AddTransactionSheet();
+  const _AddTransactionSheet({this.existing, this.existingEntry});
+
+  final Transaction? existing;
+  final ExpenseReportEntry? existingEntry;
 
   @override
   ConsumerState<_AddTransactionSheet> createState() =>
@@ -66,6 +75,34 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   final Set<String> _selectedTagIds = {};
   final Map<String, String> _fieldValues = {};
   final List<XFile> _pendingImages = [];
+  bool _isExpenseReport = false;
+  String? _costCenterId;
+  bool _reimbursable = true;
+  bool _eInvoice = false;
+
+  bool get _editing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.existing;
+    if (e != null) {
+      _amount.text = (e.amountCents / 100)
+          .toStringAsFixed(2)
+          .replaceAll('.', ',');
+      _description.text = e.description;
+      _type = e.type;
+      _categoryId = e.categoryId;
+      _date = e.date;
+    }
+    final entry = widget.existingEntry;
+    if (entry != null) {
+      _isExpenseReport = true;
+      _costCenterId = entry.costCenterId;
+      _reimbursable = entry.reimbursable;
+      _eInvoice = entry.eInvoice;
+    }
+  }
 
   @override
   void dispose() {
@@ -86,38 +123,62 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
 
     final repo = ref.read(transactionRepositoryProvider);
     final String txId;
-    switch (_type) {
-      case TransactionType.expense:
-        txId = await repo.createExpense(
-          walletId: walletId,
-          amountCents: cents,
-          date: _date,
-          categoryId: _categoryId,
-          description: _description.text.trim(),
-        );
-      case TransactionType.income:
-        txId = await repo.createIncome(
-          walletId: walletId,
-          amountCents: cents,
-          date: _date,
-          categoryId: _categoryId,
-          description: _description.text.trim(),
-        );
-      case TransactionType.transfer:
-        final toId =
-            _walletToId ??
-            wallets.where((w) => w.id != walletId).firstOrNull?.id;
-        if (toId == null) {
-          setState(() => _error = l10n.invalidAmount);
-          return;
-        }
-        txId = await repo.createTransfer(
-          fromWalletId: walletId,
-          toWalletId: toId,
-          amountCents: cents,
-          date: _date,
-          description: _description.text.trim(),
-        );
+    if (_editing) {
+      txId = widget.existing!.id;
+      await repo.updateTransaction(
+        txId,
+        amountCents: cents,
+        date: _date,
+        categoryId: _categoryId,
+        description: _description.text.trim(),
+      );
+    } else {
+      switch (_type) {
+        case TransactionType.expense:
+          txId = await repo.createExpense(
+            walletId: walletId,
+            amountCents: cents,
+            date: _date,
+            categoryId: _categoryId,
+            description: _description.text.trim(),
+          );
+        case TransactionType.income:
+          txId = await repo.createIncome(
+            walletId: walletId,
+            amountCents: cents,
+            date: _date,
+            categoryId: _categoryId,
+            description: _description.text.trim(),
+          );
+        case TransactionType.transfer:
+          final toId =
+              _walletToId ??
+              wallets.where((w) => w.id != walletId).firstOrNull?.id;
+          if (toId == null) {
+            setState(() => _error = l10n.invalidAmount);
+            return;
+          }
+          txId = await repo.createTransfer(
+            fromWalletId: walletId,
+            toWalletId: toId,
+            amountCents: cents,
+            date: _date,
+            description: _description.text.trim(),
+          );
+      }
+    }
+
+    // Dati nota spese: upsert se flaggata, clear se il flag è stato tolto.
+    final expRepo = ref.read(expenseReportRepositoryProvider);
+    if (_type == TransactionType.expense && _isExpenseReport) {
+      await expRepo.setExpenseData(
+        transactionId: txId,
+        costCenterId: _costCenterId,
+        reimbursable: _reimbursable,
+        eInvoice: _eInvoice,
+      );
+    } else if (_editing && widget.existingEntry != null) {
+      await expRepo.clearExpenseData(txId);
     }
 
     final tagRepo = ref.read(tagRepositoryProvider);
@@ -201,7 +262,13 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
 
   /// Input per ogni campo custom definito, in base al tipo.
   List<Widget> _buildCustomFields(AppLocalizations l10n) {
-    final defs = ref.watch(customFieldDefsProvider).valueOrNull ?? const [];
+    final all = ref.watch(customFieldDefsProvider).valueOrNull ?? const [];
+    final defs = [
+      for (final d in all)
+        if (!d.expenseReportOnly ||
+            (_isExpenseReport && _type == TransactionType.expense))
+          d,
+    ];
     if (defs.isEmpty) return const [];
     return [
       const SizedBox(height: 16),
@@ -283,28 +350,29 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.newTransaction,
+              _editing ? l10n.editTransaction : l10n.newTransaction,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-            SegmentedButton<TransactionType>(
-              segments: [
-                ButtonSegment(
-                  value: TransactionType.expense,
-                  label: Text(l10n.expense),
-                ),
-                ButtonSegment(
-                  value: TransactionType.income,
-                  label: Text(l10n.income),
-                ),
-                ButtonSegment(
-                  value: TransactionType.transfer,
-                  label: Text(l10n.transfer),
-                ),
-              ],
-              selected: {_type},
-              onSelectionChanged: (s) => setState(() => _type = s.first),
-            ),
+            if (!_editing)
+              SegmentedButton<TransactionType>(
+                segments: [
+                  ButtonSegment(
+                    value: TransactionType.expense,
+                    label: Text(l10n.expense),
+                  ),
+                  ButtonSegment(
+                    value: TransactionType.income,
+                    label: Text(l10n.income),
+                  ),
+                  ButtonSegment(
+                    value: TransactionType.transfer,
+                    label: Text(l10n.transfer),
+                  ),
+                ],
+                selected: {_type},
+                onSelectionChanged: (s) => setState(() => _type = s.first),
+              ),
             const SizedBox(height: 16),
             TextField(
               key: const Key('amountField'),
@@ -403,6 +471,61 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                 ],
               ),
               ..._buildCustomFields(l10n),
+              if (_type == TransactionType.expense) ...[
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  key: const Key('expenseReportSwitch'),
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  title: Text(
+                    '📋 ${l10n.expenseReportFlag}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  value: _isExpenseReport,
+                  onChanged: (v) => setState(() => _isExpenseReport = v),
+                ),
+                if (_isExpenseReport) ...[
+                  DropdownButtonFormField<String?>(
+                    key: const Key('costCenterDropdown'),
+                    initialValue: _costCenterId,
+                    decoration: InputDecoration(
+                      labelText: l10n.costCenter,
+                      isDense: true,
+                    ),
+                    items: [
+                      DropdownMenuItem(value: null, child: Text(l10n.none)),
+                      for (final cc
+                          in ref.watch(costCentersProvider).valueOrNull ??
+                              const <CostCenter>[])
+                        DropdownMenuItem(value: cc.id, child: Text(cc.name)),
+                    ],
+                    onChanged: (v) => setState(() => _costCenterId = v),
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    title: Text(
+                      l10n.reimbursable,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    value: _reimbursable,
+                    onChanged: (v) => setState(() => _reimbursable = v),
+                  ),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    title: Text(
+                      l10n.eInvoice,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    value: _eInvoice,
+                    onChanged: (v) => setState(() => _eInvoice = v),
+                  ),
+                ],
+              ],
               const SizedBox(height: 16),
               Text(l10n.receipt, style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 8),

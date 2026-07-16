@@ -17,17 +17,27 @@ part 'app_database.g.dart';
     RecurringRules,
     Attachments,
     DashboardCards,
+    CostCenters,
+    ExpenseReports,
+    ExpenseReportEntries,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
+      if (from < 3) {
+        // v3: nota spese.
+        await m.createTable(costCenters);
+        await m.createTable(expenseReports);
+        await m.createTable(expenseReportEntries);
+        await m.addColumn(customFieldDefs, customFieldDefs.expenseReportOnly);
+      }
       if (from < 2) {
         // v2: taxonomy per-portafoglio. Le righe esistenti (globali)
         // vengono assegnate al portafoglio più vecchio.

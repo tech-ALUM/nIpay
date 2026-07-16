@@ -66,6 +66,15 @@ abstract interface class TransactionRepository {
 
   /// Con [walletId] include anche i trasferimenti in arrivo (walletToId).
   Stream<List<Transaction>> watchRecent({int limit, String? walletId});
+
+  /// Modifica retroattiva: aggiorna solo i campi passati.
+  Future<void> updateTransaction(
+    String id, {
+    int? amountCents,
+    DateTime? date,
+    String? categoryId,
+    String? description,
+  });
   Future<void> softDelete(String id);
 }
 
@@ -297,6 +306,27 @@ class DriftTransactionRepository implements TransactionRepository {
             ..orderBy([(t) => OrderingTerm.desc(t.date)])
             ..limit(limit))
           .watch();
+
+  @override
+  Future<void> updateTransaction(
+    String id, {
+    int? amountCents,
+    DateTime? date,
+    String? categoryId,
+    String? description,
+  }) => (_db.update(_db.transactions)..where((t) => t.id.equals(id))).write(
+    TransactionsCompanion(
+      amountCents: amountCents == null
+          ? const Value.absent()
+          : Value(amountCents),
+      date: date == null ? const Value.absent() : Value(date),
+      categoryId: categoryId == null ? const Value.absent() : Value(categoryId),
+      description: description == null
+          ? const Value.absent()
+          : Value(description),
+      updatedAt: Value(DateTime.now()),
+    ),
+  );
 
   @override
   Future<void> softDelete(String id) =>

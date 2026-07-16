@@ -307,6 +307,78 @@ class AppLocalizationsIt extends AppLocalizations {
   String get importFailed => 'Import fallito: file non valido';
 
   @override
+  String get expenseReport => 'Nota spese';
+
+  @override
+  String get expenseReportFlag => 'Nota spese';
+
+  @override
+  String get costCenter => 'Centro di costo';
+
+  @override
+  String get manageCostCenters => 'Centri di costo';
+
+  @override
+  String get newCostCenter => 'Nuovo centro di costo';
+
+  @override
+  String get reimbursable => 'Rimborsabile';
+
+  @override
+  String get eInvoice => 'Fattura elettronica';
+
+  @override
+  String get pendingReimbursement => 'Da rimborsare';
+
+  @override
+  String get exportPdf => 'Esporta PDF';
+
+  @override
+  String get createReport => 'Crea nota spese';
+
+  @override
+  String get reportName => 'Nome nota spese';
+
+  @override
+  String get statusDraft => 'Bozza';
+
+  @override
+  String get statusSent => 'Inviata';
+
+  @override
+  String get statusReimbursed => 'Rimborsata';
+
+  @override
+  String get markSent => 'Segna inviata';
+
+  @override
+  String get markReimbursed => 'Segna rimborsata';
+
+  @override
+  String get reportArchive => 'Archivio';
+
+  @override
+  String get flaggedExpenses => 'Spese flaggate';
+
+  @override
+  String get expenseReportOnlyField => 'Solo per nota spese';
+
+  @override
+  String get edit => 'Modifica';
+
+  @override
+  String get editTransaction => 'Modifica transazione';
+
+  @override
+  String get fromDate => 'Dal';
+
+  @override
+  String get toDate => 'Al';
+
+  @override
+  String get none => 'Nessuno';
+
+  @override
   String get settingsTheme => 'Tema';
 
   @override

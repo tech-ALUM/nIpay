@@ -12,6 +12,7 @@ abstract interface class CustomFieldRepository {
     required String name,
     required CustomFieldType type,
     List<String>? options,
+    bool expenseReportOnly,
   });
   Future<List<CustomFieldDef>> getDefinitions(String walletId);
   Future<void> setValue({
@@ -39,6 +40,7 @@ class DriftCustomFieldRepository implements CustomFieldRepository {
     required String name,
     required CustomFieldType type,
     List<String>? options,
+    bool expenseReportOnly = false,
   }) async {
     final id = _uuid.v4();
     final now = DateTime.now();
@@ -51,6 +53,7 @@ class DriftCustomFieldRepository implements CustomFieldRepository {
             name: name,
             type: type,
             options: Value(options),
+            expenseReportOnly: Value(expenseReportOnly),
             createdAt: now,
             updatedAt: now,
           ),

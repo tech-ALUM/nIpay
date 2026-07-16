@@ -2788,6 +2788,21 @@ class $CustomFieldDefsTable extends CustomFieldDefs
         type: DriftSqlType.string,
         requiredDuringInsert: true,
       ).withConverter<CustomFieldType>($CustomFieldDefsTable.$convertertype);
+  static const VerificationMeta _expenseReportOnlyMeta = const VerificationMeta(
+    'expenseReportOnly',
+  );
+  @override
+  late final GeneratedColumn<bool> expenseReportOnly = GeneratedColumn<bool>(
+    'expense_report_only',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("expense_report_only" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   late final GeneratedColumnWithTypeConverter<List<String>?, String> options =
       GeneratedColumn<String>(
@@ -2818,6 +2833,7 @@ class $CustomFieldDefsTable extends CustomFieldDefs
     walletId,
     name,
     type,
+    expenseReportOnly,
     options,
     sortOrder,
   ];
@@ -2874,6 +2890,15 @@ class $CustomFieldDefsTable extends CustomFieldDefs
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('expense_report_only')) {
+      context.handle(
+        _expenseReportOnlyMeta,
+        expenseReportOnly.isAcceptableOrUnknown(
+          data['expense_report_only']!,
+          _expenseReportOnlyMeta,
+        ),
+      );
+    }
     if (data.containsKey('sort_order')) {
       context.handle(
         _sortOrderMeta,
@@ -2919,6 +2944,10 @@ class $CustomFieldDefsTable extends CustomFieldDefs
           data['${effectivePrefix}type'],
         )!,
       ),
+      expenseReportOnly: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}expense_report_only'],
+      )!,
       options: $CustomFieldDefsTable.$converteroptionsn.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
@@ -2954,6 +2983,9 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
   final String name;
   final CustomFieldType type;
 
+  /// Se true il campo compare solo quando la spesa è flaggata "nota spese".
+  final bool expenseReportOnly;
+
   /// Solo per type=choice: opzioni ammesse (JSON).
   final List<String>? options;
   final int sortOrder;
@@ -2965,6 +2997,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
     this.walletId,
     required this.name,
     required this.type,
+    required this.expenseReportOnly,
     this.options,
     required this.sortOrder,
   });
@@ -2986,6 +3019,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
         $CustomFieldDefsTable.$convertertype.toSql(type),
       );
     }
+    map['expense_report_only'] = Variable<bool>(expenseReportOnly);
     if (!nullToAbsent || options != null) {
       map['options'] = Variable<String>(
         $CustomFieldDefsTable.$converteroptionsn.toSql(options),
@@ -3008,6 +3042,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
           : Value(walletId),
       name: Value(name),
       type: Value(type),
+      expenseReportOnly: Value(expenseReportOnly),
       options: options == null && nullToAbsent
           ? const Value.absent()
           : Value(options),
@@ -3030,6 +3065,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
       type: $CustomFieldDefsTable.$convertertype.fromJson(
         serializer.fromJson<String>(json['type']),
       ),
+      expenseReportOnly: serializer.fromJson<bool>(json['expenseReportOnly']),
       options: $CustomFieldDefsTable.$converteroptionsn.fromJson(
         serializer.fromJson<String?>(json['options']),
       ),
@@ -3049,6 +3085,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
       'type': serializer.toJson<String>(
         $CustomFieldDefsTable.$convertertype.toJson(type),
       ),
+      'expenseReportOnly': serializer.toJson<bool>(expenseReportOnly),
       'options': serializer.toJson<String?>(
         $CustomFieldDefsTable.$converteroptionsn.toJson(options),
       ),
@@ -3064,6 +3101,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
     Value<String?> walletId = const Value.absent(),
     String? name,
     CustomFieldType? type,
+    bool? expenseReportOnly,
     Value<List<String>?> options = const Value.absent(),
     int? sortOrder,
   }) => CustomFieldDef(
@@ -3074,6 +3112,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
     walletId: walletId.present ? walletId.value : this.walletId,
     name: name ?? this.name,
     type: type ?? this.type,
+    expenseReportOnly: expenseReportOnly ?? this.expenseReportOnly,
     options: options.present ? options.value : this.options,
     sortOrder: sortOrder ?? this.sortOrder,
   );
@@ -3086,6 +3125,9 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
       walletId: data.walletId.present ? data.walletId.value : this.walletId,
       name: data.name.present ? data.name.value : this.name,
       type: data.type.present ? data.type.value : this.type,
+      expenseReportOnly: data.expenseReportOnly.present
+          ? data.expenseReportOnly.value
+          : this.expenseReportOnly,
       options: data.options.present ? data.options.value : this.options,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
     );
@@ -3101,6 +3143,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
           ..write('walletId: $walletId, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
+          ..write('expenseReportOnly: $expenseReportOnly, ')
           ..write('options: $options, ')
           ..write('sortOrder: $sortOrder')
           ..write(')'))
@@ -3116,6 +3159,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
     walletId,
     name,
     type,
+    expenseReportOnly,
     options,
     sortOrder,
   );
@@ -3130,6 +3174,7 @@ class CustomFieldDef extends DataClass implements Insertable<CustomFieldDef> {
           other.walletId == this.walletId &&
           other.name == this.name &&
           other.type == this.type &&
+          other.expenseReportOnly == this.expenseReportOnly &&
           other.options == this.options &&
           other.sortOrder == this.sortOrder);
 }
@@ -3142,6 +3187,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
   final Value<String?> walletId;
   final Value<String> name;
   final Value<CustomFieldType> type;
+  final Value<bool> expenseReportOnly;
   final Value<List<String>?> options;
   final Value<int> sortOrder;
   final Value<int> rowid;
@@ -3153,6 +3199,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
     this.walletId = const Value.absent(),
     this.name = const Value.absent(),
     this.type = const Value.absent(),
+    this.expenseReportOnly = const Value.absent(),
     this.options = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3165,6 +3212,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
     this.walletId = const Value.absent(),
     required String name,
     required CustomFieldType type,
+    this.expenseReportOnly = const Value.absent(),
     this.options = const Value.absent(),
     this.sortOrder = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -3181,6 +3229,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
     Expression<String>? walletId,
     Expression<String>? name,
     Expression<String>? type,
+    Expression<bool>? expenseReportOnly,
     Expression<String>? options,
     Expression<int>? sortOrder,
     Expression<int>? rowid,
@@ -3193,6 +3242,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
       if (walletId != null) 'wallet_id': walletId,
       if (name != null) 'name': name,
       if (type != null) 'type': type,
+      if (expenseReportOnly != null) 'expense_report_only': expenseReportOnly,
       if (options != null) 'options': options,
       if (sortOrder != null) 'sort_order': sortOrder,
       if (rowid != null) 'rowid': rowid,
@@ -3207,6 +3257,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
     Value<String?>? walletId,
     Value<String>? name,
     Value<CustomFieldType>? type,
+    Value<bool>? expenseReportOnly,
     Value<List<String>?>? options,
     Value<int>? sortOrder,
     Value<int>? rowid,
@@ -3219,6 +3270,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
       walletId: walletId ?? this.walletId,
       name: name ?? this.name,
       type: type ?? this.type,
+      expenseReportOnly: expenseReportOnly ?? this.expenseReportOnly,
       options: options ?? this.options,
       sortOrder: sortOrder ?? this.sortOrder,
       rowid: rowid ?? this.rowid,
@@ -3251,6 +3303,9 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
         $CustomFieldDefsTable.$convertertype.toSql(type.value),
       );
     }
+    if (expenseReportOnly.present) {
+      map['expense_report_only'] = Variable<bool>(expenseReportOnly.value);
+    }
     if (options.present) {
       map['options'] = Variable<String>(
         $CustomFieldDefsTable.$converteroptionsn.toSql(options.value),
@@ -3275,6 +3330,7 @@ class CustomFieldDefsCompanion extends UpdateCompanion<CustomFieldDef> {
           ..write('walletId: $walletId, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
+          ..write('expenseReportOnly: $expenseReportOnly, ')
           ..write('options: $options, ')
           ..write('sortOrder: $sortOrder, ')
           ..write('rowid: $rowid')
@@ -5917,6 +5973,1499 @@ class DashboardCardsCompanion extends UpdateCompanion<DashboardCard> {
   }
 }
 
+class $CostCentersTable extends CostCenters
+    with TableInfo<$CostCentersTable, CostCenter> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CostCentersTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _walletIdMeta = const VerificationMeta(
+    'walletId',
+  );
+  @override
+  late final GeneratedColumn<String> walletId = GeneratedColumn<String>(
+    'wallet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES wallets (id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    walletId,
+    name,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cost_centers';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CostCenter> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('wallet_id')) {
+      context.handle(
+        _walletIdMeta,
+        walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CostCenter map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CostCenter(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      walletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wallet_id'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $CostCentersTable createAlias(String alias) {
+    return $CostCentersTable(attachedDatabase, alias);
+  }
+}
+
+class CostCenter extends DataClass implements Insertable<CostCenter> {
+  final String id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final String? walletId;
+  final String name;
+  const CostCenter({
+    required this.id,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+    this.walletId,
+    required this.name,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || walletId != null) {
+      map['wallet_id'] = Variable<String>(walletId);
+    }
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  CostCentersCompanion toCompanion(bool nullToAbsent) {
+    return CostCentersCompanion(
+      id: Value(id),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      walletId: walletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletId),
+      name: Value(name),
+    );
+  }
+
+  factory CostCenter.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CostCenter(
+      id: serializer.fromJson<String>(json['id']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      walletId: serializer.fromJson<String?>(json['walletId']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'walletId': serializer.toJson<String?>(walletId),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  CostCenter copyWith({
+    String? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    Value<String?> walletId = const Value.absent(),
+    String? name,
+  }) => CostCenter(
+    id: id ?? this.id,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    walletId: walletId.present ? walletId.value : this.walletId,
+    name: name ?? this.name,
+  );
+  CostCenter copyWithCompanion(CostCentersCompanion data) {
+    return CostCenter(
+      id: data.id.present ? data.id.value : this.id,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CostCenter(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, createdAt, updatedAt, deletedAt, walletId, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CostCenter &&
+          other.id == this.id &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.walletId == this.walletId &&
+          other.name == this.name);
+}
+
+class CostCentersCompanion extends UpdateCompanion<CostCenter> {
+  final Value<String> id;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String?> walletId;
+  final Value<String> name;
+  final Value<int> rowid;
+  const CostCentersCompanion({
+    this.id = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CostCentersCompanion.insert({
+    required String id,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
+    required String name,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       name = Value(name);
+  static Insertable<CostCenter> custom({
+    Expression<String>? id,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? walletId,
+    Expression<String>? name,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (walletId != null) 'wallet_id': walletId,
+      if (name != null) 'name': name,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CostCentersCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<String?>? walletId,
+    Value<String>? name,
+    Value<int>? rowid,
+  }) {
+    return CostCentersCompanion(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      walletId: walletId ?? this.walletId,
+      name: name ?? this.name,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<String>(walletId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CostCentersCompanion(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
+          ..write('name: $name, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ExpenseReportsTable extends ExpenseReports
+    with TableInfo<$ExpenseReportsTable, ExpenseReport> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExpenseReportsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _walletIdMeta = const VerificationMeta(
+    'walletId',
+  );
+  @override
+  late final GeneratedColumn<String> walletId = GeneratedColumn<String>(
+    'wallet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES wallets (id)',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateFromMeta = const VerificationMeta(
+    'dateFrom',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dateFrom = GeneratedColumn<DateTime>(
+    'date_from',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateToMeta = const VerificationMeta('dateTo');
+  @override
+  late final GeneratedColumn<DateTime> dateTo = GeneratedColumn<DateTime>(
+    'date_to',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<ExpenseReportStatus, String>
+  status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  ).withConverter<ExpenseReportStatus>($ExpenseReportsTable.$converterstatus);
+  static const VerificationMeta _reimburseTxIdMeta = const VerificationMeta(
+    'reimburseTxId',
+  );
+  @override
+  late final GeneratedColumn<String> reimburseTxId = GeneratedColumn<String>(
+    'reimburse_tx_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transactions (id)',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    walletId,
+    name,
+    dateFrom,
+    dateTo,
+    status,
+    reimburseTxId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'expense_reports';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExpenseReport> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('wallet_id')) {
+      context.handle(
+        _walletIdMeta,
+        walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta),
+      );
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('date_from')) {
+      context.handle(
+        _dateFromMeta,
+        dateFrom.isAcceptableOrUnknown(data['date_from']!, _dateFromMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateFromMeta);
+    }
+    if (data.containsKey('date_to')) {
+      context.handle(
+        _dateToMeta,
+        dateTo.isAcceptableOrUnknown(data['date_to']!, _dateToMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateToMeta);
+    }
+    if (data.containsKey('reimburse_tx_id')) {
+      context.handle(
+        _reimburseTxIdMeta,
+        reimburseTxId.isAcceptableOrUnknown(
+          data['reimburse_tx_id']!,
+          _reimburseTxIdMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExpenseReport map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExpenseReport(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      walletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}wallet_id'],
+      ),
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      dateFrom: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_from'],
+      )!,
+      dateTo: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date_to'],
+      )!,
+      status: $ExpenseReportsTable.$converterstatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}status'],
+        )!,
+      ),
+      reimburseTxId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reimburse_tx_id'],
+      ),
+    );
+  }
+
+  @override
+  $ExpenseReportsTable createAlias(String alias) {
+    return $ExpenseReportsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<ExpenseReportStatus, String, String>
+  $converterstatus = const EnumNameConverter<ExpenseReportStatus>(
+    ExpenseReportStatus.values,
+  );
+}
+
+class ExpenseReport extends DataClass implements Insertable<ExpenseReport> {
+  final String id;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final String? walletId;
+  final String name;
+  final DateTime dateFrom;
+  final DateTime dateTo;
+  final ExpenseReportStatus status;
+
+  /// Entrata di rimborso collegata (quando rimborsata).
+  final String? reimburseTxId;
+  const ExpenseReport({
+    required this.id,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+    this.walletId,
+    required this.name,
+    required this.dateFrom,
+    required this.dateTo,
+    required this.status,
+    this.reimburseTxId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || walletId != null) {
+      map['wallet_id'] = Variable<String>(walletId);
+    }
+    map['name'] = Variable<String>(name);
+    map['date_from'] = Variable<DateTime>(dateFrom);
+    map['date_to'] = Variable<DateTime>(dateTo);
+    {
+      map['status'] = Variable<String>(
+        $ExpenseReportsTable.$converterstatus.toSql(status),
+      );
+    }
+    if (!nullToAbsent || reimburseTxId != null) {
+      map['reimburse_tx_id'] = Variable<String>(reimburseTxId);
+    }
+    return map;
+  }
+
+  ExpenseReportsCompanion toCompanion(bool nullToAbsent) {
+    return ExpenseReportsCompanion(
+      id: Value(id),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      walletId: walletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletId),
+      name: Value(name),
+      dateFrom: Value(dateFrom),
+      dateTo: Value(dateTo),
+      status: Value(status),
+      reimburseTxId: reimburseTxId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reimburseTxId),
+    );
+  }
+
+  factory ExpenseReport.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExpenseReport(
+      id: serializer.fromJson<String>(json['id']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      walletId: serializer.fromJson<String?>(json['walletId']),
+      name: serializer.fromJson<String>(json['name']),
+      dateFrom: serializer.fromJson<DateTime>(json['dateFrom']),
+      dateTo: serializer.fromJson<DateTime>(json['dateTo']),
+      status: $ExpenseReportsTable.$converterstatus.fromJson(
+        serializer.fromJson<String>(json['status']),
+      ),
+      reimburseTxId: serializer.fromJson<String?>(json['reimburseTxId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'walletId': serializer.toJson<String?>(walletId),
+      'name': serializer.toJson<String>(name),
+      'dateFrom': serializer.toJson<DateTime>(dateFrom),
+      'dateTo': serializer.toJson<DateTime>(dateTo),
+      'status': serializer.toJson<String>(
+        $ExpenseReportsTable.$converterstatus.toJson(status),
+      ),
+      'reimburseTxId': serializer.toJson<String?>(reimburseTxId),
+    };
+  }
+
+  ExpenseReport copyWith({
+    String? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    Value<String?> walletId = const Value.absent(),
+    String? name,
+    DateTime? dateFrom,
+    DateTime? dateTo,
+    ExpenseReportStatus? status,
+    Value<String?> reimburseTxId = const Value.absent(),
+  }) => ExpenseReport(
+    id: id ?? this.id,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    walletId: walletId.present ? walletId.value : this.walletId,
+    name: name ?? this.name,
+    dateFrom: dateFrom ?? this.dateFrom,
+    dateTo: dateTo ?? this.dateTo,
+    status: status ?? this.status,
+    reimburseTxId: reimburseTxId.present
+        ? reimburseTxId.value
+        : this.reimburseTxId,
+  );
+  ExpenseReport copyWithCompanion(ExpenseReportsCompanion data) {
+    return ExpenseReport(
+      id: data.id.present ? data.id.value : this.id,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
+      name: data.name.present ? data.name.value : this.name,
+      dateFrom: data.dateFrom.present ? data.dateFrom.value : this.dateFrom,
+      dateTo: data.dateTo.present ? data.dateTo.value : this.dateTo,
+      status: data.status.present ? data.status.value : this.status,
+      reimburseTxId: data.reimburseTxId.present
+          ? data.reimburseTxId.value
+          : this.reimburseTxId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseReport(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
+          ..write('name: $name, ')
+          ..write('dateFrom: $dateFrom, ')
+          ..write('dateTo: $dateTo, ')
+          ..write('status: $status, ')
+          ..write('reimburseTxId: $reimburseTxId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    walletId,
+    name,
+    dateFrom,
+    dateTo,
+    status,
+    reimburseTxId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExpenseReport &&
+          other.id == this.id &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.walletId == this.walletId &&
+          other.name == this.name &&
+          other.dateFrom == this.dateFrom &&
+          other.dateTo == this.dateTo &&
+          other.status == this.status &&
+          other.reimburseTxId == this.reimburseTxId);
+}
+
+class ExpenseReportsCompanion extends UpdateCompanion<ExpenseReport> {
+  final Value<String> id;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String?> walletId;
+  final Value<String> name;
+  final Value<DateTime> dateFrom;
+  final Value<DateTime> dateTo;
+  final Value<ExpenseReportStatus> status;
+  final Value<String?> reimburseTxId;
+  final Value<int> rowid;
+  const ExpenseReportsCompanion({
+    this.id = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.dateFrom = const Value.absent(),
+    this.dateTo = const Value.absent(),
+    this.status = const Value.absent(),
+    this.reimburseTxId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExpenseReportsCompanion.insert({
+    required String id,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.walletId = const Value.absent(),
+    required String name,
+    required DateTime dateFrom,
+    required DateTime dateTo,
+    required ExpenseReportStatus status,
+    this.reimburseTxId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       name = Value(name),
+       dateFrom = Value(dateFrom),
+       dateTo = Value(dateTo),
+       status = Value(status);
+  static Insertable<ExpenseReport> custom({
+    Expression<String>? id,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? walletId,
+    Expression<String>? name,
+    Expression<DateTime>? dateFrom,
+    Expression<DateTime>? dateTo,
+    Expression<String>? status,
+    Expression<String>? reimburseTxId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (walletId != null) 'wallet_id': walletId,
+      if (name != null) 'name': name,
+      if (dateFrom != null) 'date_from': dateFrom,
+      if (dateTo != null) 'date_to': dateTo,
+      if (status != null) 'status': status,
+      if (reimburseTxId != null) 'reimburse_tx_id': reimburseTxId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExpenseReportsCompanion copyWith({
+    Value<String>? id,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<String?>? walletId,
+    Value<String>? name,
+    Value<DateTime>? dateFrom,
+    Value<DateTime>? dateTo,
+    Value<ExpenseReportStatus>? status,
+    Value<String?>? reimburseTxId,
+    Value<int>? rowid,
+  }) {
+    return ExpenseReportsCompanion(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      walletId: walletId ?? this.walletId,
+      name: name ?? this.name,
+      dateFrom: dateFrom ?? this.dateFrom,
+      dateTo: dateTo ?? this.dateTo,
+      status: status ?? this.status,
+      reimburseTxId: reimburseTxId ?? this.reimburseTxId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<String>(walletId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (dateFrom.present) {
+      map['date_from'] = Variable<DateTime>(dateFrom.value);
+    }
+    if (dateTo.present) {
+      map['date_to'] = Variable<DateTime>(dateTo.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(
+        $ExpenseReportsTable.$converterstatus.toSql(status.value),
+      );
+    }
+    if (reimburseTxId.present) {
+      map['reimburse_tx_id'] = Variable<String>(reimburseTxId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseReportsCompanion(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('walletId: $walletId, ')
+          ..write('name: $name, ')
+          ..write('dateFrom: $dateFrom, ')
+          ..write('dateTo: $dateTo, ')
+          ..write('status: $status, ')
+          ..write('reimburseTxId: $reimburseTxId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ExpenseReportEntriesTable extends ExpenseReportEntries
+    with TableInfo<$ExpenseReportEntriesTable, ExpenseReportEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExpenseReportEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _transactionIdMeta = const VerificationMeta(
+    'transactionId',
+  );
+  @override
+  late final GeneratedColumn<String> transactionId = GeneratedColumn<String>(
+    'transaction_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES transactions (id)',
+    ),
+  );
+  static const VerificationMeta _costCenterIdMeta = const VerificationMeta(
+    'costCenterId',
+  );
+  @override
+  late final GeneratedColumn<String> costCenterId = GeneratedColumn<String>(
+    'cost_center_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES cost_centers (id)',
+    ),
+  );
+  static const VerificationMeta _reimbursableMeta = const VerificationMeta(
+    'reimbursable',
+  );
+  @override
+  late final GeneratedColumn<bool> reimbursable = GeneratedColumn<bool>(
+    'reimbursable',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("reimbursable" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _eInvoiceMeta = const VerificationMeta(
+    'eInvoice',
+  );
+  @override
+  late final GeneratedColumn<bool> eInvoice = GeneratedColumn<bool>(
+    'e_invoice',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("e_invoice" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _reportIdMeta = const VerificationMeta(
+    'reportId',
+  );
+  @override
+  late final GeneratedColumn<String> reportId = GeneratedColumn<String>(
+    'report_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES expense_reports (id)',
+    ),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    transactionId,
+    costCenterId,
+    reimbursable,
+    eInvoice,
+    reportId,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'expense_report_entries';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExpenseReportEntry> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+        _transactionIdMeta,
+        transactionId.isAcceptableOrUnknown(
+          data['transaction_id']!,
+          _transactionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_transactionIdMeta);
+    }
+    if (data.containsKey('cost_center_id')) {
+      context.handle(
+        _costCenterIdMeta,
+        costCenterId.isAcceptableOrUnknown(
+          data['cost_center_id']!,
+          _costCenterIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reimbursable')) {
+      context.handle(
+        _reimbursableMeta,
+        reimbursable.isAcceptableOrUnknown(
+          data['reimbursable']!,
+          _reimbursableMeta,
+        ),
+      );
+    }
+    if (data.containsKey('e_invoice')) {
+      context.handle(
+        _eInvoiceMeta,
+        eInvoice.isAcceptableOrUnknown(data['e_invoice']!, _eInvoiceMeta),
+      );
+    }
+    if (data.containsKey('report_id')) {
+      context.handle(
+        _reportIdMeta,
+        reportId.isAcceptableOrUnknown(data['report_id']!, _reportIdMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {transactionId};
+  @override
+  ExpenseReportEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExpenseReportEntry(
+      transactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transaction_id'],
+      )!,
+      costCenterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cost_center_id'],
+      ),
+      reimbursable: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}reimbursable'],
+      )!,
+      eInvoice: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}e_invoice'],
+      )!,
+      reportId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}report_id'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ExpenseReportEntriesTable createAlias(String alias) {
+    return $ExpenseReportEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class ExpenseReportEntry extends DataClass
+    implements Insertable<ExpenseReportEntry> {
+  final String transactionId;
+  final String? costCenterId;
+  final bool reimbursable;
+  final bool eInvoice;
+  final String? reportId;
+  final DateTime updatedAt;
+  const ExpenseReportEntry({
+    required this.transactionId,
+    this.costCenterId,
+    required this.reimbursable,
+    required this.eInvoice,
+    this.reportId,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['transaction_id'] = Variable<String>(transactionId);
+    if (!nullToAbsent || costCenterId != null) {
+      map['cost_center_id'] = Variable<String>(costCenterId);
+    }
+    map['reimbursable'] = Variable<bool>(reimbursable);
+    map['e_invoice'] = Variable<bool>(eInvoice);
+    if (!nullToAbsent || reportId != null) {
+      map['report_id'] = Variable<String>(reportId);
+    }
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ExpenseReportEntriesCompanion toCompanion(bool nullToAbsent) {
+    return ExpenseReportEntriesCompanion(
+      transactionId: Value(transactionId),
+      costCenterId: costCenterId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(costCenterId),
+      reimbursable: Value(reimbursable),
+      eInvoice: Value(eInvoice),
+      reportId: reportId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reportId),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ExpenseReportEntry.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExpenseReportEntry(
+      transactionId: serializer.fromJson<String>(json['transactionId']),
+      costCenterId: serializer.fromJson<String?>(json['costCenterId']),
+      reimbursable: serializer.fromJson<bool>(json['reimbursable']),
+      eInvoice: serializer.fromJson<bool>(json['eInvoice']),
+      reportId: serializer.fromJson<String?>(json['reportId']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'transactionId': serializer.toJson<String>(transactionId),
+      'costCenterId': serializer.toJson<String?>(costCenterId),
+      'reimbursable': serializer.toJson<bool>(reimbursable),
+      'eInvoice': serializer.toJson<bool>(eInvoice),
+      'reportId': serializer.toJson<String?>(reportId),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ExpenseReportEntry copyWith({
+    String? transactionId,
+    Value<String?> costCenterId = const Value.absent(),
+    bool? reimbursable,
+    bool? eInvoice,
+    Value<String?> reportId = const Value.absent(),
+    DateTime? updatedAt,
+  }) => ExpenseReportEntry(
+    transactionId: transactionId ?? this.transactionId,
+    costCenterId: costCenterId.present ? costCenterId.value : this.costCenterId,
+    reimbursable: reimbursable ?? this.reimbursable,
+    eInvoice: eInvoice ?? this.eInvoice,
+    reportId: reportId.present ? reportId.value : this.reportId,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ExpenseReportEntry copyWithCompanion(ExpenseReportEntriesCompanion data) {
+    return ExpenseReportEntry(
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      costCenterId: data.costCenterId.present
+          ? data.costCenterId.value
+          : this.costCenterId,
+      reimbursable: data.reimbursable.present
+          ? data.reimbursable.value
+          : this.reimbursable,
+      eInvoice: data.eInvoice.present ? data.eInvoice.value : this.eInvoice,
+      reportId: data.reportId.present ? data.reportId.value : this.reportId,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseReportEntry(')
+          ..write('transactionId: $transactionId, ')
+          ..write('costCenterId: $costCenterId, ')
+          ..write('reimbursable: $reimbursable, ')
+          ..write('eInvoice: $eInvoice, ')
+          ..write('reportId: $reportId, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    transactionId,
+    costCenterId,
+    reimbursable,
+    eInvoice,
+    reportId,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExpenseReportEntry &&
+          other.transactionId == this.transactionId &&
+          other.costCenterId == this.costCenterId &&
+          other.reimbursable == this.reimbursable &&
+          other.eInvoice == this.eInvoice &&
+          other.reportId == this.reportId &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ExpenseReportEntriesCompanion
+    extends UpdateCompanion<ExpenseReportEntry> {
+  final Value<String> transactionId;
+  final Value<String?> costCenterId;
+  final Value<bool> reimbursable;
+  final Value<bool> eInvoice;
+  final Value<String?> reportId;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ExpenseReportEntriesCompanion({
+    this.transactionId = const Value.absent(),
+    this.costCenterId = const Value.absent(),
+    this.reimbursable = const Value.absent(),
+    this.eInvoice = const Value.absent(),
+    this.reportId = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExpenseReportEntriesCompanion.insert({
+    required String transactionId,
+    this.costCenterId = const Value.absent(),
+    this.reimbursable = const Value.absent(),
+    this.eInvoice = const Value.absent(),
+    this.reportId = const Value.absent(),
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : transactionId = Value(transactionId),
+       updatedAt = Value(updatedAt);
+  static Insertable<ExpenseReportEntry> custom({
+    Expression<String>? transactionId,
+    Expression<String>? costCenterId,
+    Expression<bool>? reimbursable,
+    Expression<bool>? eInvoice,
+    Expression<String>? reportId,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (costCenterId != null) 'cost_center_id': costCenterId,
+      if (reimbursable != null) 'reimbursable': reimbursable,
+      if (eInvoice != null) 'e_invoice': eInvoice,
+      if (reportId != null) 'report_id': reportId,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExpenseReportEntriesCompanion copyWith({
+    Value<String>? transactionId,
+    Value<String?>? costCenterId,
+    Value<bool>? reimbursable,
+    Value<bool>? eInvoice,
+    Value<String?>? reportId,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ExpenseReportEntriesCompanion(
+      transactionId: transactionId ?? this.transactionId,
+      costCenterId: costCenterId ?? this.costCenterId,
+      reimbursable: reimbursable ?? this.reimbursable,
+      eInvoice: eInvoice ?? this.eInvoice,
+      reportId: reportId ?? this.reportId,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<String>(transactionId.value);
+    }
+    if (costCenterId.present) {
+      map['cost_center_id'] = Variable<String>(costCenterId.value);
+    }
+    if (reimbursable.present) {
+      map['reimbursable'] = Variable<bool>(reimbursable.value);
+    }
+    if (eInvoice.present) {
+      map['e_invoice'] = Variable<bool>(eInvoice.value);
+    }
+    if (reportId.present) {
+      map['report_id'] = Variable<String>(reportId.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseReportEntriesCompanion(')
+          ..write('transactionId: $transactionId, ')
+          ..write('costCenterId: $costCenterId, ')
+          ..write('reimbursable: $reimbursable, ')
+          ..write('eInvoice: $eInvoice, ')
+          ..write('reportId: $reportId, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5936,6 +7485,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RecurringRulesTable recurringRules = $RecurringRulesTable(this);
   late final $AttachmentsTable attachments = $AttachmentsTable(this);
   late final $DashboardCardsTable dashboardCards = $DashboardCardsTable(this);
+  late final $CostCentersTable costCenters = $CostCentersTable(this);
+  late final $ExpenseReportsTable expenseReports = $ExpenseReportsTable(this);
+  late final $ExpenseReportEntriesTable expenseReportEntries =
+      $ExpenseReportEntriesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5952,6 +7505,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     recurringRules,
     attachments,
     dashboardCards,
+    costCenters,
+    expenseReports,
+    expenseReportEntries,
   ];
   @override
   DriftDatabaseOptions get options =>
@@ -6096,6 +7652,42 @@ final class $$WalletsTableReferences
     ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_dashboardCardsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$CostCentersTable, List<CostCenter>>
+  _costCentersRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.costCenters,
+    aliasName: 'wallets__id__cost_centers__wallet_id',
+  );
+
+  $$CostCentersTableProcessedTableManager get costCentersRefs {
+    final manager = $$CostCentersTableTableManager(
+      $_db,
+      $_db.costCenters,
+    ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_costCentersRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ExpenseReportsTable, List<ExpenseReport>>
+  _expenseReportsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.expenseReports,
+    aliasName: 'wallets__id__expense_reports__wallet_id',
+  );
+
+  $$ExpenseReportsTableProcessedTableManager get expenseReportsRefs {
+    final manager = $$ExpenseReportsTableTableManager(
+      $_db,
+      $_db.expenseReports,
+    ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_expenseReportsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -6297,6 +7889,56 @@ class $$WalletsTableFilterComposer
           }) => $$DashboardCardsTableFilterComposer(
             $db: $db,
             $table: $db.dashboardCards,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> costCentersRefs(
+    Expression<bool> Function($$CostCentersTableFilterComposer f) f,
+  ) {
+    final $$CostCentersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.costCenters,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CostCentersTableFilterComposer(
+            $db: $db,
+            $table: $db.costCenters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> expenseReportsRefs(
+    Expression<bool> Function($$ExpenseReportsTableFilterComposer f) f,
+  ) {
+    final $$ExpenseReportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenseReports,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportsTableFilterComposer(
+            $db: $db,
+            $table: $db.expenseReports,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -6551,6 +8193,56 @@ class $$WalletsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> costCentersRefs<T extends Object>(
+    Expression<T> Function($$CostCentersTableAnnotationComposer a) f,
+  ) {
+    final $$CostCentersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.costCenters,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CostCentersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.costCenters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> expenseReportsRefs<T extends Object>(
+    Expression<T> Function($$ExpenseReportsTableAnnotationComposer a) f,
+  ) {
+    final $$ExpenseReportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenseReports,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.expenseReports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$WalletsTableTableManager
@@ -6573,6 +8265,8 @@ class $$WalletsTableTableManager
             bool budgetsRefs,
             bool recurringRulesRefs,
             bool dashboardCardsRefs,
+            bool costCentersRefs,
+            bool expenseReportsRefs,
           })
         > {
   $$WalletsTableTableManager(_$AppDatabase db, $WalletsTable table)
@@ -6650,6 +8344,8 @@ class $$WalletsTableTableManager
                 budgetsRefs = false,
                 recurringRulesRefs = false,
                 dashboardCardsRefs = false,
+                costCentersRefs = false,
+                expenseReportsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -6660,6 +8356,8 @@ class $$WalletsTableTableManager
                     if (budgetsRefs) db.budgets,
                     if (recurringRulesRefs) db.recurringRules,
                     if (dashboardCardsRefs) db.dashboardCards,
+                    if (costCentersRefs) db.costCenters,
+                    if (expenseReportsRefs) db.expenseReports,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -6782,6 +8480,48 @@ class $$WalletsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (costCentersRefs)
+                        await $_getPrefetchedData<
+                          Wallet,
+                          $WalletsTable,
+                          CostCenter
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._costCentersRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).costCentersRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (expenseReportsRefs)
+                        await $_getPrefetchedData<
+                          Wallet,
+                          $WalletsTable,
+                          ExpenseReport
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._expenseReportsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).expenseReportsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -6809,6 +8549,8 @@ typedef $$WalletsTableProcessedTableManager =
         bool budgetsRefs,
         bool recurringRulesRefs,
         bool dashboardCardsRefs,
+        bool costCentersRefs,
+        bool expenseReportsRefs,
       })
     >;
 typedef $$CategoriesTableCreateCompanionBuilder =
@@ -7788,6 +9530,49 @@ final class $$TransactionsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$ExpenseReportsTable, List<ExpenseReport>>
+  _expenseReportsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.expenseReports,
+    aliasName: 'transactions__id__expense_reports__reimburse_tx_id',
+  );
+
+  $$ExpenseReportsTableProcessedTableManager get expenseReportsRefs {
+    final manager = $$ExpenseReportsTableTableManager(
+      $_db,
+      $_db.expenseReports,
+    ).filter((f) => f.reimburseTxId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_expenseReportsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ExpenseReportEntriesTable,
+    List<ExpenseReportEntry>
+  >
+  _expenseReportEntriesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.expenseReportEntries,
+        aliasName: 'transactions__id__expense_report_entries__transaction_id',
+      );
+
+  $$ExpenseReportEntriesTableProcessedTableManager
+  get expenseReportEntriesRefs {
+    final manager = $$ExpenseReportEntriesTableTableManager(
+      $_db,
+      $_db.expenseReportEntries,
+    ).filter((f) => f.transactionId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _expenseReportEntriesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$TransactionsTableFilterComposer
@@ -7980,6 +9765,56 @@ class $$TransactionsTableFilterComposer
           }) => $$AttachmentsTableFilterComposer(
             $db: $db,
             $table: $db.attachments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> expenseReportsRefs(
+    Expression<bool> Function($$ExpenseReportsTableFilterComposer f) f,
+  ) {
+    final $$ExpenseReportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenseReports,
+      getReferencedColumn: (t) => t.reimburseTxId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportsTableFilterComposer(
+            $db: $db,
+            $table: $db.expenseReports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> expenseReportEntriesRefs(
+    Expression<bool> Function($$ExpenseReportEntriesTableFilterComposer f) f,
+  ) {
+    final $$ExpenseReportEntriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenseReportEntries,
+      getReferencedColumn: (t) => t.transactionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportEntriesTableFilterComposer(
+            $db: $db,
+            $table: $db.expenseReportEntries,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -8298,6 +10133,57 @@ class $$TransactionsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> expenseReportsRefs<T extends Object>(
+    Expression<T> Function($$ExpenseReportsTableAnnotationComposer a) f,
+  ) {
+    final $$ExpenseReportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenseReports,
+      getReferencedColumn: (t) => t.reimburseTxId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.expenseReports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> expenseReportEntriesRefs<T extends Object>(
+    Expression<T> Function($$ExpenseReportEntriesTableAnnotationComposer a) f,
+  ) {
+    final $$ExpenseReportEntriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.expenseReportEntries,
+          getReferencedColumn: (t) => t.transactionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ExpenseReportEntriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.expenseReportEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$TransactionsTableTableManager
@@ -8320,6 +10206,8 @@ class $$TransactionsTableTableManager
             bool transactionTagsRefs,
             bool customFieldValuesRefs,
             bool attachmentsRefs,
+            bool expenseReportsRefs,
+            bool expenseReportEntriesRefs,
           })
         > {
   $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
@@ -8409,6 +10297,8 @@ class $$TransactionsTableTableManager
                 transactionTagsRefs = false,
                 customFieldValuesRefs = false,
                 attachmentsRefs = false,
+                expenseReportsRefs = false,
+                expenseReportEntriesRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -8416,6 +10306,8 @@ class $$TransactionsTableTableManager
                     if (transactionTagsRefs) db.transactionTags,
                     if (customFieldValuesRefs) db.customFieldValues,
                     if (attachmentsRefs) db.attachments,
+                    if (expenseReportsRefs) db.expenseReports,
+                    if (expenseReportEntriesRefs) db.expenseReportEntries,
                   ],
                   addJoins:
                       <
@@ -8546,6 +10438,48 @@ class $$TransactionsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (expenseReportsRefs)
+                        await $_getPrefetchedData<
+                          Transaction,
+                          $TransactionsTable,
+                          ExpenseReport
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransactionsTableReferences
+                              ._expenseReportsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransactionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).expenseReportsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.reimburseTxId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (expenseReportEntriesRefs)
+                        await $_getPrefetchedData<
+                          Transaction,
+                          $TransactionsTable,
+                          ExpenseReportEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$TransactionsTableReferences
+                              ._expenseReportEntriesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$TransactionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).expenseReportEntriesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transactionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -8573,6 +10507,8 @@ typedef $$TransactionsTableProcessedTableManager =
         bool transactionTagsRefs,
         bool customFieldValuesRefs,
         bool attachmentsRefs,
+        bool expenseReportsRefs,
+        bool expenseReportEntriesRefs,
       })
     >;
 typedef $$TagsTableCreateCompanionBuilder =
@@ -9387,6 +11323,7 @@ typedef $$CustomFieldDefsTableCreateCompanionBuilder =
       Value<String?> walletId,
       required String name,
       required CustomFieldType type,
+      Value<bool> expenseReportOnly,
       Value<List<String>?> options,
       Value<int> sortOrder,
       Value<int> rowid,
@@ -9400,6 +11337,7 @@ typedef $$CustomFieldDefsTableUpdateCompanionBuilder =
       Value<String?> walletId,
       Value<String> name,
       Value<CustomFieldType> type,
+      Value<bool> expenseReportOnly,
       Value<List<String>?> options,
       Value<int> sortOrder,
       Value<int> rowid,
@@ -9491,6 +11429,11 @@ class $$CustomFieldDefsTableFilterComposer
   get type => $composableBuilder(
     column: $table.type,
     builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<bool> get expenseReportOnly => $composableBuilder(
+    column: $table.expenseReportOnly,
+    builder: (column) => ColumnFilters(column),
   );
 
   ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
@@ -9592,6 +11535,11 @@ class $$CustomFieldDefsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get expenseReportOnly => $composableBuilder(
+    column: $table.expenseReportOnly,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get options => $composableBuilder(
     column: $table.options,
     builder: (column) => ColumnOrderings(column),
@@ -9652,6 +11600,11 @@ class $$CustomFieldDefsTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<CustomFieldType, String> get type =>
       $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<bool> get expenseReportOnly => $composableBuilder(
+    column: $table.expenseReportOnly,
+    builder: (column) => column,
+  );
 
   GeneratedColumnWithTypeConverter<List<String>?, String> get options =>
       $composableBuilder(column: $table.options, builder: (column) => column);
@@ -9746,6 +11699,7 @@ class $$CustomFieldDefsTableTableManager
                 Value<String?> walletId = const Value.absent(),
                 Value<String> name = const Value.absent(),
                 Value<CustomFieldType> type = const Value.absent(),
+                Value<bool> expenseReportOnly = const Value.absent(),
                 Value<List<String>?> options = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -9757,6 +11711,7 @@ class $$CustomFieldDefsTableTableManager
                 walletId: walletId,
                 name: name,
                 type: type,
+                expenseReportOnly: expenseReportOnly,
                 options: options,
                 sortOrder: sortOrder,
                 rowid: rowid,
@@ -9770,6 +11725,7 @@ class $$CustomFieldDefsTableTableManager
                 Value<String?> walletId = const Value.absent(),
                 required String name,
                 required CustomFieldType type,
+                Value<bool> expenseReportOnly = const Value.absent(),
                 Value<List<String>?> options = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -9781,6 +11737,7 @@ class $$CustomFieldDefsTableTableManager
                 walletId: walletId,
                 name: name,
                 type: type,
+                expenseReportOnly: expenseReportOnly,
                 options: options,
                 sortOrder: sortOrder,
                 rowid: rowid,
@@ -12059,6 +14016,1621 @@ typedef $$DashboardCardsTableProcessedTableManager =
       DashboardCard,
       PrefetchHooks Function({bool walletId})
     >;
+typedef $$CostCentersTableCreateCompanionBuilder =
+    CostCentersCompanion Function({
+      required String id,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<String?> walletId,
+      required String name,
+      Value<int> rowid,
+    });
+typedef $$CostCentersTableUpdateCompanionBuilder =
+    CostCentersCompanion Function({
+      Value<String> id,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<String?> walletId,
+      Value<String> name,
+      Value<int> rowid,
+    });
+
+final class $$CostCentersTableReferences
+    extends BaseReferences<_$AppDatabase, $CostCentersTable, CostCenter> {
+  $$CostCentersTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $WalletsTable _walletIdTable(_$AppDatabase db) =>
+      db.wallets.createAlias('cost_centers__wallet_id__wallets__id');
+
+  $$WalletsTableProcessedTableManager? get walletId {
+    final $_column = $_itemColumn<String>('wallet_id');
+    if ($_column == null) return null;
+    final manager = $$WalletsTableTableManager(
+      $_db,
+      $_db.wallets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_walletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ExpenseReportEntriesTable,
+    List<ExpenseReportEntry>
+  >
+  _expenseReportEntriesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.expenseReportEntries,
+        aliasName: 'cost_centers__id__expense_report_entries__cost_center_id',
+      );
+
+  $$ExpenseReportEntriesTableProcessedTableManager
+  get expenseReportEntriesRefs {
+    final manager = $$ExpenseReportEntriesTableTableManager(
+      $_db,
+      $_db.expenseReportEntries,
+    ).filter((f) => f.costCenterId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _expenseReportEntriesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$CostCentersTableFilterComposer
+    extends Composer<_$AppDatabase, $CostCentersTable> {
+  $$CostCentersTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$WalletsTableFilterComposer get walletId {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableFilterComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> expenseReportEntriesRefs(
+    Expression<bool> Function($$ExpenseReportEntriesTableFilterComposer f) f,
+  ) {
+    final $$ExpenseReportEntriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenseReportEntries,
+      getReferencedColumn: (t) => t.costCenterId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportEntriesTableFilterComposer(
+            $db: $db,
+            $table: $db.expenseReportEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$CostCentersTableOrderingComposer
+    extends Composer<_$AppDatabase, $CostCentersTable> {
+  $$CostCentersTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WalletsTableOrderingComposer get walletId {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$CostCentersTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CostCentersTable> {
+  $$CostCentersTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  $$WalletsTableAnnotationComposer get walletId {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> expenseReportEntriesRefs<T extends Object>(
+    Expression<T> Function($$ExpenseReportEntriesTableAnnotationComposer a) f,
+  ) {
+    final $$ExpenseReportEntriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.expenseReportEntries,
+          getReferencedColumn: (t) => t.costCenterId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ExpenseReportEntriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.expenseReportEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$CostCentersTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CostCentersTable,
+          CostCenter,
+          $$CostCentersTableFilterComposer,
+          $$CostCentersTableOrderingComposer,
+          $$CostCentersTableAnnotationComposer,
+          $$CostCentersTableCreateCompanionBuilder,
+          $$CostCentersTableUpdateCompanionBuilder,
+          (CostCenter, $$CostCentersTableReferences),
+          CostCenter,
+          PrefetchHooks Function({bool walletId, bool expenseReportEntriesRefs})
+        > {
+  $$CostCentersTableTableManager(_$AppDatabase db, $CostCentersTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CostCentersTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CostCentersTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CostCentersTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CostCentersCompanion(
+                id: id,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                walletId: walletId,
+                name: name,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
+                required String name,
+                Value<int> rowid = const Value.absent(),
+              }) => CostCentersCompanion.insert(
+                id: id,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                walletId: walletId,
+                name: name,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CostCentersTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({walletId = false, expenseReportEntriesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (expenseReportEntriesRefs) db.expenseReportEntries,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (walletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.walletId,
+                                    referencedTable:
+                                        $$CostCentersTableReferences
+                                            ._walletIdTable(db),
+                                    referencedColumn:
+                                        $$CostCentersTableReferences
+                                            ._walletIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (expenseReportEntriesRefs)
+                        await $_getPrefetchedData<
+                          CostCenter,
+                          $CostCentersTable,
+                          ExpenseReportEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$CostCentersTableReferences
+                              ._expenseReportEntriesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$CostCentersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).expenseReportEntriesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.costCenterId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$CostCentersTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CostCentersTable,
+      CostCenter,
+      $$CostCentersTableFilterComposer,
+      $$CostCentersTableOrderingComposer,
+      $$CostCentersTableAnnotationComposer,
+      $$CostCentersTableCreateCompanionBuilder,
+      $$CostCentersTableUpdateCompanionBuilder,
+      (CostCenter, $$CostCentersTableReferences),
+      CostCenter,
+      PrefetchHooks Function({bool walletId, bool expenseReportEntriesRefs})
+    >;
+typedef $$ExpenseReportsTableCreateCompanionBuilder =
+    ExpenseReportsCompanion Function({
+      required String id,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<String?> walletId,
+      required String name,
+      required DateTime dateFrom,
+      required DateTime dateTo,
+      required ExpenseReportStatus status,
+      Value<String?> reimburseTxId,
+      Value<int> rowid,
+    });
+typedef $$ExpenseReportsTableUpdateCompanionBuilder =
+    ExpenseReportsCompanion Function({
+      Value<String> id,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<String?> walletId,
+      Value<String> name,
+      Value<DateTime> dateFrom,
+      Value<DateTime> dateTo,
+      Value<ExpenseReportStatus> status,
+      Value<String?> reimburseTxId,
+      Value<int> rowid,
+    });
+
+final class $$ExpenseReportsTableReferences
+    extends BaseReferences<_$AppDatabase, $ExpenseReportsTable, ExpenseReport> {
+  $$ExpenseReportsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $WalletsTable _walletIdTable(_$AppDatabase db) =>
+      db.wallets.createAlias('expense_reports__wallet_id__wallets__id');
+
+  $$WalletsTableProcessedTableManager? get walletId {
+    final $_column = $_itemColumn<String>('wallet_id');
+    if ($_column == null) return null;
+    final manager = $$WalletsTableTableManager(
+      $_db,
+      $_db.wallets,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_walletIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $TransactionsTable _reimburseTxIdTable(_$AppDatabase db) => db
+      .transactions
+      .createAlias('expense_reports__reimburse_tx_id__transactions__id');
+
+  $$TransactionsTableProcessedTableManager? get reimburseTxId {
+    final $_column = $_itemColumn<String>('reimburse_tx_id');
+    if ($_column == null) return null;
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_reimburseTxIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $ExpenseReportEntriesTable,
+    List<ExpenseReportEntry>
+  >
+  _expenseReportEntriesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.expenseReportEntries,
+        aliasName: 'expense_reports__id__expense_report_entries__report_id',
+      );
+
+  $$ExpenseReportEntriesTableProcessedTableManager
+  get expenseReportEntriesRefs {
+    final manager = $$ExpenseReportEntriesTableTableManager(
+      $_db,
+      $_db.expenseReportEntries,
+    ).filter((f) => f.reportId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _expenseReportEntriesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ExpenseReportsTableFilterComposer
+    extends Composer<_$AppDatabase, $ExpenseReportsTable> {
+  $$ExpenseReportsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateFrom => $composableBuilder(
+    column: $table.dateFrom,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dateTo => $composableBuilder(
+    column: $table.dateTo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<
+    ExpenseReportStatus,
+    ExpenseReportStatus,
+    String
+  >
+  get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  $$WalletsTableFilterComposer get walletId {
+    final $$WalletsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableFilterComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransactionsTableFilterComposer get reimburseTxId {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.reimburseTxId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> expenseReportEntriesRefs(
+    Expression<bool> Function($$ExpenseReportEntriesTableFilterComposer f) f,
+  ) {
+    final $$ExpenseReportEntriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.expenseReportEntries,
+      getReferencedColumn: (t) => t.reportId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportEntriesTableFilterComposer(
+            $db: $db,
+            $table: $db.expenseReportEntries,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ExpenseReportsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ExpenseReportsTable> {
+  $$ExpenseReportsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dateFrom => $composableBuilder(
+    column: $table.dateFrom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dateTo => $composableBuilder(
+    column: $table.dateTo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$WalletsTableOrderingComposer get walletId {
+    final $$WalletsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableOrderingComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransactionsTableOrderingComposer get reimburseTxId {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.reimburseTxId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExpenseReportsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ExpenseReportsTable> {
+  $$ExpenseReportsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateFrom =>
+      $composableBuilder(column: $table.dateFrom, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateTo =>
+      $composableBuilder(column: $table.dateTo, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<ExpenseReportStatus, String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  $$WalletsTableAnnotationComposer get walletId {
+    final $$WalletsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.wallets,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.wallets,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$TransactionsTableAnnotationComposer get reimburseTxId {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.reimburseTxId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> expenseReportEntriesRefs<T extends Object>(
+    Expression<T> Function($$ExpenseReportEntriesTableAnnotationComposer a) f,
+  ) {
+    final $$ExpenseReportEntriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.expenseReportEntries,
+          getReferencedColumn: (t) => t.reportId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ExpenseReportEntriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.expenseReportEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ExpenseReportsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ExpenseReportsTable,
+          ExpenseReport,
+          $$ExpenseReportsTableFilterComposer,
+          $$ExpenseReportsTableOrderingComposer,
+          $$ExpenseReportsTableAnnotationComposer,
+          $$ExpenseReportsTableCreateCompanionBuilder,
+          $$ExpenseReportsTableUpdateCompanionBuilder,
+          (ExpenseReport, $$ExpenseReportsTableReferences),
+          ExpenseReport,
+          PrefetchHooks Function({
+            bool walletId,
+            bool reimburseTxId,
+            bool expenseReportEntriesRefs,
+          })
+        > {
+  $$ExpenseReportsTableTableManager(
+    _$AppDatabase db,
+    $ExpenseReportsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExpenseReportsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExpenseReportsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExpenseReportsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<DateTime> dateFrom = const Value.absent(),
+                Value<DateTime> dateTo = const Value.absent(),
+                Value<ExpenseReportStatus> status = const Value.absent(),
+                Value<String?> reimburseTxId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExpenseReportsCompanion(
+                id: id,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                walletId: walletId,
+                name: name,
+                dateFrom: dateFrom,
+                dateTo: dateTo,
+                status: status,
+                reimburseTxId: reimburseTxId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String?> walletId = const Value.absent(),
+                required String name,
+                required DateTime dateFrom,
+                required DateTime dateTo,
+                required ExpenseReportStatus status,
+                Value<String?> reimburseTxId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExpenseReportsCompanion.insert(
+                id: id,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                walletId: walletId,
+                name: name,
+                dateFrom: dateFrom,
+                dateTo: dateTo,
+                status: status,
+                reimburseTxId: reimburseTxId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ExpenseReportsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                walletId = false,
+                reimburseTxId = false,
+                expenseReportEntriesRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (expenseReportEntriesRefs) db.expenseReportEntries,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (walletId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.walletId,
+                                    referencedTable:
+                                        $$ExpenseReportsTableReferences
+                                            ._walletIdTable(db),
+                                    referencedColumn:
+                                        $$ExpenseReportsTableReferences
+                                            ._walletIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (reimburseTxId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.reimburseTxId,
+                                    referencedTable:
+                                        $$ExpenseReportsTableReferences
+                                            ._reimburseTxIdTable(db),
+                                    referencedColumn:
+                                        $$ExpenseReportsTableReferences
+                                            ._reimburseTxIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (expenseReportEntriesRefs)
+                        await $_getPrefetchedData<
+                          ExpenseReport,
+                          $ExpenseReportsTable,
+                          ExpenseReportEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ExpenseReportsTableReferences
+                              ._expenseReportEntriesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ExpenseReportsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).expenseReportEntriesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.reportId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ExpenseReportsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ExpenseReportsTable,
+      ExpenseReport,
+      $$ExpenseReportsTableFilterComposer,
+      $$ExpenseReportsTableOrderingComposer,
+      $$ExpenseReportsTableAnnotationComposer,
+      $$ExpenseReportsTableCreateCompanionBuilder,
+      $$ExpenseReportsTableUpdateCompanionBuilder,
+      (ExpenseReport, $$ExpenseReportsTableReferences),
+      ExpenseReport,
+      PrefetchHooks Function({
+        bool walletId,
+        bool reimburseTxId,
+        bool expenseReportEntriesRefs,
+      })
+    >;
+typedef $$ExpenseReportEntriesTableCreateCompanionBuilder =
+    ExpenseReportEntriesCompanion Function({
+      required String transactionId,
+      Value<String?> costCenterId,
+      Value<bool> reimbursable,
+      Value<bool> eInvoice,
+      Value<String?> reportId,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ExpenseReportEntriesTableUpdateCompanionBuilder =
+    ExpenseReportEntriesCompanion Function({
+      Value<String> transactionId,
+      Value<String?> costCenterId,
+      Value<bool> reimbursable,
+      Value<bool> eInvoice,
+      Value<String?> reportId,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ExpenseReportEntriesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ExpenseReportEntriesTable,
+          ExpenseReportEntry
+        > {
+  $$ExpenseReportEntriesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $TransactionsTable _transactionIdTable(_$AppDatabase db) => db
+      .transactions
+      .createAlias('expense_report_entries__transaction_id__transactions__id');
+
+  $$TransactionsTableProcessedTableManager get transactionId {
+    final $_column = $_itemColumn<String>('transaction_id')!;
+
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transactionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CostCentersTable _costCenterIdTable(_$AppDatabase db) => db
+      .costCenters
+      .createAlias('expense_report_entries__cost_center_id__cost_centers__id');
+
+  $$CostCentersTableProcessedTableManager? get costCenterId {
+    final $_column = $_itemColumn<String>('cost_center_id');
+    if ($_column == null) return null;
+    final manager = $$CostCentersTableTableManager(
+      $_db,
+      $_db.costCenters,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_costCenterIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ExpenseReportsTable _reportIdTable(_$AppDatabase db) => db
+      .expenseReports
+      .createAlias('expense_report_entries__report_id__expense_reports__id');
+
+  $$ExpenseReportsTableProcessedTableManager? get reportId {
+    final $_column = $_itemColumn<String>('report_id');
+    if ($_column == null) return null;
+    final manager = $$ExpenseReportsTableTableManager(
+      $_db,
+      $_db.expenseReports,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_reportIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ExpenseReportEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $ExpenseReportEntriesTable> {
+  $$ExpenseReportEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<bool> get reimbursable => $composableBuilder(
+    column: $table.reimbursable,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get eInvoice => $composableBuilder(
+    column: $table.eInvoice,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TransactionsTableFilterComposer get transactionId {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CostCentersTableFilterComposer get costCenterId {
+    final $$CostCentersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.costCenterId,
+      referencedTable: $db.costCenters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CostCentersTableFilterComposer(
+            $db: $db,
+            $table: $db.costCenters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExpenseReportsTableFilterComposer get reportId {
+    final $$ExpenseReportsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.reportId,
+      referencedTable: $db.expenseReports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportsTableFilterComposer(
+            $db: $db,
+            $table: $db.expenseReports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExpenseReportEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ExpenseReportEntriesTable> {
+  $$ExpenseReportEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<bool> get reimbursable => $composableBuilder(
+    column: $table.reimbursable,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get eInvoice => $composableBuilder(
+    column: $table.eInvoice,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TransactionsTableOrderingComposer get transactionId {
+    final $$TransactionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CostCentersTableOrderingComposer get costCenterId {
+    final $$CostCentersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.costCenterId,
+      referencedTable: $db.costCenters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CostCentersTableOrderingComposer(
+            $db: $db,
+            $table: $db.costCenters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExpenseReportsTableOrderingComposer get reportId {
+    final $$ExpenseReportsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.reportId,
+      referencedTable: $db.expenseReports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportsTableOrderingComposer(
+            $db: $db,
+            $table: $db.expenseReports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExpenseReportEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ExpenseReportEntriesTable> {
+  $$ExpenseReportEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<bool> get reimbursable => $composableBuilder(
+    column: $table.reimbursable,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get eInvoice =>
+      $composableBuilder(column: $table.eInvoice, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$TransactionsTableAnnotationComposer get transactionId {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.transactionId,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CostCentersTableAnnotationComposer get costCenterId {
+    final $$CostCentersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.costCenterId,
+      referencedTable: $db.costCenters,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CostCentersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.costCenters,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ExpenseReportsTableAnnotationComposer get reportId {
+    final $$ExpenseReportsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.reportId,
+      referencedTable: $db.expenseReports,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ExpenseReportsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.expenseReports,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ExpenseReportEntriesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ExpenseReportEntriesTable,
+          ExpenseReportEntry,
+          $$ExpenseReportEntriesTableFilterComposer,
+          $$ExpenseReportEntriesTableOrderingComposer,
+          $$ExpenseReportEntriesTableAnnotationComposer,
+          $$ExpenseReportEntriesTableCreateCompanionBuilder,
+          $$ExpenseReportEntriesTableUpdateCompanionBuilder,
+          (ExpenseReportEntry, $$ExpenseReportEntriesTableReferences),
+          ExpenseReportEntry,
+          PrefetchHooks Function({
+            bool transactionId,
+            bool costCenterId,
+            bool reportId,
+          })
+        > {
+  $$ExpenseReportEntriesTableTableManager(
+    _$AppDatabase db,
+    $ExpenseReportEntriesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExpenseReportEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExpenseReportEntriesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ExpenseReportEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> transactionId = const Value.absent(),
+                Value<String?> costCenterId = const Value.absent(),
+                Value<bool> reimbursable = const Value.absent(),
+                Value<bool> eInvoice = const Value.absent(),
+                Value<String?> reportId = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExpenseReportEntriesCompanion(
+                transactionId: transactionId,
+                costCenterId: costCenterId,
+                reimbursable: reimbursable,
+                eInvoice: eInvoice,
+                reportId: reportId,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String transactionId,
+                Value<String?> costCenterId = const Value.absent(),
+                Value<bool> reimbursable = const Value.absent(),
+                Value<bool> eInvoice = const Value.absent(),
+                Value<String?> reportId = const Value.absent(),
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ExpenseReportEntriesCompanion.insert(
+                transactionId: transactionId,
+                costCenterId: costCenterId,
+                reimbursable: reimbursable,
+                eInvoice: eInvoice,
+                reportId: reportId,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ExpenseReportEntriesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                transactionId = false,
+                costCenterId = false,
+                reportId = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (transactionId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.transactionId,
+                                    referencedTable:
+                                        $$ExpenseReportEntriesTableReferences
+                                            ._transactionIdTable(db),
+                                    referencedColumn:
+                                        $$ExpenseReportEntriesTableReferences
+                                            ._transactionIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (costCenterId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.costCenterId,
+                                    referencedTable:
+                                        $$ExpenseReportEntriesTableReferences
+                                            ._costCenterIdTable(db),
+                                    referencedColumn:
+                                        $$ExpenseReportEntriesTableReferences
+                                            ._costCenterIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (reportId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.reportId,
+                                    referencedTable:
+                                        $$ExpenseReportEntriesTableReferences
+                                            ._reportIdTable(db),
+                                    referencedColumn:
+                                        $$ExpenseReportEntriesTableReferences
+                                            ._reportIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$ExpenseReportEntriesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ExpenseReportEntriesTable,
+      ExpenseReportEntry,
+      $$ExpenseReportEntriesTableFilterComposer,
+      $$ExpenseReportEntriesTableOrderingComposer,
+      $$ExpenseReportEntriesTableAnnotationComposer,
+      $$ExpenseReportEntriesTableCreateCompanionBuilder,
+      $$ExpenseReportEntriesTableUpdateCompanionBuilder,
+      (ExpenseReportEntry, $$ExpenseReportEntriesTableReferences),
+      ExpenseReportEntry,
+      PrefetchHooks Function({
+        bool transactionId,
+        bool costCenterId,
+        bool reportId,
+      })
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -12084,4 +15656,10 @@ class $AppDatabaseManager {
       $$AttachmentsTableTableManager(_db, _db.attachments);
   $$DashboardCardsTableTableManager get dashboardCards =>
       $$DashboardCardsTableTableManager(_db, _db.dashboardCards);
+  $$CostCentersTableTableManager get costCenters =>
+      $$CostCentersTableTableManager(_db, _db.costCenters);
+  $$ExpenseReportsTableTableManager get expenseReports =>
+      $$ExpenseReportsTableTableManager(_db, _db.expenseReports);
+  $$ExpenseReportEntriesTableTableManager get expenseReportEntries =>
+      $$ExpenseReportEntriesTableTableManager(_db, _db.expenseReportEntries);
 }

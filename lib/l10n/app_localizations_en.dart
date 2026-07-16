@@ -306,6 +306,78 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importFailed => 'Import failed: invalid file';
 
   @override
+  String get expenseReport => 'Expense report';
+
+  @override
+  String get expenseReportFlag => 'Expense report';
+
+  @override
+  String get costCenter => 'Cost center';
+
+  @override
+  String get manageCostCenters => 'Cost centers';
+
+  @override
+  String get newCostCenter => 'New cost center';
+
+  @override
+  String get reimbursable => 'Reimbursable';
+
+  @override
+  String get eInvoice => 'E-invoice';
+
+  @override
+  String get pendingReimbursement => 'To be reimbursed';
+
+  @override
+  String get exportPdf => 'Export PDF';
+
+  @override
+  String get createReport => 'Create expense report';
+
+  @override
+  String get reportName => 'Report name';
+
+  @override
+  String get statusDraft => 'Draft';
+
+  @override
+  String get statusSent => 'Sent';
+
+  @override
+  String get statusReimbursed => 'Reimbursed';
+
+  @override
+  String get markSent => 'Mark as sent';
+
+  @override
+  String get markReimbursed => 'Mark as reimbursed';
+
+  @override
+  String get reportArchive => 'Archive';
+
+  @override
+  String get flaggedExpenses => 'Flagged expenses';
+
+  @override
+  String get expenseReportOnlyField => 'Only for expense reports';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get editTransaction => 'Edit transaction';
+
+  @override
+  String get fromDate => 'From';
+
+  @override
+  String get toDate => 'To';
+
+  @override
+  String get none => 'None';
+
+  @override
   String get settingsTheme => 'Theme';
 
   @override

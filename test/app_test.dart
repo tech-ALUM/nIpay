@@ -240,4 +240,40 @@ void main() {
 
     await _unmount(tester);
   });
+
+  testWidgets('expense report: flagged expense shows in pending and screen', (
+    tester,
+  ) async {
+    await tester.pumpWidget(await _app());
+    await tester.pumpAndSettle();
+
+    await _createWallet(tester);
+
+    // Spesa flaggata nota spese.
+    await tester.tap(find.byKey(const Key('addTransactionFab')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('amountField')), '55');
+    await tester.enterText(
+      find.byKey(const Key('descriptionField')),
+      'Hotel trasferta',
+    );
+    await tester.ensureVisible(find.byKey(const Key('expenseReportSwitch')));
+    await tester.tap(find.byKey(const Key('expenseReportSwitch')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+    await tester.tap(find.byKey(const Key('txSaveButton')));
+    await tester.pumpAndSettle();
+
+    // Card in home col totale da rimborsare.
+    expect(find.byKey(const Key('expenseReportCard')), findsOneWidget);
+    expect(find.text(formatCents(5500)), findsWidgets);
+
+    // Schermata nota spese: la spesa è nel periodo corrente.
+    await tester.tap(find.byKey(const Key('expenseReportCard')));
+    await tester.pumpAndSettle();
+    expect(find.text('Hotel trasferta'), findsOneWidget);
+    expect(find.text('Flagged expenses: 1'), findsOneWidget);
+
+    await _unmount(tester);
+  });
 }

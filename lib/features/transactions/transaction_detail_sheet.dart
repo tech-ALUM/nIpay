@@ -9,6 +9,7 @@ import '../../core/theme/app_theme.dart';
 import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
 import '../../l10n/app_localizations.dart';
+import 'add_transaction_sheet.dart';
 
 Future<void> showTransactionDetailSheet(
   BuildContext context,
@@ -113,19 +114,44 @@ class _TransactionDetailSheet extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.delete_outline, size: 18),
-              label: Text(l10n.deleteTransaction),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.error,
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: Text(l10n.delete),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  onPressed: () async {
+                    await ref
+                        .read(transactionRepositoryProvider)
+                        .softDelete(t.id);
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
+                ),
               ),
-              onPressed: () async {
-                await ref.read(transactionRepositoryProvider).softDelete(t.id);
-                if (context.mounted) Navigator.of(context).pop();
-              },
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton.icon(
+                  key: const Key('editTransactionButton'),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: Text(l10n.edit),
+                  onPressed: () async {
+                    final entry = await ref
+                        .read(expenseReportRepositoryProvider)
+                        .dataOf(t.id);
+                    if (!context.mounted) return;
+                    Navigator.of(context).pop();
+                    await showAddTransactionSheet(
+                      context,
+                      existing: t,
+                      existingEntry: entry,
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ],
       ),

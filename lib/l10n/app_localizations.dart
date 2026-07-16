@@ -680,6 +680,150 @@ abstract class AppLocalizations {
   /// **'Import failed: invalid file'**
   String get importFailed;
 
+  /// No description provided for @expenseReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense report'**
+  String get expenseReport;
+
+  /// No description provided for @expenseReportFlag.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense report'**
+  String get expenseReportFlag;
+
+  /// No description provided for @costCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost center'**
+  String get costCenter;
+
+  /// No description provided for @manageCostCenters.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost centers'**
+  String get manageCostCenters;
+
+  /// No description provided for @newCostCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'New cost center'**
+  String get newCostCenter;
+
+  /// No description provided for @reimbursable.
+  ///
+  /// In en, this message translates to:
+  /// **'Reimbursable'**
+  String get reimbursable;
+
+  /// No description provided for @eInvoice.
+  ///
+  /// In en, this message translates to:
+  /// **'E-invoice'**
+  String get eInvoice;
+
+  /// No description provided for @pendingReimbursement.
+  ///
+  /// In en, this message translates to:
+  /// **'To be reimbursed'**
+  String get pendingReimbursement;
+
+  /// No description provided for @exportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Export PDF'**
+  String get exportPdf;
+
+  /// No description provided for @createReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Create expense report'**
+  String get createReport;
+
+  /// No description provided for @reportName.
+  ///
+  /// In en, this message translates to:
+  /// **'Report name'**
+  String get reportName;
+
+  /// No description provided for @statusDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get statusDraft;
+
+  /// No description provided for @statusSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent'**
+  String get statusSent;
+
+  /// No description provided for @statusReimbursed.
+  ///
+  /// In en, this message translates to:
+  /// **'Reimbursed'**
+  String get statusReimbursed;
+
+  /// No description provided for @markSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as sent'**
+  String get markSent;
+
+  /// No description provided for @markReimbursed.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as reimbursed'**
+  String get markReimbursed;
+
+  /// No description provided for @reportArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get reportArchive;
+
+  /// No description provided for @flaggedExpenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Flagged expenses'**
+  String get flaggedExpenses;
+
+  /// No description provided for @expenseReportOnlyField.
+  ///
+  /// In en, this message translates to:
+  /// **'Only for expense reports'**
+  String get expenseReportOnlyField;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @editTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit transaction'**
+  String get editTransaction;
+
+  /// No description provided for @fromDate.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get fromDate;
+
+  /// No description provided for @toDate.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get toDate;
+
+  /// No description provided for @none.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get none;
+
   /// No description provided for @settingsTheme.
   ///
   /// In en, this message translates to:

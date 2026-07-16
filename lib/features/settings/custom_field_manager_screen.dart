@@ -79,6 +79,7 @@ Future<void> _showFieldSheet(BuildContext context, WidgetRef ref) {
   final name = TextEditingController();
   final options = TextEditingController();
   var type = CustomFieldType.text;
+  var expenseOnly = false;
 
   return showModalBottomSheet<void>(
     context: context,
@@ -122,6 +123,16 @@ Future<void> _showFieldSheet(BuildContext context, WidgetRef ref) {
                 decoration: InputDecoration(labelText: l10n.choiceOptions),
               ),
             ],
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(
+                l10n.expenseReportOnlyField,
+                style: const TextStyle(fontSize: 13),
+              ),
+              value: expenseOnly,
+              onChanged: (v) => setState(() => expenseOnly = v),
+            ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -146,6 +157,7 @@ Future<void> _showFieldSheet(BuildContext context, WidgetRef ref) {
                         name: n,
                         type: type,
                         options: opts,
+                        expenseReportOnly: expenseOnly,
                       );
                   ref.invalidate(customFieldDefsProvider);
                   if (sheetContext.mounted) {

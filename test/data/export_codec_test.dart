@@ -70,7 +70,7 @@ void main() {
     await seed(source);
 
     final json = await exportToJson(source);
-    expect(json['schemaVersion'], 2);
+    expect(json['schemaVersion'], 3);
 
     final target = AppDatabase(NativeDatabase.memory());
     await importFromJson(target, json);

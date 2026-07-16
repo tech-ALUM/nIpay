@@ -8,6 +8,7 @@ import '../../data/db/app_database.dart';
 import '../../l10n/app_localizations.dart';
 import '../budgets/budget_manager_screen.dart';
 import '../budgets/budget_progress_bar.dart';
+import '../expense_report/expense_report_screen.dart';
 import '../transactions/transaction_tile.dart';
 import '../wallets/wallet_form_sheet.dart'
     show showWalletActionsSheet, showWalletFormSheet;
@@ -92,6 +93,44 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ..._buildBudgetSection(context, ref, l10n),
+          const SizedBox(height: 24),
+          Text(
+            l10n.expenseReport,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 10),
+          GestureDetector(
+            key: const Key('expenseReportCard'),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ExpenseReportScreen()),
+            ),
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    const Text('📋', style: TextStyle(fontSize: 20)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        l10n.pendingReimbursement,
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                    Text(
+                      formatCents(
+                        ref.watch(pendingReimbursementProvider).valueOrNull ??
+                            0,
+                      ),
+                      style: moneyStyle(size: 15, color: palette.income),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(Icons.chevron_right, size: 18, color: palette.muted),
+                  ],
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
           Text(
             l10n.recentTransactions,

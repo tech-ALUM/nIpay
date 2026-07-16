@@ -58,6 +58,10 @@ class CustomFieldDefs extends Table with SyncColumns {
   TextColumn get name => text()();
   TextColumn get type => textEnum<CustomFieldType>()();
 
+  /// Se true il campo compare solo quando la spesa è flaggata "nota spese".
+  BoolColumn get expenseReportOnly =>
+      boolean().withDefault(const Constant(false))();
+
   /// Solo per type=choice: opzioni ammesse (JSON).
   TextColumn get options =>
       text().map(const StringListConverter()).nullable()();
@@ -148,6 +152,44 @@ class DashboardCards extends Table with SyncColumns {
   TextColumn get type => text()();
   IntColumn get position => integer()();
   TextColumn get configJson => text().withDefault(const Constant('{}'))();
+}
+
+/// Centro di costo per la nota spese (per portafoglio).
+class CostCenters extends Table with SyncColumns {
+  TextColumn get walletId => text().nullable().references(Wallets, #id)();
+  TextColumn get name => text()();
+}
+
+enum ExpenseReportStatus { draft, sent, reimbursed }
+
+/// Nota spese persistita: periodo + ciclo di vita bozza→inviata→rimborsata.
+class ExpenseReports extends Table with SyncColumns {
+  TextColumn get walletId => text().nullable().references(Wallets, #id)();
+  TextColumn get name => text()();
+  DateTimeColumn get dateFrom => dateTime()();
+  DateTimeColumn get dateTo => dateTime()();
+  TextColumn get status => textEnum<ExpenseReportStatus>()();
+
+  /// Entrata di rimborso collegata (quando rimborsata).
+  TextColumn get reimburseTxId =>
+      text().nullable().references(Transactions, #id)();
+}
+
+/// Dati nota-spese di una transazione: la presenza della riga = spesa
+/// flaggata "nota spese". PK = transactionId (una riga per spesa).
+@DataClassName('ExpenseReportEntry')
+class ExpenseReportEntries extends Table {
+  TextColumn get transactionId => text().references(Transactions, #id)();
+  TextColumn get costCenterId =>
+      text().nullable().references(CostCenters, #id)();
+  BoolColumn get reimbursable => boolean().withDefault(const Constant(true))();
+  BoolColumn get eInvoice => boolean().withDefault(const Constant(false))();
+  TextColumn get reportId =>
+      text().nullable().references(ExpenseReports, #id)();
+  DateTimeColumn get updatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {transactionId};
 }
 
 class Wallets extends Table with SyncColumns {

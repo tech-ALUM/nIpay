@@ -106,6 +106,17 @@ Richiesta di Alberto post-M9: categorie, tag, campi custom, budget, dashboard ed
 - [x] Export/import per-portafoglio: JSON (+zip con allegati) additivo con ID rigenerati (reimportabile più volte), Excel del solo spazio attivo; backup globale invariato (schema export v2, i backup v1 non sono più importabili)
 - [x] TDD: scoping categorie, round-trip portafoglio con remap, switch di spazio in widget test (40 test verdi)
 
+## M11 — v2: Nota spese ✅ (2026-07-16)
+Design approvato da Alberto (sessione 2026-07-16): la nota spese è una proprietà della spesa.
+- [x] Schema v3: ExpenseReportEntries (per-transazione: centro di costo, rimborsabile, fattura elettronica, link nota), CostCenters ed ExpenseReports (bozza→inviata→rimborsata) per portafoglio; flag `expenseReportOnly` sui campi custom; migrazione v2→v3
+- [x] Spunta "📋 Nota spese" nel form spesa con campi dedicati (centro di costo, rimborsabile, F.E., campi custom expense-only)
+- [x] Modifica retroattiva completa (form in modalità edit dal dettaglio), inclusa la spunta nota spese; `updateTransaction` TDD
+- [x] Schermata Nota spese: intervallo date → spese flaggate → export **PDF con giustificativi** (tabella + foto scontrini numerate G1..Gn in appendice, condiviso via share sheet)
+- [x] Nota spese persistita con stati; "segna rimborsata" crea l'entrata di rimborso e la collega; card in home col totale **da rimborsare**
+- [x] Centri di costo gestibili (Altro → Centri di costo), export/backup v3 (globale + per-portafoglio con remap)
+
+**Fatto quando**: spesa flaggata in 2 tap ✓, PDF presentabile con scontrini ✓, rimborso tracciato ✓ (47 test verdi). Note: in modifica non si cambiano tag/allegati (solo aggiunta in creazione); l'export Excel della nota usa quello di portafoglio; importo rimborso auto-calcolato sulle rimborsabili della nota.
+
 ## Futuro (fuori scope, predisposto)
 - Sync cloud multi-dispositivo (il repository layer e i campi UUID/updatedAt/deletedAt sono già pronti)
 - Import da export bancari (CSV home banking) con mappatura colonne

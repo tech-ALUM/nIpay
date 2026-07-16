@@ -4,8 +4,9 @@ import 'package:uuid/uuid.dart';
 import '../db/app_database.dart';
 
 /// Versione dello schema di export: da incrementare a ogni cambiamento
-/// incompatibile del formato. v2: taxonomy per-portafoglio (walletId).
-const kExportSchemaVersion = 2;
+/// incompatibile del formato. v3: nota spese (costCenters, expenseReports,
+/// expenseReportEntries, expenseReportOnly sui campi custom).
+const kExportSchemaVersion = 3;
 
 /// Serializza l'intero DB in una mappa JSON-encodable (formato canonico).
 Future<Map<String, dynamic>> exportToJson(AppDatabase db) async => {
@@ -37,6 +38,15 @@ Future<Map<String, dynamic>> exportToJson(AppDatabase db) async => {
   ],
   'dashboardCards': [
     for (final r in await db.select(db.dashboardCards).get()) r.toJson(),
+  ],
+  'costCenters': [
+    for (final r in await db.select(db.costCenters).get()) r.toJson(),
+  ],
+  'expenseReports': [
+    for (final r in await db.select(db.expenseReports).get()) r.toJson(),
+  ],
+  'expenseReportEntries': [
+    for (final r in await db.select(db.expenseReportEntries).get()) r.toJson(),
   ],
 };
 
@@ -87,6 +97,16 @@ Future<Map<String, dynamic>> exportWalletToJson(
   final cards = await (db.select(
     db.dashboardCards,
   )..where((t) => t.walletId.equals(walletId))).get();
+  final costCenters = await (db.select(
+    db.costCenters,
+  )..where((t) => t.walletId.equals(walletId))).get();
+  final expReports = await (db.select(
+    db.expenseReports,
+  )..where((t) => t.walletId.equals(walletId))).get();
+  final expEntries = [
+    for (final r in await db.select(db.expenseReportEntries).get())
+      if (txIds.contains(r.transactionId)) r,
+  ];
 
   return {
     'schemaVersion': kExportSchemaVersion,
@@ -103,6 +123,9 @@ Future<Map<String, dynamic>> exportWalletToJson(
     'recurringRules': [for (final r in rules) r.toJson()],
     'attachments': [for (final r in attachments) r.toJson()],
     'dashboardCards': [for (final r in cards) r.toJson()],
+    'costCenters': [for (final r in costCenters) r.toJson()],
+    'expenseReports': [for (final r in expReports) r.toJson()],
+    'expenseReportEntries': [for (final r in expEntries) r.toJson()],
   };
 }
 
@@ -140,6 +163,8 @@ Future<String> importWalletFromJson(
     'recurringRules',
     'attachments',
     'dashboardCards',
+    'costCenters',
+    'expenseReports',
   ]) {
     for (final r in rows(key)) {
       fresh(r['id'] as String);
@@ -202,6 +227,22 @@ Future<String> importWalletFromJson(
         for (final r in rows('dashboardCards'))
           DashboardCard.fromJson(rewrite(r, ['id', 'walletId'])),
       ]);
+      b.insertAll(db.costCenters, [
+        for (final r in rows('costCenters'))
+          CostCenter.fromJson(rewrite(r, ['id', 'walletId'])),
+      ]);
+      b.insertAll(db.expenseReports, [
+        for (final r in rows('expenseReports'))
+          ExpenseReport.fromJson(
+            rewrite(r, ['id', 'walletId', 'reimburseTxId']),
+          ),
+      ]);
+      b.insertAll(db.expenseReportEntries, [
+        for (final r in rows('expenseReportEntries'))
+          ExpenseReportEntry.fromJson(
+            rewrite(r, ['transactionId', 'costCenterId', 'reportId']),
+          ),
+      ]);
     });
   });
 
@@ -220,6 +261,9 @@ Future<void> importFromJson(AppDatabase db, Map<String, dynamic> json) async {
 
   await db.transaction(() async {
     // Svuota in ordine figli → genitori (vincoli FK).
+    await db.delete(db.expenseReportEntries).go();
+    await db.delete(db.expenseReports).go();
+    await db.delete(db.costCenters).go();
     await db.delete(db.dashboardCards).go();
     await db.delete(db.attachments).go();
     await db.delete(db.recurringRules).go();
@@ -261,6 +305,15 @@ Future<void> importFromJson(AppDatabase db, Map<String, dynamic> json) async {
       b.insertAll(
         db.dashboardCards,
         rows('dashboardCards').map(DashboardCard.fromJson),
+      );
+      b.insertAll(db.costCenters, rows('costCenters').map(CostCenter.fromJson));
+      b.insertAll(
+        db.expenseReports,
+        rows('expenseReports').map(ExpenseReport.fromJson),
+      );
+      b.insertAll(
+        db.expenseReportEntries,
+        rows('expenseReportEntries').map(ExpenseReportEntry.fromJson),
       );
     });
   });

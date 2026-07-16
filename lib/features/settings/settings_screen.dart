@@ -7,6 +7,7 @@ import '../budgets/budget_manager_screen.dart';
 import '../recurring/recurring_manager_screen.dart';
 import 'backup_actions.dart';
 import 'category_manager_screen.dart';
+import 'cost_center_manager_screen.dart';
 import 'custom_field_manager_screen.dart';
 import 'tag_manager_screen.dart';
 
@@ -91,6 +92,11 @@ class SettingsScreen extends ConsumerWidget {
                     Icons.autorenew,
                     l10n.recurring,
                     const RecurringManagerScreen(),
+                  ),
+                  (
+                    Icons.work_outline,
+                    l10n.manageCostCenters,
+                    const CostCenterManagerScreen(),
                   ),
                 ])
                   ListTile(

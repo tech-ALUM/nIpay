@@ -163,6 +163,35 @@ void main() {
     },
   );
 
+  test(
+    'updateTransaction edits amount, date, category and description',
+    () async {
+      final id = await repo.createExpense(
+        walletId: conto,
+        amountCents: 1000,
+        date: DateTime(2026, 7, 10),
+        description: 'Prima',
+      );
+
+      await repo.updateTransaction(
+        id,
+        amountCents: 2500,
+        date: DateTime(2026, 7, 12),
+        categoryId: 'cat-x',
+        description: 'Dopo',
+      );
+
+      final tx = await (db.select(
+        db.transactions,
+      )..where((t) => t.id.equals(id))).getSingle();
+      expect(tx.amountCents, 2500);
+      expect(tx.date, DateTime(2026, 7, 12));
+      expect(tx.categoryId, 'cat-x');
+      expect(tx.description, 'Dopo');
+      expect(await repo.balanceOf(conto), 100000 - 2500);
+    },
+  );
+
   test('soft-deleted transactions do not affect balance', () async {
     final id = await repo.createExpense(
       walletId: conto,
