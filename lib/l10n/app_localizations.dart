@@ -296,6 +296,144 @@ abstract class AppLocalizations {
   /// **'Configurable dashboard coming soon (M6)'**
   String get statsSoon;
 
+  /// No description provided for @customization.
+  ///
+  /// In en, this message translates to:
+  /// **'Customization'**
+  String get customization;
+
+  /// No description provided for @manageCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get manageCategories;
+
+  /// No description provided for @manageTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get manageTags;
+
+  /// No description provided for @manageCustomFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom fields'**
+  String get manageCustomFields;
+
+  /// No description provided for @newCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'New category'**
+  String get newCategory;
+
+  /// No description provided for @editCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit category'**
+  String get editCategory;
+
+  /// No description provided for @icon.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon (emoji)'**
+  String get icon;
+
+  /// No description provided for @color.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get color;
+
+  /// No description provided for @kindBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get kindBoth;
+
+  /// No description provided for @newTag.
+  ///
+  /// In en, this message translates to:
+  /// **'New tag'**
+  String get newTag;
+
+  /// No description provided for @tagName.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag name'**
+  String get tagName;
+
+  /// No description provided for @newField.
+  ///
+  /// In en, this message translates to:
+  /// **'New field'**
+  String get newField;
+
+  /// No description provided for @fieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Field name'**
+  String get fieldName;
+
+  /// No description provided for @fieldType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get fieldType;
+
+  /// No description provided for @typeText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get typeText;
+
+  /// No description provided for @typeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Number'**
+  String get typeNumber;
+
+  /// No description provided for @typeChoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Choice'**
+  String get typeChoice;
+
+  /// No description provided for @typeDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get typeDate;
+
+  /// No description provided for @choiceOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options (comma separated)'**
+  String get choiceOptions;
+
+  /// No description provided for @tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get tags;
+
+  /// No description provided for @customFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom fields'**
+  String get customFields;
+
+  /// No description provided for @allTags.
+  ///
+  /// In en, this message translates to:
+  /// **'All tags'**
+  String get allTags;
+
+  /// No description provided for @noItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet.'**
+  String get noItems;
+
   /// No description provided for @settingsTheme.
   ///
   /// In en, this message translates to:

@@ -7,6 +7,35 @@ import '../../core/theme/app_theme.dart';
 import '../../data/db/tables.dart';
 import '../../l10n/app_localizations.dart';
 
+Future<String?> _promptNewTag(BuildContext context, AppLocalizations l10n) {
+  final controller = TextEditingController();
+  return showDialog<String>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(l10n.newTag),
+      content: TextField(
+        key: const Key('newTagField'),
+        controller: controller,
+        autofocus: true,
+        decoration: InputDecoration(labelText: l10n.tagName),
+        onSubmitted: (v) => Navigator.of(dialogContext).pop(v.trim()),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          key: const Key('tagSaveButton'),
+          onPressed: () =>
+              Navigator.of(dialogContext).pop(controller.text.trim()),
+          child: Text(l10n.save),
+        ),
+      ],
+    ),
+  );
+}
+
 Future<void> showAddTransactionSheet(BuildContext context) =>
     showModalBottomSheet<void>(
       context: context,
@@ -31,6 +60,8 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   String? _categoryId;
   DateTime _date = DateTime.now();
   String? _error;
+  final Set<String> _selectedTagIds = {};
+  final Map<String, String> _fieldValues = {};
 
   @override
   void dispose() {
@@ -50,9 +81,10 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     }
 
     final repo = ref.read(transactionRepositoryProvider);
+    final String txId;
     switch (_type) {
       case TransactionType.expense:
-        await repo.createExpense(
+        txId = await repo.createExpense(
           walletId: walletId,
           amountCents: cents,
           date: _date,
@@ -60,7 +92,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           description: _description.text.trim(),
         );
       case TransactionType.income:
-        await repo.createIncome(
+        txId = await repo.createIncome(
           walletId: walletId,
           amountCents: cents,
           date: _date,
@@ -75,7 +107,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           setState(() => _error = l10n.invalidAmount);
           return;
         }
-        await repo.createTransfer(
+        txId = await repo.createTransfer(
           fromWalletId: walletId,
           toWalletId: toId,
           amountCents: cents,
@@ -83,7 +115,78 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           description: _description.text.trim(),
         );
     }
+
+    final tagRepo = ref.read(tagRepositoryProvider);
+    for (final tagId in _selectedTagIds) {
+      await tagRepo.tagTransaction(txId, tagId);
+    }
+    final fieldRepo = ref.read(customFieldRepositoryProvider);
+    for (final entry in _fieldValues.entries) {
+      if (entry.value.trim().isNotEmpty) {
+        await fieldRepo.setValue(
+          transactionId: txId,
+          fieldId: entry.key,
+          value: entry.value.trim(),
+        );
+      }
+    }
+
     if (mounted) Navigator.of(context).pop();
+  }
+
+  /// Input per ogni campo custom definito, in base al tipo.
+  List<Widget> _buildCustomFields(AppLocalizations l10n) {
+    final defs = ref.watch(customFieldDefsProvider).valueOrNull ?? const [];
+    if (defs.isEmpty) return const [];
+    return [
+      const SizedBox(height: 16),
+      Text(l10n.customFields, style: Theme.of(context).textTheme.bodySmall),
+      const SizedBox(height: 8),
+      for (final d in defs) ...[
+        switch (d.type) {
+          CustomFieldType.choice => DropdownButtonFormField<String>(
+            initialValue: _fieldValues[d.id],
+            decoration: InputDecoration(labelText: d.name, isDense: true),
+            items: [
+              for (final o in d.options ?? const <String>[])
+                DropdownMenuItem(value: o, child: Text(o)),
+            ],
+            onChanged: (v) => setState(() => _fieldValues[d.id] = v ?? ''),
+          ),
+          CustomFieldType.date => ListTile(
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            leading: const Icon(Icons.event, size: 18),
+            title: Text(
+              _fieldValues[d.id] ?? d.name,
+              style: const TextStyle(fontSize: 13),
+            ),
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (picked != null) {
+                setState(
+                  () => _fieldValues[d.id] =
+                      '${picked.year}-${picked.month.toString().padLeft(2, "0")}-${picked.day.toString().padLeft(2, "0")}',
+                );
+              }
+            },
+          ),
+          _ => TextField(
+            keyboardType: d.type == CustomFieldType.number
+                ? const TextInputType.numberWithOptions(decimal: true)
+                : TextInputType.text,
+            decoration: InputDecoration(labelText: d.name, isDense: true),
+            onChanged: (v) => _fieldValues[d.id] = v,
+          ),
+        },
+        const SizedBox(height: 8),
+      ],
+    ];
   }
 
   @override
@@ -209,6 +312,45 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                     ),
                 ],
               ),
+            ],
+            if (_type != TransactionType.transfer) ...[
+              const SizedBox(height: 16),
+              Text(l10n.tags, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final t
+                      in ref.watch(tagsProvider).valueOrNull ?? const [])
+                    FilterChip(
+                      label: Text(
+                        '#${t.name}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      selected: _selectedTagIds.contains(t.id),
+                      onSelected: (sel) => setState(
+                        () => sel
+                            ? _selectedTagIds.add(t.id)
+                            : _selectedTagIds.remove(t.id),
+                      ),
+                    ),
+                  ActionChip(
+                    key: const Key('addTagChip'),
+                    label: const Text('＋', style: TextStyle(fontSize: 12)),
+                    onPressed: () async {
+                      final name = await _promptNewTag(context, l10n);
+                      if (name == null || name.isEmpty) return;
+                      final id = await ref
+                          .read(tagRepositoryProvider)
+                          .create(name);
+                      ref.invalidate(tagsProvider);
+                      setState(() => _selectedTagIds.add(id));
+                    },
+                  ),
+                ],
+              ),
+              ..._buildCustomFields(l10n),
             ],
             const SizedBox(height: 16),
             ListTile(

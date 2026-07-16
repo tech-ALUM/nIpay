@@ -19,6 +19,10 @@ abstract interface class CustomFieldRepository {
     required String value,
   });
   Future<List<CustomFieldValue>> valuesOf(String transactionId);
+
+  /// Id delle transazioni con almeno un valore custom che contiene [query]
+  /// (case-insensitive). Usato dalla ricerca della lista.
+  Future<Set<String>> transactionIdsMatching(String query);
   Future<void> softDeleteDefinition(String id);
 }
 
@@ -78,6 +82,14 @@ class DriftCustomFieldRepository implements CustomFieldRepository {
   Future<List<CustomFieldValue>> valuesOf(String transactionId) => (_db.select(
     _db.customFieldValues,
   )..where((t) => t.transactionId.equals(transactionId))).get();
+
+  @override
+  Future<Set<String>> transactionIdsMatching(String query) async {
+    final rows = await (_db.select(
+      _db.customFieldValues,
+    )..where((t) => t.value.lower().like('%${query.toLowerCase()}%'))).get();
+    return rows.map((r) => r.transactionId).toSet();
+  }
 
   @override
   Future<void> softDeleteDefinition(String id) =>

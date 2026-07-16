@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../l10n/app_localizations.dart';
+import 'category_manager_screen.dart';
+import 'custom_field_manager_screen.dart';
+import 'tag_manager_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -18,6 +21,40 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           Text(l10n.settingsTab, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
+          Text(
+            l10n.customization,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 6),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (final (icon, label, screen) in [
+                  (
+                    Icons.category_outlined,
+                    l10n.manageCategories,
+                    const CategoryManagerScreen() as Widget,
+                  ),
+                  (Icons.tag, l10n.manageTags, const TagManagerScreen()),
+                  (
+                    Icons.tune,
+                    l10n.manageCustomFields,
+                    const CustomFieldManagerScreen(),
+                  ),
+                ])
+                  ListTile(
+                    leading: Icon(icon, size: 20),
+                    title: Text(label, style: const TextStyle(fontSize: 14)),
+                    trailing: const Icon(Icons.chevron_right, size: 18),
+                    onTap: () => Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: (_) => screen)),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           Text(
             l10n.settingsTheme,
             style: Theme.of(context).textTheme.titleMedium,

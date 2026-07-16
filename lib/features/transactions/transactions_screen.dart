@@ -21,6 +21,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   String _query = '';
   String? _walletId;
   String? _categoryId;
+  String? _tagId;
 
   void _shiftMonth(int delta) =>
       setState(() => _month = DateTime(_month.year, _month.month + delta));
@@ -33,6 +34,15 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final all =
         ref.watch(recentTransactionsProvider).valueOrNull ??
         const <Transaction>[];
+    final tagIds = _tagId == null
+        ? null
+        : ref.watch(txIdsWithTagProvider(_tagId!)).valueOrNull ?? const {};
+    // La ricerca guarda anche i valori dei campi custom.
+    final fieldMatchIds = _query.isEmpty
+        ? const <String>{}
+        : ref.watch(txIdsMatchingFieldProvider(_query)).valueOrNull ??
+              const <String>{};
+
     final inMonth = all.where(
       (t) =>
           t.date.year == _month.year &&
@@ -41,8 +51,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               t.walletId == _walletId ||
               t.walletToId == _walletId) &&
           (_categoryId == null || t.categoryId == _categoryId) &&
+          (tagIds == null || tagIds.contains(t.id)) &&
           (_query.isEmpty ||
-              t.description.toLowerCase().contains(_query.toLowerCase())),
+              t.description.toLowerCase().contains(_query.toLowerCase()) ||
+              fieldMatchIds.contains(t.id)),
     );
 
     // Raggruppa per giorno, più recente prima.
@@ -107,6 +119,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                             (c.id, '${c.icon} ${c.name}'),
                         ],
                         onChanged: (v) => setState(() => _categoryId = v),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _FilterDropdown<String>(
+                        value: _tagId,
+                        nullLabel: l10n.allTags,
+                        items: [
+                          for (final t
+                              in ref.watch(tagsProvider).valueOrNull ??
+                                  const <Tag>[])
+                            (t.id, '#${t.name}'),
+                        ],
+                        onChanged: (v) => setState(() => _tagId = v),
                       ),
                     ),
                   ],

@@ -109,6 +109,75 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsSoon => 'Configurable dashboard coming soon (M6)';
 
   @override
+  String get customization => 'Customization';
+
+  @override
+  String get manageCategories => 'Categories';
+
+  @override
+  String get manageTags => 'Tags';
+
+  @override
+  String get manageCustomFields => 'Custom fields';
+
+  @override
+  String get newCategory => 'New category';
+
+  @override
+  String get editCategory => 'Edit category';
+
+  @override
+  String get icon => 'Icon (emoji)';
+
+  @override
+  String get color => 'Color';
+
+  @override
+  String get kindBoth => 'Both';
+
+  @override
+  String get newTag => 'New tag';
+
+  @override
+  String get tagName => 'Tag name';
+
+  @override
+  String get newField => 'New field';
+
+  @override
+  String get fieldName => 'Field name';
+
+  @override
+  String get fieldType => 'Type';
+
+  @override
+  String get typeText => 'Text';
+
+  @override
+  String get typeNumber => 'Number';
+
+  @override
+  String get typeChoice => 'Choice';
+
+  @override
+  String get typeDate => 'Date';
+
+  @override
+  String get choiceOptions => 'Options (comma separated)';
+
+  @override
+  String get tags => 'Tags';
+
+  @override
+  String get customFields => 'Custom fields';
+
+  @override
+  String get allTags => 'All tags';
+
+  @override
+  String get noItems => 'Nothing here yet.';
+
+  @override
   String get settingsTheme => 'Theme';
 
   @override

@@ -65,6 +65,33 @@ void main() {
     expect(defs.single.options, ['Carta', 'Contanti', 'Bonifico']);
   });
 
+  test('transactionIdsWithTag returns only tagged transactions', () async {
+    final casa = await tags.create('casa');
+    await tags.tagTransaction(txId, casa);
+
+    expect(await tags.transactionIdsWithTag(casa), {txId});
+    final altro = await tags.create('altro');
+    expect(await tags.transactionIdsWithTag(altro), isEmpty);
+  });
+
+  test(
+    'transactionIdsMatching finds transactions by custom field value',
+    () async {
+      final fieldId = await fields.define(
+        name: 'Luogo',
+        type: CustomFieldType.text,
+      );
+      await fields.setValue(
+        transactionId: txId,
+        fieldId: fieldId,
+        value: 'Milano Centrale',
+      );
+
+      expect(await fields.transactionIdsMatching('milano'), {txId});
+      expect(await fields.transactionIdsMatching('roma'), isEmpty);
+    },
+  );
+
   test('setValue overwrites the previous value for the same field', () async {
     final fieldId = await fields.define(
       name: 'Luogo',

@@ -45,13 +45,13 @@
 
 **Fatto quando**: uso quotidiano reale possibile ✓ (24 test verdi, analyze pulito). Nota: preferenza tema non ancora persistita (StateProvider in-memory, serve shared_preferences).
 
-## M4 — Customizzazione
-- [ ] Gestione categorie: crea/modifica/elimina, gerarchia, colore+icona, riordino
-- [ ] Gestione tag
-- [ ] Campi custom: definizione (testo, numero, scelta, data) e compilazione sulle transazioni
-- [ ] I campi custom compaiono nei filtri della lista
+## M4 — Customizzazione ✅ (2026-07-16)
+- [x] Gestione categorie: crea/modifica/elimina, colore+icona, riordino drag&drop (Altro → Categorie); gerarchia supportata dal layer dati ma non ancora esposta nella UI
+- [x] Gestione tag (Altro → Tag) + creazione tag al volo dal sheet transazione
+- [x] Campi custom: definizione (testo, numero, scelta, data) in Altro → Campi custom, compilazione nel sheet transazione
+- [x] Ricerca lista estesa ai valori dei campi custom + filtro per tag
 
-**Fatto quando**: una transazione può avere categoria custom nidificata, tag e campi custom, tutto creato dall'utente.
+**Fatto quando**: una transazione può avere categoria custom, tag e campi custom creati dall'utente ✓ (29 test verdi). Rimandato: UI per sottocategorie (parentId già nel modello dati).
 
 ## M5 — Ricorrenze e budget
 - [ ] RecurringRule: template + cadenza, generazione automatica all'apertura app (catch-up delle occorrenze mancate)

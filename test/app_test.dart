@@ -85,4 +85,44 @@ void main() {
 
     await _unmount(tester);
   });
+
+  testWidgets('creating a tag inline attaches it and the tag filter finds it', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    await _createWallet(tester);
+
+    // Spesa con tag creato al volo dal sheet.
+    await tester.tap(find.byKey(const Key('addTransactionFab')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('amountField')), '10');
+    await tester.enterText(
+      find.byKey(const Key('descriptionField')),
+      'Bolletta',
+    );
+    await tester.ensureVisible(find.byKey(const Key('addTagChip')));
+    await tester.tap(find.byKey(const Key('addTagChip')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('newTagField')), 'casa');
+    await tester.tap(find.byKey(const Key('tagSaveButton')));
+    await tester.pumpAndSettle();
+    expect(find.text('#casa'), findsOneWidget); // chip selezionata nel sheet
+    await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+    await tester.tap(find.byKey(const Key('txSaveButton')));
+    await tester.pumpAndSettle();
+
+    // Tab Transazioni: filtro per tag.
+    await tester.tap(find.text('Transactions'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All tags'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('#casa').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bolletta'), findsOneWidget);
+
+    await _unmount(tester);
+  });
 }

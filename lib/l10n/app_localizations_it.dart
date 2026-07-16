@@ -109,6 +109,75 @@ class AppLocalizationsIt extends AppLocalizations {
   String get statsSoon => 'Dashboard componibile in arrivo (M6)';
 
   @override
+  String get customization => 'Personalizzazione';
+
+  @override
+  String get manageCategories => 'Categorie';
+
+  @override
+  String get manageTags => 'Tag';
+
+  @override
+  String get manageCustomFields => 'Campi custom';
+
+  @override
+  String get newCategory => 'Nuova categoria';
+
+  @override
+  String get editCategory => 'Modifica categoria';
+
+  @override
+  String get icon => 'Icona (emoji)';
+
+  @override
+  String get color => 'Colore';
+
+  @override
+  String get kindBoth => 'Entrambi';
+
+  @override
+  String get newTag => 'Nuovo tag';
+
+  @override
+  String get tagName => 'Nome tag';
+
+  @override
+  String get newField => 'Nuovo campo';
+
+  @override
+  String get fieldName => 'Nome campo';
+
+  @override
+  String get fieldType => 'Tipo';
+
+  @override
+  String get typeText => 'Testo';
+
+  @override
+  String get typeNumber => 'Numero';
+
+  @override
+  String get typeChoice => 'Scelta';
+
+  @override
+  String get typeDate => 'Data';
+
+  @override
+  String get choiceOptions => 'Opzioni (separate da virgola)';
+
+  @override
+  String get tags => 'Tag';
+
+  @override
+  String get customFields => 'Campi custom';
+
+  @override
+  String get allTags => 'Tutti i tag';
+
+  @override
+  String get noItems => 'Ancora niente qui.';
+
+  @override
   String get settingsTheme => 'Tema';
 
   @override

@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/db/app_database.dart';
 import '../data/repositories/category_repository.dart';
+import '../data/repositories/custom_field_repository.dart';
 import '../data/repositories/recurring_repository.dart';
+import '../data/repositories/tag_repository.dart';
 import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/wallet_repository.dart';
 
@@ -31,6 +33,12 @@ final transactionRepositoryProvider = Provider<TransactionRepository>(
 );
 final recurringRepositoryProvider = Provider<RecurringRepository>(
   (ref) => DriftRecurringRepository(ref.watch(databaseProvider)),
+);
+final tagRepositoryProvider = Provider<TagRepository>(
+  (ref) => DriftTagRepository(ref.watch(databaseProvider)),
+);
+final customFieldRepositoryProvider = Provider<CustomFieldRepository>(
+  (ref) => DriftCustomFieldRepository(ref.watch(databaseProvider)),
 );
 
 /// Bootstrap alla prima apertura: seed categorie + catch-up ricorrenze.
@@ -80,6 +88,35 @@ final monthTotalsProvider = FutureProvider<PeriodTotals>((ref) {
         from: DateTime(now.year, now.month),
         to: DateTime(now.year, now.month + 1),
       );
+});
+
+/// Tag e definizioni campi custom (si aggiornano al cambiare delle transazioni
+/// perché tag/valori possono nascere dal sheet di inserimento).
+final tagsProvider = FutureProvider((ref) {
+  ref.watch(recentTransactionsProvider);
+  return ref.watch(tagRepositoryProvider).getAll();
+});
+
+final customFieldDefsProvider = FutureProvider(
+  (ref) => ref.watch(customFieldRepositoryProvider).getDefinitions(),
+);
+
+/// Id transazioni con un certo tag (per il filtro della lista).
+final txIdsWithTagProvider = FutureProvider.family<Set<String>, String>((
+  ref,
+  tagId,
+) {
+  ref.watch(recentTransactionsProvider);
+  return ref.watch(tagRepositoryProvider).transactionIdsWithTag(tagId);
+});
+
+/// Id transazioni i cui valori custom contengono la query di ricerca.
+final txIdsMatchingFieldProvider = FutureProvider.family<Set<String>, String>((
+  ref,
+  query,
+) {
+  ref.watch(recentTransactionsProvider);
+  return ref.watch(customFieldRepositoryProvider).transactionIdsMatching(query);
 });
 
 /// Preferenza tema: Sistema / Chiaro / Scuro (switch in Impostazioni).

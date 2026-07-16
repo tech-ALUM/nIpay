@@ -44,6 +44,47 @@ void main() {
     expect(second.length, first.length);
   });
 
+  test('update changes name, icon and color', () async {
+    final id = await repo.create(
+      name: 'Sport',
+      icon: '⚽',
+      colorHex: '#2E9E6B',
+      kind: CategoryKind.expense,
+    );
+    await repo.update(id, name: 'Palestra', icon: '🏋️', colorHex: '#7C5CBF');
+
+    final cat = (await repo.getAll()).single;
+    expect(cat.name, 'Palestra');
+    expect(cat.icon, '🏋️');
+    expect(cat.colorHex, '#7C5CBF');
+  });
+
+  test('reorder rewrites sortOrder following the given id order', () async {
+    final a = await repo.create(
+      name: 'A',
+      icon: 'a',
+      colorHex: '#111111',
+      kind: CategoryKind.expense,
+    );
+    final b = await repo.create(
+      name: 'B',
+      icon: 'b',
+      colorHex: '#222222',
+      kind: CategoryKind.expense,
+    );
+    final c = await repo.create(
+      name: 'C',
+      icon: 'c',
+      colorHex: '#333333',
+      kind: CategoryKind.expense,
+    );
+
+    await repo.reorder([c, a, b]);
+
+    final names = (await repo.getAll()).map((x) => x.name).toList();
+    expect(names, ['C', 'A', 'B']);
+  });
+
   test('soft-deleted categories are hidden from getAll', () async {
     final id = await repo.create(
       name: 'Svago',

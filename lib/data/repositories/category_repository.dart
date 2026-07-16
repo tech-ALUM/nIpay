@@ -16,6 +16,15 @@ abstract interface class CategoryRepository {
   });
   Future<List<Category>> getAll();
   Stream<List<Category>> watchAll();
+  Future<void> update(
+    String id, {
+    String? name,
+    String? icon,
+    String? colorHex,
+  });
+
+  /// Riscrive i sortOrder seguendo l'ordine degli id passati.
+  Future<void> reorder(List<String> orderedIds);
   Future<void> softDelete(String id);
 
   /// Popola le categorie di default alla prima apertura. Idempotente.
@@ -81,6 +90,35 @@ class DriftCategoryRepository implements CategoryRepository {
             ..where((t) => t.deletedAt.isNull())
             ..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
           .watch();
+
+  @override
+  Future<void> update(
+    String id, {
+    String? name,
+    String? icon,
+    String? colorHex,
+  }) => (_db.update(_db.categories)..where((t) => t.id.equals(id))).write(
+    CategoriesCompanion(
+      name: name == null ? const Value.absent() : Value(name),
+      icon: icon == null ? const Value.absent() : Value(icon),
+      colorHex: colorHex == null ? const Value.absent() : Value(colorHex),
+      updatedAt: Value(DateTime.now()),
+    ),
+  );
+
+  @override
+  Future<void> reorder(List<String> orderedIds) async {
+    final now = DateTime.now();
+    await _db.batch((b) {
+      for (final (i, id) in orderedIds.indexed) {
+        b.update(
+          _db.categories,
+          CategoriesCompanion(sortOrder: Value(i), updatedAt: Value(now)),
+          where: ($CategoriesTable t) => t.id.equals(id),
+        );
+      }
+    });
+  }
 
   @override
   Future<void> softDelete(String id) =>

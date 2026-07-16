@@ -9,6 +9,9 @@ abstract interface class TagRepository {
   Future<void> tagTransaction(String transactionId, String tagId);
   Future<void> untagTransaction(String transactionId, String tagId);
   Future<List<Tag>> tagsOf(String transactionId);
+
+  /// Id delle transazioni che hanno questo tag (per il filtro lista).
+  Future<Set<String>> transactionIdsWithTag(String tagId);
   Future<void> softDelete(String id);
 }
 
@@ -72,6 +75,14 @@ class DriftTagRepository implements TagRepository {
               _db.tags.deletedAt.isNull(),
         );
     return query.map((row) => row.readTable(_db.tags)).get();
+  }
+
+  @override
+  Future<Set<String>> transactionIdsWithTag(String tagId) async {
+    final rows = await (_db.select(
+      _db.transactionTags,
+    )..where((t) => t.tagId.equals(tagId))).get();
+    return rows.map((r) => r.transactionId).toSet();
   }
 
   @override
