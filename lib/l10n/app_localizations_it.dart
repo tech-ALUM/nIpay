@@ -112,6 +112,55 @@ class AppLocalizationsIt extends AppLocalizations {
   String get customization => 'Personalizzazione';
 
   @override
+  String get budgets => 'Budget';
+
+  @override
+  String get newBudget => 'Nuovo budget';
+
+  @override
+  String get monthlyLimit => 'Tetto mensile';
+
+  @override
+  String get recurring => 'Ricorrenze';
+
+  @override
+  String get newRecurring => 'Nuova transazione ricorrente';
+
+  @override
+  String get frequency => 'Frequenza';
+
+  @override
+  String get freqDaily => 'Giornaliera';
+
+  @override
+  String get freqWeekly => 'Settimanale';
+
+  @override
+  String get freqMonthly => 'Mensile';
+
+  @override
+  String get freqYearly => 'Annuale';
+
+  @override
+  String get startDate => 'Data di inizio';
+
+  @override
+  String get nextRun => 'Prossima';
+
+  @override
+  String get paused => 'In pausa';
+
+  @override
+  String budgetNear(String category, int percent) {
+    return 'Budget $category all\'$percent%';
+  }
+
+  @override
+  String budgetExceeded(String category) {
+    return 'Budget $category superato!';
+  }
+
+  @override
   String get manageCategories => 'Categorie';
 
   @override

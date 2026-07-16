@@ -6,6 +6,8 @@ import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/db/app_database.dart';
 import '../../l10n/app_localizations.dart';
+import '../budgets/budget_manager_screen.dart';
+import '../budgets/budget_progress_bar.dart';
 import '../transactions/transaction_tile.dart';
 import '../wallets/wallet_form_sheet.dart'
     show showWalletActionsSheet, showWalletFormSheet;
@@ -86,6 +88,7 @@ class HomeScreen extends ConsumerWidget {
                 itemBuilder: (context, i) => _WalletCard(wallet: wallets[i]),
               ),
             ),
+          ..._buildBudgetSection(context, ref, l10n),
           const SizedBox(height: 24),
           Text(
             l10n.recentTransactions,
@@ -118,6 +121,48 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Sezione "Budget" della home: barre di avanzamento del mese corrente.
+/// Nascosta finché non esiste almeno un budget; tap → manager.
+List<Widget> _buildBudgetSection(
+  BuildContext context,
+  WidgetRef ref,
+  AppLocalizations l10n,
+) {
+  final budgets = ref.watch(budgetsProvider).valueOrNull ?? const <Budget>[];
+  if (budgets.isEmpty) return const [];
+  final categories =
+      ref.watch(categoriesProvider).valueOrNull ?? const <Category>[];
+
+  return [
+    const SizedBox(height: 24),
+    Text(l10n.budgets, style: Theme.of(context).textTheme.titleMedium),
+    const SizedBox(height: 10),
+    GestureDetector(
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const BudgetManagerScreen())),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            children: [
+              for (final (i, b) in budgets.indexed) ...[
+                if (i > 0) const SizedBox(height: 12),
+                BudgetProgressBar(
+                  budget: b,
+                  category: categories
+                      .where((c) => c.id == b.categoryId)
+                      .firstOrNull,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    ),
+  ];
 }
 
 class _DeltaChip extends StatelessWidget {

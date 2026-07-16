@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/db/app_database.dart';
+import '../data/repositories/budget_repository.dart';
 import '../data/repositories/category_repository.dart';
 import '../data/repositories/custom_field_repository.dart';
 import '../data/repositories/recurring_repository.dart';
@@ -39,6 +40,9 @@ final tagRepositoryProvider = Provider<TagRepository>(
 );
 final customFieldRepositoryProvider = Provider<CustomFieldRepository>(
   (ref) => DriftCustomFieldRepository(ref.watch(databaseProvider)),
+);
+final budgetRepositoryProvider = Provider<BudgetRepository>(
+  (ref) => DriftBudgetRepository(ref.watch(databaseProvider)),
 );
 
 /// Bootstrap alla prima apertura: seed categorie + catch-up ricorrenze.
@@ -118,6 +122,27 @@ final txIdsMatchingFieldProvider = FutureProvider.family<Set<String>, String>((
   ref.watch(recentTransactionsProvider);
   return ref.watch(customFieldRepositoryProvider).transactionIdsMatching(query);
 });
+
+/// Budget attivi (invalidato dai manager dopo le modifiche).
+final budgetsProvider = FutureProvider(
+  (ref) => ref.watch(budgetRepositoryProvider).getAll(),
+);
+
+/// Avanzamento budget del mese corrente per categoria.
+final budgetProgressProvider = FutureProvider.family<BudgetProgress, String>((
+  ref,
+  categoryId,
+) {
+  ref.watch(recentTransactionsProvider);
+  return ref
+      .watch(budgetRepositoryProvider)
+      .progressFor(categoryId: categoryId, month: DateTime.now());
+});
+
+/// Regole ricorrenti (invalidato dal manager dopo le modifiche).
+final recurringRulesProvider = FutureProvider(
+  (ref) => ref.watch(recurringRepositoryProvider).getAll(),
+);
 
 /// Preferenza tema: Sistema / Chiaro / Scuro (switch in Impostazioni).
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);

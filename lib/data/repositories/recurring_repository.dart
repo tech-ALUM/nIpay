@@ -24,6 +24,7 @@ abstract interface class RecurringRepository {
   /// [RecurringRule.nextRunAt]. Ritorna quante transazioni ha creato.
   Future<int> generateDue({required DateTime now});
   Future<void> pause(String id);
+  Future<void> resume(String id);
   Future<void> softDelete(String id);
 }
 
@@ -141,6 +142,15 @@ class DriftRecurringRepository implements RecurringRepository {
       (_db.update(_db.recurringRules)..where((t) => t.id.equals(id))).write(
         RecurringRulesCompanion(
           pausedAt: Value(DateTime.now()),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+
+  @override
+  Future<void> resume(String id) =>
+      (_db.update(_db.recurringRules)..where((t) => t.id.equals(id))).write(
+        RecurringRulesCompanion(
+          pausedAt: const Value(null),
           updatedAt: Value(DateTime.now()),
         ),
       );

@@ -131,6 +131,36 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       }
     }
 
+    // Avviso budget: se la spesa porta la categoria oltre l'80% o il 100%.
+    if (_type == TransactionType.expense && _categoryId != null && mounted) {
+      final messenger = ScaffoldMessenger.of(context);
+      final budgets = await ref.read(budgetRepositoryProvider).getAll();
+      if (budgets.any((b) => b.categoryId == _categoryId)) {
+        final p = await ref
+            .read(budgetRepositoryProvider)
+            .progressFor(categoryId: _categoryId!, month: DateTime.now());
+        final ratio = p.limitCents == 0 ? 0.0 : p.spentCents / p.limitCents;
+        if (ratio >= .8 && mounted) {
+          final name =
+              (ref.read(categoriesProvider).valueOrNull ?? [])
+                  .where((c) => c.id == _categoryId)
+                  .firstOrNull
+                  ?.name ??
+              '';
+          messenger.showSnackBar(
+            SnackBar(
+              content: Text(
+                ratio >= 1
+                    ? l10n.budgetExceeded(name)
+                    : l10n.budgetNear(name, (ratio * 100).round()),
+              ),
+              backgroundColor: ratio >= 1 ? NipayColors.over : NipayColors.warn,
+            ),
+          );
+        }
+      }
+    }
+
     if (mounted) Navigator.of(context).pop();
   }
 

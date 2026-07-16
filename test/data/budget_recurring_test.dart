@@ -64,6 +64,23 @@ void main() {
   });
 
   group('ricorrenze', () {
+    test('pause stops generation, resume restarts it', () async {
+      final recurring = DriftRecurringRepository(db);
+      final id = await recurring.create(
+        walletId: wallet,
+        type: TransactionType.expense,
+        amountCents: 1000,
+        frequency: RecurrenceFrequency.monthly,
+        startAt: DateTime(2026, 7, 1),
+      );
+
+      await recurring.pause(id);
+      expect(await recurring.generateDue(now: DateTime(2026, 7, 15)), 0);
+
+      await recurring.resume(id);
+      expect(await recurring.generateDue(now: DateTime(2026, 7, 15)), 1);
+    });
+
     test(
       'generateDue crea le occorrenze mancanti (catch-up) e avanza nextRunAt',
       () async {

@@ -34,6 +34,32 @@
   "searchTransactions": "Search transactions…",
   "statsSoon": "Configurable dashboard coming soon (M6)",
   "customization": "Customization",
+  "budgets": "Budget",
+  "newBudget": "New budget",
+  "monthlyLimit": "Monthly limit",
+  "recurring": "Recurring",
+  "newRecurring": "New recurring transaction",
+  "frequency": "Frequency",
+  "freqDaily": "Daily",
+  "freqWeekly": "Weekly",
+  "freqMonthly": "Monthly",
+  "freqYearly": "Yearly",
+  "startDate": "Start date",
+  "nextRun": "Next",
+  "paused": "Paused",
+  "budgetNear": "Budget {category} at {percent}%",
+  "@budgetNear": {
+    "placeholders": {
+      "category": {"type": "String"},
+      "percent": {"type": "int"}
+    }
+  },
+  "budgetExceeded": "Budget {category} exceeded!",
+  "@budgetExceeded": {
+    "placeholders": {
+      "category": {"type": "String"}
+    }
+  },
   "manageCategories": "Categories",
   "manageTags": "Tags",
   "manageCustomFields": "Custom fields",

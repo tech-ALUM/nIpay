@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../l10n/app_localizations.dart';
+import '../budgets/budget_manager_screen.dart';
+import '../recurring/recurring_manager_screen.dart';
 import 'category_manager_screen.dart';
 import 'custom_field_manager_screen.dart';
 import 'tag_manager_screen.dart';
@@ -41,6 +43,16 @@ class SettingsScreen extends ConsumerWidget {
                     Icons.tune,
                     l10n.manageCustomFields,
                     const CustomFieldManagerScreen(),
+                  ),
+                  (
+                    Icons.savings_outlined,
+                    l10n.budgets,
+                    const BudgetManagerScreen(),
+                  ),
+                  (
+                    Icons.autorenew,
+                    l10n.recurring,
+                    const RecurringManagerScreen(),
                   ),
                 ])
                   ListTile(

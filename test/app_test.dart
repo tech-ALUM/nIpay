@@ -125,4 +125,50 @@ void main() {
 
     await _unmount(tester);
   });
+
+  testWidgets('budget shows in home and warns when nearly exhausted', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    await _createWallet(tester);
+
+    // Crea budget 100€ sulla categoria seed "Spesa" da Altro → Budget.
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Budget'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('budgetCategoryDropdown')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('🛒 Spesa').last);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('budgetLimitField')), '100');
+    await tester.tap(find.byKey(const Key('budgetSaveButton')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    // La home mostra la barra del budget.
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+    expect(find.text('🛒 Spesa'), findsOneWidget);
+
+    // Spesa da 90€ nella categoria → avviso 90%.
+    await tester.tap(find.byKey(const Key('addTransactionFab')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('amountField')), '90');
+    await tester.ensureVisible(find.text('🛒 Spesa').last);
+    await tester.tap(find.text('🛒 Spesa').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+    await tester.tap(find.byKey(const Key('txSaveButton')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('90%'), findsOneWidget);
+
+    await _unmount(tester);
+  });
 }

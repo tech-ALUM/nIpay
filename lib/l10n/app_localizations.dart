@@ -302,6 +302,96 @@ abstract class AppLocalizations {
   /// **'Customization'**
   String get customization;
 
+  /// No description provided for @budgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget'**
+  String get budgets;
+
+  /// No description provided for @newBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'New budget'**
+  String get newBudget;
+
+  /// No description provided for @monthlyLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly limit'**
+  String get monthlyLimit;
+
+  /// No description provided for @recurring.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring'**
+  String get recurring;
+
+  /// No description provided for @newRecurring.
+  ///
+  /// In en, this message translates to:
+  /// **'New recurring transaction'**
+  String get newRecurring;
+
+  /// No description provided for @frequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get frequency;
+
+  /// No description provided for @freqDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get freqDaily;
+
+  /// No description provided for @freqWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get freqWeekly;
+
+  /// No description provided for @freqMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get freqMonthly;
+
+  /// No description provided for @freqYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get freqYearly;
+
+  /// No description provided for @startDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get startDate;
+
+  /// No description provided for @nextRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextRun;
+
+  /// No description provided for @paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get paused;
+
+  /// No description provided for @budgetNear.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget {category} at {percent}%'**
+  String budgetNear(String category, int percent);
+
+  /// No description provided for @budgetExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget {category} exceeded!'**
+  String budgetExceeded(String category);
+
   /// No description provided for @manageCategories.
   ///
   /// In en, this message translates to:

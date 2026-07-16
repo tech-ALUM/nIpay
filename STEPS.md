@@ -53,13 +53,13 @@
 
 **Fatto quando**: una transazione può avere categoria custom, tag e campi custom creati dall'utente ✓ (29 test verdi). Rimandato: UI per sottocategorie (parentId già nel modello dati).
 
-## M5 — Ricorrenze e budget
-- [ ] RecurringRule: template + cadenza, generazione automatica all'apertura app (catch-up delle occorrenze mancate)
-- [ ] UI gestione ricorrenze (lista, pausa, fine)
-- [ ] Budget mensile per categoria con barra di avanzamento
-- [ ] Notifica locale all'avvicinarsi del limite budget (es. 80% e 100%)
+## M5 — Ricorrenze e budget ✅ (2026-07-16)
+- [x] RecurringRule: template + cadenza, generazione automatica all'apertura app (catch-up nel bootstrap) e subito alla creazione
+- [x] UI gestione ricorrenze: Altro → Ricorrenze (crea, pausa/riprendi, elimina, prossima occorrenza visibile)
+- [x] Budget mensile per categoria con barra di avanzamento (sezione in home + manager in Altro → Budget; colori teal/giallo ≥80%/rosso ≥100%)
+- [x] Avviso budget all'80% e al superamento: snackbar in-app al salvataggio della spesa (notifiche push locali rimandate: servirebbe flutter_local_notifications + permessi Android 13)
 
-**Fatto quando**: stipendio/affitto si generano da soli; sforare un budget è visibile e notificato.
+**Fatto quando**: stipendio/affitto si generano da soli ✓; sforare un budget è visibile e avvisato ✓ (31 test verdi).
 
 ## M6 — Statistiche (dashboard componibile)
 - [ ] Motore di aggregazione (query Drift: per categoria, per mese, cash flow, per portafoglio)
