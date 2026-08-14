@@ -16,6 +16,7 @@ class TransactionTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.nipay;
+    final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final categories =
         ref.watch(categoriesProvider).valueOrNull ?? const <Category>[];
     final category = transaction.categoryId == null
@@ -25,15 +26,28 @@ class TransactionTile extends ConsumerWidget {
     final (amountColor, amountText) = switch (transaction.type) {
       TransactionType.expense => (
         palette.expense,
-        formatCents(-transaction.amountCents),
+        formatCents(
+          -transaction.amountCents,
+          currency: currency,
+          symbolOnly: true,
+        ),
       ),
       TransactionType.income => (
         palette.income,
-        formatCents(transaction.amountCents, signed: true),
+        formatCents(
+          transaction.amountCents,
+          currency: currency,
+          signed: true,
+          symbolOnly: true,
+        ),
       ),
       TransactionType.transfer => (
         palette.transfer,
-        formatCents(transaction.amountCents),
+        formatCents(
+          transaction.amountCents,
+          currency: currency,
+          symbolOnly: true,
+        ),
       ),
     };
 

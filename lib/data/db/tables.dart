@@ -92,6 +92,18 @@ class Transactions extends Table with SyncColumns {
   TextColumn get categoryId => text().nullable().references(Categories, #id)();
   TextColumn get description => text().withDefault(const Constant(''))();
   TextColumn get note => text().nullable()();
+
+  /// Valuta scelta dall'utente in inserimento, se diversa da quella del
+  /// portafoglio; null = nessuna conversione, [amountCents] è come digitato.
+  TextColumn get entryCurrency => text().nullable()();
+
+  /// Importo come digitato in [entryCurrency], prima della conversione.
+  IntColumn get entryAmountCents => integer().nullable()();
+
+  /// Solo trasferimenti cross-valuta: importo accreditato a [walletToId]
+  /// nella SUA valuta, quando diversa da quella di [walletId]. Se null, il
+  /// credito usa [amountCents] invariato (stessa valuta su entrambi i lati).
+  IntColumn get amountCentsTo => integer().nullable()();
 }
 
 /// A cosa si applica una categoria.
@@ -201,4 +213,11 @@ class Wallets extends Table with SyncColumns {
   IntColumn get initialBalanceCents =>
       integer().withDefault(const Constant(0))();
   DateTimeColumn get archivedAt => dateTime().nullable()();
+
+  /// Ordine di visualizzazione in home (drag-to-reorder).
+  IntColumn get position => integer().withDefault(const Constant(0))();
+
+  /// Codice ISO 4217 (es. "EUR", "USD"), fisso alla creazione. Ogni importo
+  /// del portafoglio (saldo, transazioni) è in questa valuta.
+  TextColumn get currency => text().withDefault(const Constant('EUR'))();
 }

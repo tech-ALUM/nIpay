@@ -15,6 +15,7 @@ class TagManagerScreen extends ConsumerStatefulWidget {
 
 class _TagManagerScreenState extends ConsumerState<TagManagerScreen> {
   final _controller = TextEditingController();
+  String? _error;
 
   @override
   void dispose() {
@@ -23,9 +24,19 @@ class _TagManagerScreenState extends ConsumerState<TagManagerScreen> {
   }
 
   Future<void> _add() async {
+    final l10n = AppLocalizations.of(context)!;
     final name = _controller.text.trim();
+    if (name.isEmpty) {
+      setState(() => _error = l10n.tagNameRequired);
+      return;
+    }
+    final tags = ref.read(tagsProvider).valueOrNull ?? const [];
+    if (tags.any((t) => t.name.toLowerCase() == name.toLowerCase())) {
+      setState(() => _error = l10n.tagNameDuplicate);
+      return;
+    }
     final active = ref.read(activeWalletProvider);
-    if (name.isEmpty || active == null) return;
+    if (active == null) return;
     await ref.read(tagRepositoryProvider).create(name, walletId: active.id);
     _controller.clear();
     ref.invalidate(tagsProvider);
@@ -47,8 +58,12 @@ class _TagManagerScreenState extends ConsumerState<TagManagerScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    onChanged: (_) {
+                      if (_error != null) setState(() => _error = null);
+                    },
                     decoration: InputDecoration(
                       labelText: l10n.newTag,
+                      errorText: _error,
                       isDense: true,
                     ),
                     onSubmitted: (_) => _add(),

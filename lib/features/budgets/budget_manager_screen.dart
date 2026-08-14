@@ -100,6 +100,7 @@ Future<void> _showBudgetSheet(
         final categories = (ref.read(categoriesProvider).valueOrNull ?? [])
             .where((c) => c.kind != CategoryKind.income)
             .toList();
+        final currency = ref.read(activeWalletProvider)?.currency ?? 'EUR';
         return Padding(
           padding: EdgeInsets.only(
             left: 20,
@@ -141,7 +142,7 @@ Future<void> _showBudgetSheet(
                 ),
                 decoration: InputDecoration(
                   labelText: l10n.monthlyLimit,
-                  suffixText: '€',
+                  suffixText: currency == 'EUR' ? '€' : currency,
                 ),
               ),
               const SizedBox(height: 20),

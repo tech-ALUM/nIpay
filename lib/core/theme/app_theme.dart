@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// Tema "Bold Ink" — dal design system nIpay (design/directions/a-bold-ink*.html).
-/// Brand ALUM: coral #FF6F61, teal #0E7C86, ink; importi in JetBrains Mono.
+/// Brand ALUM: coral #FF6F61, teal #0E7C86, ink; importi in Nunito.
 abstract final class NipayColors {
   static const coral = Color(0xFFFF6F61);
   static const coralLight = Color(0xFFFF8A7E);
@@ -95,13 +95,17 @@ extension NipayThemeX on BuildContext {
   NipayPalette get nipay => Theme.of(this).extension<NipayPalette>()!;
 }
 
-/// Stile per gli importi: SEMPRE JetBrains Mono.
+/// Stile per gli importi: SEMPRE Nunito (cifre tabulari, non monospace).
 TextStyle moneyStyle({
   double size = 14,
   FontWeight weight = FontWeight.w700,
   Color? color,
-}) =>
-    GoogleFonts.jetBrainsMono(fontSize: size, fontWeight: weight, color: color);
+}) => GoogleFonts.nunito(
+  fontSize: size,
+  fontWeight: weight,
+  color: color,
+  fontFeatures: const [FontFeature.tabularFigures()],
+);
 
 ThemeData _base(Brightness brightness) {
   final dark = brightness == Brightness.dark;
@@ -124,7 +128,7 @@ ThemeData _base(Brightness brightness) {
     ThemeData(brightness: brightness).textTheme,
   ).apply(bodyColor: text, displayColor: text);
 
-  final grotesk = GoogleFonts.spaceGrotesk(fontWeight: FontWeight.w700);
+  final display = GoogleFonts.manrope(fontWeight: FontWeight.w700);
 
   return ThemeData(
     useMaterial3: true,
@@ -132,10 +136,10 @@ ThemeData _base(Brightness brightness) {
     colorScheme: scheme,
     scaffoldBackgroundColor: bg,
     textTheme: textTheme.copyWith(
-      // Titoli in Space Grotesk, come da design system.
-      headlineMedium: grotesk.copyWith(fontSize: 28, color: text),
-      titleLarge: grotesk.copyWith(fontSize: 20, color: text),
-      titleMedium: grotesk.copyWith(
+      // Titoli in Manrope, come da design system.
+      headlineMedium: display.copyWith(fontSize: 28, color: text),
+      titleLarge: display.copyWith(fontSize: 20, color: text),
+      titleMedium: display.copyWith(
         fontSize: 15,
         fontWeight: FontWeight.w500,
         color: text,
@@ -146,7 +150,7 @@ ThemeData _base(Brightness brightness) {
       backgroundColor: bg,
       foregroundColor: text,
       elevation: 0,
-      titleTextStyle: grotesk.copyWith(fontSize: 20, color: text),
+      titleTextStyle: display.copyWith(fontSize: 20, color: text),
     ),
     cardTheme: CardThemeData(
       color: surf,

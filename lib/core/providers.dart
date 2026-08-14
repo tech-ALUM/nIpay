@@ -20,6 +20,7 @@ import '../data/repositories/recurring_repository.dart';
 import '../data/repositories/tag_repository.dart';
 import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/wallet_repository.dart';
+import '../data/services/exchange_rate_service.dart';
 
 /// Executor del DB: nei test viene sostituito con NativeDatabase.memory().
 final databaseExecutorProvider = Provider<QueryExecutor>(
@@ -64,6 +65,12 @@ final costCenterRepositoryProvider = Provider<CostCenterRepository>(
 );
 final expenseReportRepositoryProvider = Provider<ExpenseReportRepository>(
   (ref) => DriftExpenseReportRepository(ref.watch(databaseProvider)),
+);
+
+/// Tassi scaricati una volta al giorno e messi in cache (usati anche
+/// offline); overridabile nei test con un fake a tassi fissi.
+final exchangeRateServiceProvider = Provider<ExchangeRateService>(
+  (ref) => CachedExchangeRateService(prefs: ref.watch(sharedPreferencesProvider)),
 );
 
 /// Directory documenti dell'app (base per i path relativi degli allegati).
@@ -231,7 +238,9 @@ final statsMonthProvider = StateProvider<DateTime>(
   (ref) => DateTime(DateTime.now().year, DateTime.now().month),
 );
 
-/// Spese per categoria del mese (chiave: primo giorno del mese).
+/// Spese per categoria del mese (chiave: primo giorno del mese). Scoped sul
+/// portafoglio attivo: sommare tra portafogli di valute diverse non avrebbe
+/// senso ("portafogli = spazi separati").
 final expensesByCategoryProvider =
     FutureProvider.family<List<CategoryTotal>, DateTime>((ref, month) {
       ref.watch(recentTransactionsProvider);
@@ -240,19 +249,26 @@ final expensesByCategoryProvider =
           .expensesByCategory(
             from: DateTime(month.year, month.month),
             to: DateTime(month.year, month.month + 1),
+            walletId: ref.watch(activeWalletProvider)?.id,
           );
     });
 
 /// Serie mensile entrate/uscite degli ultimi 6 mesi fino al mese scelto.
+/// Scoped sul portafoglio attivo (vedi nota sopra).
 final monthlySeriesProvider =
     FutureProvider.family<List<MonthTotals>, DateTime>((ref, month) {
       ref.watch(recentTransactionsProvider);
       return ref
           .watch(transactionRepositoryProvider)
-          .monthlySeries(months: 6, until: month);
+          .monthlySeries(
+            months: 6,
+            until: month,
+            walletId: ref.watch(activeWalletProvider)?.id,
+          );
     });
 
-/// Totali del mese scelto nelle statistiche.
+/// Totali del mese scelto nelle statistiche. Scoped sul portafoglio attivo
+/// (vedi nota sopra).
 final statsTotalsProvider = FutureProvider.family<PeriodTotals, DateTime>((
   ref,
   month,
@@ -261,6 +277,7 @@ final statsTotalsProvider = FutureProvider.family<PeriodTotals, DateTime>((
   return ref
       .watch(transactionRepositoryProvider)
       .totalsForPeriod(
+        walletId: ref.watch(activeWalletProvider)?.id,
         from: DateTime(month.year, month.month),
         to: DateTime(month.year, month.month + 1),
       );
@@ -322,5 +339,26 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   void set(ThemeMode mode) {
     state = mode;
     ref.read(sharedPreferencesProvider).setString(_key, mode.name);
+  }
+}
+
+/// Lingua dell'app. Default **inglese**, indipendentemente dalla lingua del
+/// dispositivo: l'utente sceglie esplicitamente dalle Impostazioni.
+final localeProvider = NotifierProvider<LocaleNotifier, Locale>(
+  LocaleNotifier.new,
+);
+
+class LocaleNotifier extends Notifier<Locale> {
+  static const _key = 'locale';
+
+  @override
+  Locale build() {
+    final saved = ref.watch(sharedPreferencesProvider).getString(_key);
+    return Locale(saved ?? 'en');
+  }
+
+  void set(Locale locale) {
+    state = locale;
+    ref.read(sharedPreferencesProvider).setString(_key, locale.languageCode);
   }
 }

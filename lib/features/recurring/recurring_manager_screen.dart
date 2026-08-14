@@ -14,6 +14,7 @@ class RecurringManagerScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
+    final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final rules = ref.watch(recurringRulesProvider).valueOrNull ?? const [];
 
     return Scaffold(
@@ -55,8 +56,12 @@ class RecurringManagerScreen extends ConsumerWidget {
                       children: [
                         Text(
                           r.type == TransactionType.expense
-                              ? formatCents(-r.amountCents)
-                              : formatCents(r.amountCents, signed: true),
+                              ? formatCents(-r.amountCents, currency: currency)
+                              : formatCents(
+                                  r.amountCents,
+                                  currency: currency,
+                                  signed: true,
+                                ),
                           style: moneyStyle(
                             size: 13,
                             color: r.type == TransactionType.expense
@@ -125,6 +130,13 @@ Future<void> _showRecurringSheet(BuildContext context, WidgetRef ref) {
     builder: (sheetContext) => StatefulBuilder(
       builder: (sheetContext, setState) {
         final wallets = ref.read(walletsProvider).valueOrNull ?? [];
+        final selectedWalletId = walletId ?? wallets.firstOrNull?.id;
+        final selectedCurrency =
+            wallets
+                .where((w) => w.id == selectedWalletId)
+                .firstOrNull
+                ?.currency ??
+            'EUR';
         final categories = (ref.read(categoriesProvider).valueOrNull ?? [])
             .where(
               (c) => type == TransactionType.expense
@@ -149,19 +161,23 @@ Future<void> _showRecurringSheet(BuildContext context, WidgetRef ref) {
                   style: Theme.of(sheetContext).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
-                SegmentedButton<TransactionType>(
-                  segments: [
-                    ButtonSegment(
-                      value: TransactionType.expense,
-                      label: Text(l10n.expense),
-                    ),
-                    ButtonSegment(
-                      value: TransactionType.income,
-                      label: Text(l10n.income),
-                    ),
-                  ],
-                  selected: {type},
-                  onSelectionChanged: (s) => setState(() => type = s.first),
+                SizedBox(
+                  width: double.infinity,
+                  child: SegmentedButton<TransactionType>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: TransactionType.expense,
+                        label: Text(l10n.expense),
+                      ),
+                      ButtonSegment(
+                        value: TransactionType.income,
+                        label: Text(l10n.income),
+                      ),
+                    ],
+                    selected: {type},
+                    onSelectionChanged: (s) => setState(() => type = s.first),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -172,7 +188,9 @@ Future<void> _showRecurringSheet(BuildContext context, WidgetRef ref) {
                   ),
                   decoration: InputDecoration(
                     labelText: l10n.amount,
-                    suffixText: '€',
+                    suffixText: selectedCurrency == 'EUR'
+                        ? '€'
+                        : selectedCurrency,
                   ),
                 ),
                 const SizedBox(height: 12),

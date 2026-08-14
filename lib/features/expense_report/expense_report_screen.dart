@@ -71,8 +71,13 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
   Future<void> _exportPdf(List<FlaggedExpense> rows) async {
     final active = ref.read(activeWalletProvider);
     if (active == null || rows.isEmpty) return;
-    final categories = ref.read(categoriesProvider).valueOrNull ?? [];
-    final costCenters = ref.read(costCentersProvider).valueOrNull ?? [];
+    // .future, non .valueOrNull su ref.read: se nessuno sta osservando
+    // questi provider in questo momento (es. non sei mai passato dalla
+    // gestione centri di costo), .valueOrNull li coglie ancora in
+    // caricamento e torna null — mappa vuota, "-" per tutti anche quando
+    // il dato esiste davvero.
+    final categories = await ref.read(categoriesProvider.future);
+    final costCenters = await ref.read(costCentersProvider.future);
     final appDir = await ref.read(appDirProvider.future);
     final attachRepo = ref.read(attachmentRepositoryProvider);
 
@@ -89,6 +94,7 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
 
     final bytes = await buildExpenseReportPdf(
       walletName: active.name,
+      currency: active.currency,
       from: _from,
       to: _to,
       rows: rows,
@@ -144,6 +150,7 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
+    final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final rows =
         ref.watch(_flaggedProvider((_from, _to))).valueOrNull ??
         const <FlaggedExpense>[];
@@ -190,7 +197,7 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
                 ),
               ),
               Text(
-                formatCents(total),
+                formatCents(total, currency: currency),
                 style: moneyStyle(
                   size: 16,
                   color: Theme.of(context).colorScheme.onSurface,

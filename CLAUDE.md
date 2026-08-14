@@ -29,6 +29,34 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
   schermata dedicata con export **PDF con giustificativi** per intervallo date
   (`lib/data/export/expense_report_pdf.dart`), archivio note con stati
   bozza→inviata→rimborsata, card "Da rimborsare" in home. Schema Drift **v3**.
+- **Multi-valuta (decisione 2026-08-11, sostituisce "solo EUR")**: ogni
+  `Wallet.currency` è scelta alla creazione (lista curata in
+  `lib/core/currencies.dart`, solo valute a 2 decimali). Le transazioni possono
+  essere inserite in un'altra valuta (`entryCurrency`/`entryAmountCents`);
+  conversione via `ExchangeRateService` prima del salvataggio (vedi sotto
+  per la sorgente dei tassi). I trasferimenti cross-valuta convertono due
+  volte (entry→valuta "Da"→valuta "A", campo `amountCentsTo`). `formatCents`
+  richiede `currency:` (default `'EUR'`); tutte le schermate risolvono la
+  valuta dal portafoglio attivo (`activeWalletProvider`). Schema Drift **v5**.
+- **Cambio valuta a posteriori (decisione 2026-08-13, semplificata lo stesso
+  giorno)**: un portafoglio può cambiare valuta anche dopo la creazione
+  (`WalletRepository.changeCurrency`, foglio azioni portafoglio in home).
+  Converte **solo il saldo iniziale** del portafoglio, al tasso del momento;
+  transazioni storiche, budget e regole ricorrenti NON vengono toccati —
+  restano nei loro importi originali, semplicemente letti nella nuova
+  valuta (scelta deliberata: niente bulk-update su potenzialmente migliaia
+  di righe). Il bottone "Salva" nel foglio azioni è l'unica conferma: fa
+  rinomina + cambio valuta insieme, senza dialogo separato.
+- **Tassi di cambio: cache giornaliera, non più live-bloccante (decisione
+  2026-08-14, sostituisce "blocca se l'API non risponde")**: `getRate` in
+  `CachedExchangeRateService` (Frankfurter, `base=EUR`, no chiave) non fa mai
+  una chiamata di rete bloccante se esiste già una cache locale
+  (SharedPreferences), **anche se vecchia di giorni** — l'app resta
+  utilizzabile offline indefinitamente. Se la cache non è di oggi, un
+  refresh parte in background per la prossima chiamata, senza bloccare
+  quella in corso. `ExchangeRateException` scatta solo se non esiste ALCUNA
+  cache pregressa (mai scaricata con successo, tipicamente al primissimo
+  utilizzo offline) — l'unico caso in cui serve ancora un fetch bloccante.
 
 ## Regole di progetto
 - Stack: Flutter 3.44.6 + Riverpod 2.6 (v3 confligge con drift_dev) + Drift.
@@ -42,6 +70,14 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
 - Stringhe UI sempre in l10n (arb IT + EN), mai hardcoded.
 - **TDD**: test prima, in `test/data/` (DB in memoria) e `test/app_test.dart`
   (widget test; usare `_unmount()` a fine test per il Timer di Drift).
+- **Property-based testing** (deciso 2026-08-12): per logica pura/algoritmica
+  ad alto rischio (parsing importi, round-trip export/import, saldi), oltre
+  ai test a esempi fissi usare `forAll` da `test/support/property.dart` —
+  harness minimale in-repo, senza dipendenze esterne (valutate e scartate:
+  `glados` incompatibile con Dart 3, `kiri_check` in conflitto con
+  l'`analyzer` richiesto da `drift_dev`, le alternative senza questo
+  conflitto troppo poco adottate). Esempi: `test/core/money_property_test.dart`,
+  `test/data/export_property_test.dart`, `test/data/balance_property_test.dart`.
 - Dopo modifiche allo schema: `dart run build_runner build --delete-conflicting-outputs`
   e incrementare `schemaVersion` + migration in `app_database.dart`; valutare
   bump di `kExportSchemaVersion`.

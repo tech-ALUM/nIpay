@@ -26,11 +26,30 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
+      if (from < 5) {
+        // v5: multi-valuta. Default 'EUR' per i portafogli esistenti; le
+        // nuove colonne su transactions restano NULL (= nessuna conversione,
+        // comportamento identico a prima).
+        await m.addColumn(wallets, wallets.currency);
+        await m.addColumn(transactions, transactions.entryCurrency);
+        await m.addColumn(transactions, transactions.entryAmountCents);
+        await m.addColumn(transactions, transactions.amountCentsTo);
+      }
+      if (from < 4) {
+        // v4: ordine portafogli (drag-to-reorder in home). Backfill in
+        // base a createdAt, così l'ordine esistente non cambia.
+        await m.addColumn(wallets, wallets.position);
+        await customStatement('''
+          UPDATE wallets SET position = (
+            SELECT COUNT(*) FROM wallets w2 WHERE w2.created_at < wallets.created_at
+          )
+        ''');
+      }
       if (from < 3) {
         // v3: nota spese.
         await m.createTable(costCenters);

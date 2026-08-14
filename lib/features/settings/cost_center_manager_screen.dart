@@ -17,6 +17,7 @@ class CostCenterManagerScreen extends ConsumerStatefulWidget {
 class _CostCenterManagerScreenState
     extends ConsumerState<CostCenterManagerScreen> {
   final _controller = TextEditingController();
+  String? _error;
 
   @override
   void dispose() {
@@ -25,9 +26,14 @@ class _CostCenterManagerScreenState
   }
 
   Future<void> _add() async {
+    final l10n = AppLocalizations.of(context)!;
     final name = _controller.text.trim();
+    if (name.isEmpty) {
+      setState(() => _error = l10n.costCenterNameRequired);
+      return;
+    }
     final active = ref.read(activeWalletProvider);
-    if (name.isEmpty || active == null) return;
+    if (active == null) return;
     await ref
         .read(costCenterRepositoryProvider)
         .create(name, walletId: active.id);
@@ -52,8 +58,12 @@ class _CostCenterManagerScreenState
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    onChanged: (_) {
+                      if (_error != null) setState(() => _error = null);
+                    },
                     decoration: InputDecoration(
                       labelText: l10n.newCostCenter,
+                      errorText: _error,
                       isDense: true,
                     ),
                     onSubmitted: (_) => _add(),

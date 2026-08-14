@@ -24,6 +24,7 @@ class HomeScreen extends ConsumerWidget {
     final monthTotals = ref.watch(monthTotalsProvider).valueOrNull;
     final recent = ref.watch(recentTransactionsProvider).valueOrNull ?? [];
     final palette = context.nipay;
+    final activeCurrency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
 
     return SafeArea(
       child: ListView(
@@ -35,7 +36,7 @@ class HomeScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            total == null ? '…' : formatCents(total),
+            total == null ? '…' : formatCents(total, currency: activeCurrency),
             style: moneyStyle(
               size: 40,
               weight: FontWeight.w800,
@@ -48,50 +49,57 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 _DeltaChip(
                   text:
-                      '${formatCents(monthTotals.incomeCents, signed: true)} · '
-                      '${formatCents(-monthTotals.expenseCents)} ${l10n.thisMonth}',
+                      '${formatCents(monthTotals.incomeCents, currency: activeCurrency, signed: true)} · '
+                      '${formatCents(-monthTotals.expenseCents, currency: activeCurrency)} ${l10n.thisMonth}',
                 ),
               ],
             ),
           ],
           const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  l10n.wallets,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              IconButton(
-                key: const Key('addWalletButton'),
-                onPressed: () => showWalletFormSheet(context),
-                icon: const Icon(Icons.add_circle_outline),
-                color: NipayColors.coral,
-              ),
-            ],
-          ),
+          Text(l10n.wallets, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 4),
-          if (wallets.isEmpty)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  l10n.noWallets,
-                  style: TextStyle(color: palette.muted),
+          SizedBox(
+            height: 110,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: wallets.isEmpty
+                      ? Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Text(
+                              l10n.noWallets,
+                              style: TextStyle(color: palette.muted),
+                            ),
+                          ),
+                        )
+                      : ReorderableListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          buildDefaultDragHandles: false,
+                          // Di default, durante il trascinamento Flutter
+                          // avvolge l'elemento in un Material bianco pieno
+                          // slot (padding incluso), più largo della card
+                          // arrotondata sotto: qui lo rendiamo trasparente
+                          // così si vede solo la card che si sta spostando.
+                          proxyDecorator: (child, index, animation) =>
+                              Material(color: Colors.transparent, child: child),
+                          itemCount: wallets.length,
+                          onReorderItem: (oldIndex, newIndex) => ref
+                              .read(walletRepositoryProvider)
+                              .move(wallets[oldIndex].id, newIndex),
+                          itemBuilder: (context, i) => Padding(
+                            key: ValueKey(wallets[i].id),
+                            padding: const EdgeInsets.only(right: 12),
+                            child: _WalletCard(wallet: wallets[i], index: i),
+                          ),
+                        ),
                 ),
-              ),
-            )
-          else
-            SizedBox(
-              height: 110,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: wallets.length,
-                separatorBuilder: (_, i) => const SizedBox(width: 12),
-                itemBuilder: (context, i) => _WalletCard(wallet: wallets[i]),
-              ),
+                const SizedBox(width: 4),
+                const _AddWalletButton(),
+              ],
             ),
+          ),
           ..._buildBudgetSection(context, ref, l10n),
           const SizedBox(height: 24),
           Text(
@@ -121,6 +129,7 @@ class HomeScreen extends ConsumerWidget {
                       formatCents(
                         ref.watch(pendingReimbursementProvider).valueOrNull ??
                             0,
+                        currency: activeCurrency,
                       ),
                       style: moneyStyle(size: 15, color: palette.income),
                     ),
@@ -207,6 +216,21 @@ List<Widget> _buildBudgetSection(
   ];
 }
 
+class _AddWalletButton extends StatelessWidget {
+  const _AddWalletButton();
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    key: const Key('addWalletButton'),
+    onPressed: () => showWalletFormSheet(context),
+    icon: const Icon(Icons.add_circle_outline),
+    color: NipayColors.coral,
+    padding: EdgeInsets.zero,
+    constraints: const BoxConstraints(),
+    visualDensity: VisualDensity.compact,
+  );
+}
+
 class _DeltaChip extends StatelessWidget {
   const _DeltaChip({required this.text});
 
@@ -234,9 +258,10 @@ class _DeltaChip extends StatelessWidget {
 }
 
 class _WalletCard extends ConsumerWidget {
-  const _WalletCard({required this.wallet});
+  const _WalletCard({required this.wallet, required this.index});
 
   final Wallet wallet;
+  final int index;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -244,52 +269,100 @@ class _WalletCard extends ConsumerWidget {
     final base = _parseHex(wallet.colorHex);
     final isActive = ref.watch(activeWalletProvider)?.id == wallet.id;
 
-    return GestureDetector(
-      // Tap: rende il portafoglio lo spazio attivo; long-press: azioni.
-      onTap: () => ref.read(activeWalletIdProvider.notifier).set(wallet.id),
-      onLongPress: () => showWalletActionsSheet(context, wallet),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        width: 158,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          border: isActive
-              ? Border.all(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  width: 2.5,
-                )
-              : null,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              base.withValues(alpha: isActive ? 1 : .55),
-              _darken(base).withValues(alpha: isActive ? 1 : .55),
+    // Tenendo premuto si trascina per riordinare (l'intera card diventa la
+    // maniglia); un tap semplice attiva il portafoglio; il bottone edit in
+    // alto a destra apre il foglio azioni (rinomina/valuta/elimina).
+    return ReorderableDelayedDragStartListener(
+      index: index,
+      child: GestureDetector(
+        onTap: () => ref.read(activeWalletIdProvider.notifier).set(wallet.id),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 50),
+          width: 150,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: isActive
+                ? Border.all(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    width: 2.5,
+                  )
+                : null,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                base.withValues(alpha: isActive ? 1 : .55),
+                _darken(base).withValues(alpha: isActive ? 1 : .55),
+              ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    wallet.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: .9),
+                    ),
+                  ),
+                  const Spacer(),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          balance == null
+                              ? '…'
+                              : formatCents(
+                                  balance,
+                                  currency: wallet.currency,
+                                  symbolOnly: true,
+                                ),
+                          maxLines: 1,
+                          style: moneyStyle(size: 19, color: Colors.white),
+                        ),
+                        if (balance != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 2),
+                            child: Text(
+                              wallet.currency,
+                              style: moneyStyle(
+                                size: 9,
+                                weight: FontWeight.w600,
+                                color: Colors.white.withValues(alpha: .7),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: GestureDetector(
+                  key: const Key('walletEditButton'),
+                  onTap: () => showWalletActionsSheet(context, wallet),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      size: 16,
+                      color: Colors.white.withValues(alpha: .8),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              wallet.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.white.withValues(alpha: .9),
-              ),
-            ),
-            const Spacer(),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                balance == null ? '…' : formatCents(balance),
-                maxLines: 1,
-                style: moneyStyle(size: 19, color: Colors.white),
-              ),
-            ),
-          ],
         ),
       ),
     );

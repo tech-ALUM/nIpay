@@ -8,8 +8,10 @@ import '../db/app_database.dart';
 import '../repositories/expense_report_repository.dart';
 
 /// Importi nel PDF: i font Type1 non hanno €/NBSP/minus tipografico.
-String _pdfAmount(int cents) =>
-    formatCents(cents).replaceAll(' €', ' EUR').replaceAll('−', '-');
+String _pdfAmount(int cents, String currency) => formatCents(
+  cents,
+  currency: currency,
+).replaceAll('€', 'EUR').replaceAll('−', '-');
 
 String _d(DateTime d) =>
     '${d.day.toString().padLeft(2, "0")}/${d.month.toString().padLeft(2, "0")}/${d.year}';
@@ -21,6 +23,7 @@ const _ink = PdfColor.fromInt(0xFF15181D);
 /// giustificativi (foto scontrini) in appendice, numerati e riferiti.
 Future<Uint8List> buildExpenseReportPdf({
   required String walletName,
+  String currency = 'EUR',
   required DateTime from,
   required DateTime to,
   required List<FlaggedExpense> rows,
@@ -80,14 +83,14 @@ Future<Uint8List> buildExpenseReportPdf({
           ),
           cellStyle: const pw.TextStyle(fontSize: 8.5),
           columnWidths: {
-            0: const pw.FixedColumnWidth(52),
-            1: const pw.FlexColumnWidth(3),
-            2: const pw.FlexColumnWidth(2),
-            3: const pw.FlexColumnWidth(2),
-            4: const pw.FixedColumnWidth(30),
-            5: const pw.FixedColumnWidth(30),
-            6: const pw.FixedColumnWidth(35),
-            7: const pw.FixedColumnWidth(60),
+            0: const pw.FixedColumnWidth(60),
+            1: const pw.FlexColumnWidth(4),
+            2: const pw.FlexColumnWidth(1.8),
+            3: const pw.FlexColumnWidth(2.2),
+            4: const pw.FixedColumnWidth(36),
+            5: const pw.FixedColumnWidth(28),
+            6: const pw.FixedColumnWidth(40),
+            7: const pw.FixedColumnWidth(62),
           },
           headers: [
             'Data',
@@ -111,7 +114,7 @@ Future<Uint8List> buildExpenseReportPdf({
                 (receiptNumbers[r.transaction.id] ?? [])
                     .map((n) => 'G$n')
                     .join(','),
-                _pdfAmount(r.transaction.amountCents),
+                _pdfAmount(r.transaction.amountCents, currency),
               ],
           ],
         ),
@@ -122,14 +125,14 @@ Future<Uint8List> buildExpenseReportPdf({
             crossAxisAlignment: pw.CrossAxisAlignment.end,
             children: [
               pw.Text(
-                'Totale: ${_pdfAmount(total)}',
+                'Totale: ${_pdfAmount(total, currency)}',
                 style: pw.TextStyle(
                   fontSize: 11,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
               pw.Text(
-                'di cui rimborsabile: ${_pdfAmount(reimbursable)}',
+                'di cui rimborsabile: ${_pdfAmount(reimbursable, currency)}',
                 style: pw.TextStyle(
                   fontSize: 11,
                   fontWeight: pw.FontWeight.bold,
@@ -159,7 +162,7 @@ Future<Uint8List> buildExpenseReportPdf({
               pw.Text(
                 'Giustificativo G${numbers[i]} - ${_d(r.transaction.date)} - '
                 '${r.transaction.description} - '
-                '${_pdfAmount(r.transaction.amountCents)}',
+                '${_pdfAmount(r.transaction.amountCents, currency)}',
                 style: pw.TextStyle(
                   fontSize: 10,
                   fontWeight: pw.FontWeight.bold,

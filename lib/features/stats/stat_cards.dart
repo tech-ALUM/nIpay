@@ -46,6 +46,7 @@ class _CategoryDonut extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
+    final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final rows =
         ref.watch(expensesByCategoryProvider(month)).valueOrNull ?? const [];
     final categories =
@@ -99,7 +100,7 @@ class _CategoryDonut extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                formatCents(total),
+                formatCents(total, currency: currency),
                 style: moneyStyle(
                   size: 16,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -127,7 +128,7 @@ class _CategoryDonut extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        formatCents(r.totalCents),
+                        formatCents(r.totalCents, currency: currency),
                         style: moneyStyle(
                           size: 11,
                           weight: FontWeight.w500,
@@ -228,6 +229,7 @@ class _CashflowKpis extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
+    final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final totals = ref.watch(statsTotalsProvider(month)).valueOrNull;
     final income = totals?.incomeCents ?? 0;
     final expense = totals?.expenseCents ?? 0;
@@ -250,7 +252,7 @@ class _CashflowKpis extends ConsumerWidget {
                 const SizedBox(height: 2),
                 FittedBox(
                   child: Text(
-                    formatCents(cents, signed: signed),
+                    formatCents(cents, currency: currency, signed: signed),
                     style: moneyStyle(size: 14, color: color),
                   ),
                 ),

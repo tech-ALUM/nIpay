@@ -39,6 +39,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get walletName => 'Name';
 
   @override
+  String get currency => 'Currency';
+
+  @override
+  String get walletNameDuplicate => 'A wallet with this name already exists';
+
+  @override
+  String get walletNameRequired => 'Enter a wallet name';
+
+  @override
   String get initialBalance => 'Initial balance';
 
   @override
@@ -70,6 +79,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidAmount => 'Invalid amount';
 
   @override
+  String get exchangeRateError =>
+      'Couldn\'t get the exchange rate: check your connection and try again';
+
+  @override
+  String convertedPreview(String amount) {
+    return '≈ $amount at the current rate';
+  }
+
+  @override
   String get description => 'Description';
 
   @override
@@ -91,10 +109,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
+  String get apply => 'Apply';
+
+  @override
   String get cancel => 'Cancel';
 
   @override
   String get delete => 'Delete';
+
+  @override
+  String get deleteWalletTitle => 'Delete wallet?';
+
+  @override
+  String deleteWalletBody(String name) {
+    return 'To confirm, type \"$name\" in the field below. This cannot be undone.';
+  }
 
   @override
   String get allWallets => 'All wallets';
@@ -227,6 +256,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newTag => 'New tag';
 
   @override
+  String get tagNameRequired => 'Enter a tag name';
+
+  @override
+  String get tagNameDuplicate => 'A tag with this name already exists';
+
+  @override
+  String get costCenterNameRequired => 'Enter a cost center name';
+
+  @override
   String get tagName => 'Tag name';
 
   @override
@@ -264,46 +302,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noItems => 'Nothing here yet.';
-
-  @override
-  String get backup => 'Backup';
-
-  @override
-  String get exportJson => 'Export JSON backup';
-
-  @override
-  String get exportExcel => 'Export Excel';
-
-  @override
-  String get importJson => 'Import JSON backup';
-
-  @override
-  String get importExcel => 'Import Excel';
-
-  @override
-  String get exportWalletJson => 'Export active wallet (JSON)';
-
-  @override
-  String get exportWalletExcel => 'Export active wallet (Excel)';
-
-  @override
-  String get importWallet => 'Import wallet (adds a new space)';
-
-  @override
-  String get walletImported => 'Wallet imported';
-
-  @override
-  String get importConfirmTitle => 'Replace all data?';
-
-  @override
-  String get importConfirmBody =>
-      'Importing replaces every wallet, transaction and setting with the file contents. This cannot be undone.';
-
-  @override
-  String get importDone => 'Import completed';
-
-  @override
-  String get importFailed => 'Import failed: invalid file';
 
   @override
   String get expenseReport => 'Expense report';
@@ -376,6 +374,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get none => 'None';
+
+  @override
+  String get language => 'Language';
 
   @override
   String get settingsTheme => 'Theme';

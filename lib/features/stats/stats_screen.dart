@@ -71,6 +71,7 @@ class StatsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 12),
                 child: _AddCardButton(
                   emptyHint: cards.isEmpty ? l10n.emptyDashboard : null,
+                  usedTypes: cards.map((c) => c.type).toSet(),
                 ),
               ),
               children: [
@@ -130,14 +131,21 @@ class StatsScreen extends ConsumerWidget {
 }
 
 class _AddCardButton extends ConsumerWidget {
-  const _AddCardButton({this.emptyHint});
+  const _AddCardButton({this.emptyHint, required this.usedTypes});
 
   final String? emptyHint;
+  final Set<String> usedTypes;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
+    final availableTypes = kCardTypes
+        .where((t) => !usedTypes.contains(t))
+        .toList();
+    // Ogni tipo di card è unico in dashboard: se sono già tutti presenti
+    // non c'è altro da aggiungere.
+    if (availableTypes.isEmpty) return const SizedBox.shrink();
     return Column(
       children: [
         if (emptyHint != null) ...[
@@ -156,7 +164,7 @@ class _AddCardButton extends ConsumerWidget {
               builder: (dialogContext) => SimpleDialog(
                 title: Text(l10n.addCard),
                 children: [
-                  for (final t in kCardTypes)
+                  for (final t in availableTypes)
                     SimpleDialogOption(
                       onPressed: () => Navigator.of(dialogContext).pop(t),
                       child: Text(cardTitle(l10n, t)),

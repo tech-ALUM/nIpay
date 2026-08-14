@@ -5,8 +5,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_ar.dart';
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_hi.dart';
 import 'app_localizations_it.dart';
+import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 
@@ -94,8 +100,14 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('ar'),
+    Locale('de'),
     Locale('en'),
+    Locale('es'),
+    Locale('fr'),
+    Locale('hi'),
     Locale('it'),
+    Locale('zh'),
   ];
 
   /// No description provided for @appTitle.
@@ -158,6 +170,24 @@ abstract class AppLocalizations {
   /// **'Name'**
   String get walletName;
 
+  /// No description provided for @currency.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currency;
+
+  /// No description provided for @walletNameDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'A wallet with this name already exists'**
+  String get walletNameDuplicate;
+
+  /// No description provided for @walletNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a wallet name'**
+  String get walletNameRequired;
+
   /// No description provided for @initialBalance.
   ///
   /// In en, this message translates to:
@@ -218,6 +248,18 @@ abstract class AppLocalizations {
   /// **'Invalid amount'**
   String get invalidAmount;
 
+  /// No description provided for @exchangeRateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t get the exchange rate: check your connection and try again'**
+  String get exchangeRateError;
+
+  /// No description provided for @convertedPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {amount} at the current rate'**
+  String convertedPreview(String amount);
+
   /// No description provided for @description.
   ///
   /// In en, this message translates to:
@@ -260,6 +302,12 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get save;
 
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
   /// No description provided for @cancel.
   ///
   /// In en, this message translates to:
@@ -271,6 +319,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete'**
   String get delete;
+
+  /// No description provided for @deleteWalletTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete wallet?'**
+  String get deleteWalletTitle;
+
+  /// No description provided for @deleteWalletBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To confirm, type \"{name}\" in the field below. This cannot be undone.'**
+  String deleteWalletBody(String name);
 
   /// No description provided for @allWallets.
   ///
@@ -524,6 +584,24 @@ abstract class AppLocalizations {
   /// **'New tag'**
   String get newTag;
 
+  /// No description provided for @tagNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a tag name'**
+  String get tagNameRequired;
+
+  /// No description provided for @tagNameDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'A tag with this name already exists'**
+  String get tagNameDuplicate;
+
+  /// No description provided for @costCenterNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a cost center name'**
+  String get costCenterNameRequired;
+
   /// No description provided for @tagName.
   ///
   /// In en, this message translates to:
@@ -601,84 +679,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing here yet.'**
   String get noItems;
-
-  /// No description provided for @backup.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup'**
-  String get backup;
-
-  /// No description provided for @exportJson.
-  ///
-  /// In en, this message translates to:
-  /// **'Export JSON backup'**
-  String get exportJson;
-
-  /// No description provided for @exportExcel.
-  ///
-  /// In en, this message translates to:
-  /// **'Export Excel'**
-  String get exportExcel;
-
-  /// No description provided for @importJson.
-  ///
-  /// In en, this message translates to:
-  /// **'Import JSON backup'**
-  String get importJson;
-
-  /// No description provided for @importExcel.
-  ///
-  /// In en, this message translates to:
-  /// **'Import Excel'**
-  String get importExcel;
-
-  /// No description provided for @exportWalletJson.
-  ///
-  /// In en, this message translates to:
-  /// **'Export active wallet (JSON)'**
-  String get exportWalletJson;
-
-  /// No description provided for @exportWalletExcel.
-  ///
-  /// In en, this message translates to:
-  /// **'Export active wallet (Excel)'**
-  String get exportWalletExcel;
-
-  /// No description provided for @importWallet.
-  ///
-  /// In en, this message translates to:
-  /// **'Import wallet (adds a new space)'**
-  String get importWallet;
-
-  /// No description provided for @walletImported.
-  ///
-  /// In en, this message translates to:
-  /// **'Wallet imported'**
-  String get walletImported;
-
-  /// No description provided for @importConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Replace all data?'**
-  String get importConfirmTitle;
-
-  /// No description provided for @importConfirmBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Importing replaces every wallet, transaction and setting with the file contents. This cannot be undone.'**
-  String get importConfirmBody;
-
-  /// No description provided for @importDone.
-  ///
-  /// In en, this message translates to:
-  /// **'Import completed'**
-  String get importDone;
-
-  /// No description provided for @importFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Import failed: invalid file'**
-  String get importFailed;
 
   /// No description provided for @expenseReport.
   ///
@@ -824,6 +824,12 @@ abstract class AppLocalizations {
   /// **'None'**
   String get none;
 
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
   /// No description provided for @settingsTheme.
   ///
   /// In en, this message translates to:
@@ -859,8 +865,16 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'it'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'ar',
+    'de',
+    'en',
+    'es',
+    'fr',
+    'hi',
+    'it',
+    'zh',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -869,10 +883,22 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'ar':
+      return AppLocalizationsAr();
+    case 'de':
+      return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
+    case 'hi':
+      return AppLocalizationsHi();
     case 'it':
       return AppLocalizationsIt();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(

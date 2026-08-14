@@ -102,6 +102,30 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('EUR'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -113,6 +137,8 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
     icon,
     initialBalanceCents,
     archivedAt,
+    position,
+    currency,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -190,6 +216,18 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
         archivedAt.isAcceptableOrUnknown(data['archived_at']!, _archivedAtMeta),
       );
     }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    }
     return context;
   }
 
@@ -235,6 +273,14 @@ class $WalletsTable extends Wallets with TableInfo<$WalletsTable, Wallet> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}archived_at'],
       ),
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
     );
   }
 
@@ -256,6 +302,13 @@ class Wallet extends DataClass implements Insertable<Wallet> {
   /// Importi sempre in centesimi (int).
   final int initialBalanceCents;
   final DateTime? archivedAt;
+
+  /// Ordine di visualizzazione in home (drag-to-reorder).
+  final int position;
+
+  /// Codice ISO 4217 (es. "EUR", "USD"), fisso alla creazione. Ogni importo
+  /// del portafoglio (saldo, transazioni) è in questa valuta.
+  final String currency;
   const Wallet({
     required this.id,
     required this.createdAt,
@@ -266,6 +319,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     required this.icon,
     required this.initialBalanceCents,
     this.archivedAt,
+    required this.position,
+    required this.currency,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -283,6 +338,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     if (!nullToAbsent || archivedAt != null) {
       map['archived_at'] = Variable<DateTime>(archivedAt);
     }
+    map['position'] = Variable<int>(position);
+    map['currency'] = Variable<String>(currency);
     return map;
   }
 
@@ -301,6 +358,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
       archivedAt: archivedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(archivedAt),
+      position: Value(position),
+      currency: Value(currency),
     );
   }
 
@@ -321,6 +380,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
         json['initialBalanceCents'],
       ),
       archivedAt: serializer.fromJson<DateTime?>(json['archivedAt']),
+      position: serializer.fromJson<int>(json['position']),
+      currency: serializer.fromJson<String>(json['currency']),
     );
   }
   @override
@@ -336,6 +397,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
       'icon': serializer.toJson<String>(icon),
       'initialBalanceCents': serializer.toJson<int>(initialBalanceCents),
       'archivedAt': serializer.toJson<DateTime?>(archivedAt),
+      'position': serializer.toJson<int>(position),
+      'currency': serializer.toJson<String>(currency),
     };
   }
 
@@ -349,6 +412,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     String? icon,
     int? initialBalanceCents,
     Value<DateTime?> archivedAt = const Value.absent(),
+    int? position,
+    String? currency,
   }) => Wallet(
     id: id ?? this.id,
     createdAt: createdAt ?? this.createdAt,
@@ -359,6 +424,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     icon: icon ?? this.icon,
     initialBalanceCents: initialBalanceCents ?? this.initialBalanceCents,
     archivedAt: archivedAt.present ? archivedAt.value : this.archivedAt,
+    position: position ?? this.position,
+    currency: currency ?? this.currency,
   );
   Wallet copyWithCompanion(WalletsCompanion data) {
     return Wallet(
@@ -375,6 +442,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
       archivedAt: data.archivedAt.present
           ? data.archivedAt.value
           : this.archivedAt,
+      position: data.position.present ? data.position.value : this.position,
+      currency: data.currency.present ? data.currency.value : this.currency,
     );
   }
 
@@ -389,7 +458,9 @@ class Wallet extends DataClass implements Insertable<Wallet> {
           ..write('colorHex: $colorHex, ')
           ..write('icon: $icon, ')
           ..write('initialBalanceCents: $initialBalanceCents, ')
-          ..write('archivedAt: $archivedAt')
+          ..write('archivedAt: $archivedAt, ')
+          ..write('position: $position, ')
+          ..write('currency: $currency')
           ..write(')'))
         .toString();
   }
@@ -405,6 +476,8 @@ class Wallet extends DataClass implements Insertable<Wallet> {
     icon,
     initialBalanceCents,
     archivedAt,
+    position,
+    currency,
   );
   @override
   bool operator ==(Object other) =>
@@ -418,7 +491,9 @@ class Wallet extends DataClass implements Insertable<Wallet> {
           other.colorHex == this.colorHex &&
           other.icon == this.icon &&
           other.initialBalanceCents == this.initialBalanceCents &&
-          other.archivedAt == this.archivedAt);
+          other.archivedAt == this.archivedAt &&
+          other.position == this.position &&
+          other.currency == this.currency);
 }
 
 class WalletsCompanion extends UpdateCompanion<Wallet> {
@@ -431,6 +506,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
   final Value<String> icon;
   final Value<int> initialBalanceCents;
   final Value<DateTime?> archivedAt;
+  final Value<int> position;
+  final Value<String> currency;
   final Value<int> rowid;
   const WalletsCompanion({
     this.id = const Value.absent(),
@@ -442,6 +519,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     this.icon = const Value.absent(),
     this.initialBalanceCents = const Value.absent(),
     this.archivedAt = const Value.absent(),
+    this.position = const Value.absent(),
+    this.currency = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   WalletsCompanion.insert({
@@ -454,6 +533,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     this.icon = const Value.absent(),
     this.initialBalanceCents = const Value.absent(),
     this.archivedAt = const Value.absent(),
+    this.position = const Value.absent(),
+    this.currency = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        createdAt = Value(createdAt),
@@ -470,6 +551,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     Expression<String>? icon,
     Expression<int>? initialBalanceCents,
     Expression<DateTime>? archivedAt,
+    Expression<int>? position,
+    Expression<String>? currency,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -483,6 +566,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
       if (initialBalanceCents != null)
         'initial_balance_cents': initialBalanceCents,
       if (archivedAt != null) 'archived_at': archivedAt,
+      if (position != null) 'position': position,
+      if (currency != null) 'currency': currency,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -497,6 +582,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     Value<String>? icon,
     Value<int>? initialBalanceCents,
     Value<DateTime?>? archivedAt,
+    Value<int>? position,
+    Value<String>? currency,
     Value<int>? rowid,
   }) {
     return WalletsCompanion(
@@ -509,6 +596,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
       icon: icon ?? this.icon,
       initialBalanceCents: initialBalanceCents ?? this.initialBalanceCents,
       archivedAt: archivedAt ?? this.archivedAt,
+      position: position ?? this.position,
+      currency: currency ?? this.currency,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -543,6 +632,12 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
     if (archivedAt.present) {
       map['archived_at'] = Variable<DateTime>(archivedAt.value);
     }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -561,6 +656,8 @@ class WalletsCompanion extends UpdateCompanion<Wallet> {
           ..write('icon: $icon, ')
           ..write('initialBalanceCents: $initialBalanceCents, ')
           ..write('archivedAt: $archivedAt, ')
+          ..write('position: $position, ')
+          ..write('currency: $currency, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1423,6 +1520,39 @@ class $TransactionsTable extends Transactions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _entryCurrencyMeta = const VerificationMeta(
+    'entryCurrency',
+  );
+  @override
+  late final GeneratedColumn<String> entryCurrency = GeneratedColumn<String>(
+    'entry_currency',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _entryAmountCentsMeta = const VerificationMeta(
+    'entryAmountCents',
+  );
+  @override
+  late final GeneratedColumn<int> entryAmountCents = GeneratedColumn<int>(
+    'entry_amount_cents',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _amountCentsToMeta = const VerificationMeta(
+    'amountCentsTo',
+  );
+  @override
+  late final GeneratedColumn<int> amountCentsTo = GeneratedColumn<int>(
+    'amount_cents_to',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1437,6 +1567,9 @@ class $TransactionsTable extends Transactions
     categoryId,
     description,
     note,
+    entryCurrency,
+    entryAmountCents,
+    amountCentsTo,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1534,6 +1667,33 @@ class $TransactionsTable extends Transactions
         note.isAcceptableOrUnknown(data['note']!, _noteMeta),
       );
     }
+    if (data.containsKey('entry_currency')) {
+      context.handle(
+        _entryCurrencyMeta,
+        entryCurrency.isAcceptableOrUnknown(
+          data['entry_currency']!,
+          _entryCurrencyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('entry_amount_cents')) {
+      context.handle(
+        _entryAmountCentsMeta,
+        entryAmountCents.isAcceptableOrUnknown(
+          data['entry_amount_cents']!,
+          _entryAmountCentsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('amount_cents_to')) {
+      context.handle(
+        _amountCentsToMeta,
+        amountCentsTo.isAcceptableOrUnknown(
+          data['amount_cents_to']!,
+          _amountCentsToMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1593,6 +1753,18 @@ class $TransactionsTable extends Transactions
         DriftSqlType.string,
         data['${effectivePrefix}note'],
       ),
+      entryCurrency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}entry_currency'],
+      ),
+      entryAmountCents: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}entry_amount_cents'],
+      ),
+      amountCentsTo: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_cents_to'],
+      ),
     );
   }
 
@@ -1622,6 +1794,18 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final String? categoryId;
   final String description;
   final String? note;
+
+  /// Valuta scelta dall'utente in inserimento, se diversa da quella del
+  /// portafoglio; null = nessuna conversione, [amountCents] è come digitato.
+  final String? entryCurrency;
+
+  /// Importo come digitato in [entryCurrency], prima della conversione.
+  final int? entryAmountCents;
+
+  /// Solo trasferimenti cross-valuta: importo accreditato a [walletToId]
+  /// nella SUA valuta, quando diversa da quella di [walletId]. Se null, il
+  /// credito usa [amountCents] invariato (stessa valuta su entrambi i lati).
+  final int? amountCentsTo;
   const Transaction({
     required this.id,
     required this.createdAt,
@@ -1635,6 +1819,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     this.categoryId,
     required this.description,
     this.note,
+    this.entryCurrency,
+    this.entryAmountCents,
+    this.amountCentsTo,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1663,6 +1850,15 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
     }
+    if (!nullToAbsent || entryCurrency != null) {
+      map['entry_currency'] = Variable<String>(entryCurrency);
+    }
+    if (!nullToAbsent || entryAmountCents != null) {
+      map['entry_amount_cents'] = Variable<int>(entryAmountCents);
+    }
+    if (!nullToAbsent || amountCentsTo != null) {
+      map['amount_cents_to'] = Variable<int>(amountCentsTo);
+    }
     return map;
   }
 
@@ -1686,6 +1882,15 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           : Value(categoryId),
       description: Value(description),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      entryCurrency: entryCurrency == null && nullToAbsent
+          ? const Value.absent()
+          : Value(entryCurrency),
+      entryAmountCents: entryAmountCents == null && nullToAbsent
+          ? const Value.absent()
+          : Value(entryAmountCents),
+      amountCentsTo: amountCentsTo == null && nullToAbsent
+          ? const Value.absent()
+          : Value(amountCentsTo),
     );
   }
 
@@ -1709,6 +1914,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       categoryId: serializer.fromJson<String?>(json['categoryId']),
       description: serializer.fromJson<String>(json['description']),
       note: serializer.fromJson<String?>(json['note']),
+      entryCurrency: serializer.fromJson<String?>(json['entryCurrency']),
+      entryAmountCents: serializer.fromJson<int?>(json['entryAmountCents']),
+      amountCentsTo: serializer.fromJson<int?>(json['amountCentsTo']),
     );
   }
   @override
@@ -1729,6 +1937,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'categoryId': serializer.toJson<String?>(categoryId),
       'description': serializer.toJson<String>(description),
       'note': serializer.toJson<String?>(note),
+      'entryCurrency': serializer.toJson<String?>(entryCurrency),
+      'entryAmountCents': serializer.toJson<int?>(entryAmountCents),
+      'amountCentsTo': serializer.toJson<int?>(amountCentsTo),
     };
   }
 
@@ -1745,6 +1956,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     Value<String?> categoryId = const Value.absent(),
     String? description,
     Value<String?> note = const Value.absent(),
+    Value<String?> entryCurrency = const Value.absent(),
+    Value<int?> entryAmountCents = const Value.absent(),
+    Value<int?> amountCentsTo = const Value.absent(),
   }) => Transaction(
     id: id ?? this.id,
     createdAt: createdAt ?? this.createdAt,
@@ -1758,6 +1972,15 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
     description: description ?? this.description,
     note: note.present ? note.value : this.note,
+    entryCurrency: entryCurrency.present
+        ? entryCurrency.value
+        : this.entryCurrency,
+    entryAmountCents: entryAmountCents.present
+        ? entryAmountCents.value
+        : this.entryAmountCents,
+    amountCentsTo: amountCentsTo.present
+        ? amountCentsTo.value
+        : this.amountCentsTo,
   );
   Transaction copyWithCompanion(TransactionsCompanion data) {
     return Transaction(
@@ -1781,6 +2004,15 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ? data.description.value
           : this.description,
       note: data.note.present ? data.note.value : this.note,
+      entryCurrency: data.entryCurrency.present
+          ? data.entryCurrency.value
+          : this.entryCurrency,
+      entryAmountCents: data.entryAmountCents.present
+          ? data.entryAmountCents.value
+          : this.entryAmountCents,
+      amountCentsTo: data.amountCentsTo.present
+          ? data.amountCentsTo.value
+          : this.amountCentsTo,
     );
   }
 
@@ -1798,7 +2030,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('walletToId: $walletToId, ')
           ..write('categoryId: $categoryId, ')
           ..write('description: $description, ')
-          ..write('note: $note')
+          ..write('note: $note, ')
+          ..write('entryCurrency: $entryCurrency, ')
+          ..write('entryAmountCents: $entryAmountCents, ')
+          ..write('amountCentsTo: $amountCentsTo')
           ..write(')'))
         .toString();
   }
@@ -1817,6 +2052,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     categoryId,
     description,
     note,
+    entryCurrency,
+    entryAmountCents,
+    amountCentsTo,
   );
   @override
   bool operator ==(Object other) =>
@@ -1833,7 +2071,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.walletToId == this.walletToId &&
           other.categoryId == this.categoryId &&
           other.description == this.description &&
-          other.note == this.note);
+          other.note == this.note &&
+          other.entryCurrency == this.entryCurrency &&
+          other.entryAmountCents == this.entryAmountCents &&
+          other.amountCentsTo == this.amountCentsTo);
 }
 
 class TransactionsCompanion extends UpdateCompanion<Transaction> {
@@ -1849,6 +2090,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<String?> categoryId;
   final Value<String> description;
   final Value<String?> note;
+  final Value<String?> entryCurrency;
+  final Value<int?> entryAmountCents;
+  final Value<int?> amountCentsTo;
   final Value<int> rowid;
   const TransactionsCompanion({
     this.id = const Value.absent(),
@@ -1863,6 +2107,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.categoryId = const Value.absent(),
     this.description = const Value.absent(),
     this.note = const Value.absent(),
+    this.entryCurrency = const Value.absent(),
+    this.entryAmountCents = const Value.absent(),
+    this.amountCentsTo = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TransactionsCompanion.insert({
@@ -1878,6 +2125,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.categoryId = const Value.absent(),
     this.description = const Value.absent(),
     this.note = const Value.absent(),
+    this.entryCurrency = const Value.absent(),
+    this.entryAmountCents = const Value.absent(),
+    this.amountCentsTo = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        createdAt = Value(createdAt),
@@ -1899,6 +2149,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? categoryId,
     Expression<String>? description,
     Expression<String>? note,
+    Expression<String>? entryCurrency,
+    Expression<int>? entryAmountCents,
+    Expression<int>? amountCentsTo,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1914,6 +2167,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (categoryId != null) 'category_id': categoryId,
       if (description != null) 'description': description,
       if (note != null) 'note': note,
+      if (entryCurrency != null) 'entry_currency': entryCurrency,
+      if (entryAmountCents != null) 'entry_amount_cents': entryAmountCents,
+      if (amountCentsTo != null) 'amount_cents_to': amountCentsTo,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1931,6 +2187,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<String?>? categoryId,
     Value<String>? description,
     Value<String?>? note,
+    Value<String?>? entryCurrency,
+    Value<int?>? entryAmountCents,
+    Value<int?>? amountCentsTo,
     Value<int>? rowid,
   }) {
     return TransactionsCompanion(
@@ -1946,6 +2205,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       categoryId: categoryId ?? this.categoryId,
       description: description ?? this.description,
       note: note ?? this.note,
+      entryCurrency: entryCurrency ?? this.entryCurrency,
+      entryAmountCents: entryAmountCents ?? this.entryAmountCents,
+      amountCentsTo: amountCentsTo ?? this.amountCentsTo,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1991,6 +2253,15 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (note.present) {
       map['note'] = Variable<String>(note.value);
     }
+    if (entryCurrency.present) {
+      map['entry_currency'] = Variable<String>(entryCurrency.value);
+    }
+    if (entryAmountCents.present) {
+      map['entry_amount_cents'] = Variable<int>(entryAmountCents.value);
+    }
+    if (amountCentsTo.present) {
+      map['amount_cents_to'] = Variable<int>(amountCentsTo.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2012,6 +2283,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('categoryId: $categoryId, ')
           ..write('description: $description, ')
           ..write('note: $note, ')
+          ..write('entryCurrency: $entryCurrency, ')
+          ..write('entryAmountCents: $entryAmountCents, ')
+          ..write('amountCentsTo: $amountCentsTo, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -7525,6 +7799,8 @@ typedef $$WalletsTableCreateCompanionBuilder =
       Value<String> icon,
       Value<int> initialBalanceCents,
       Value<DateTime?> archivedAt,
+      Value<int> position,
+      Value<String> currency,
       Value<int> rowid,
     });
 typedef $$WalletsTableUpdateCompanionBuilder =
@@ -7538,6 +7814,8 @@ typedef $$WalletsTableUpdateCompanionBuilder =
       Value<String> icon,
       Value<int> initialBalanceCents,
       Value<DateTime?> archivedAt,
+      Value<int> position,
+      Value<String> currency,
       Value<int> rowid,
     });
 
@@ -7745,6 +8023,16 @@ class $$WalletsTableFilterComposer
 
   ColumnFilters<DateTime> get archivedAt => $composableBuilder(
     column: $table.archivedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8002,6 +8290,16 @@ class $$WalletsTableOrderingComposer
     column: $table.archivedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$WalletsTableAnnotationComposer
@@ -8043,6 +8341,12 @@ class $$WalletsTableAnnotationComposer
     column: $table.archivedAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
 
   Expression<T> categoriesRefs<T extends Object>(
     Expression<T> Function($$CategoriesTableAnnotationComposer a) f,
@@ -8291,6 +8595,8 @@ class $$WalletsTableTableManager
                 Value<String> icon = const Value.absent(),
                 Value<int> initialBalanceCents = const Value.absent(),
                 Value<DateTime?> archivedAt = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<String> currency = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WalletsCompanion(
                 id: id,
@@ -8302,6 +8608,8 @@ class $$WalletsTableTableManager
                 icon: icon,
                 initialBalanceCents: initialBalanceCents,
                 archivedAt: archivedAt,
+                position: position,
+                currency: currency,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -8315,6 +8623,8 @@ class $$WalletsTableTableManager
                 Value<String> icon = const Value.absent(),
                 Value<int> initialBalanceCents = const Value.absent(),
                 Value<DateTime?> archivedAt = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<String> currency = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => WalletsCompanion.insert(
                 id: id,
@@ -8326,6 +8636,8 @@ class $$WalletsTableTableManager
                 icon: icon,
                 initialBalanceCents: initialBalanceCents,
                 archivedAt: archivedAt,
+                position: position,
+                currency: currency,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -9398,6 +9710,9 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<String?> categoryId,
       Value<String> description,
       Value<String?> note,
+      Value<String?> entryCurrency,
+      Value<int?> entryAmountCents,
+      Value<int?> amountCentsTo,
       Value<int> rowid,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
@@ -9414,6 +9729,9 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<String?> categoryId,
       Value<String> description,
       Value<String?> note,
+      Value<String?> entryCurrency,
+      Value<int?> entryAmountCents,
+      Value<int?> amountCentsTo,
       Value<int> rowid,
     });
 
@@ -9627,6 +9945,21 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<String> get note => $composableBuilder(
     column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get entryCurrency => $composableBuilder(
+    column: $table.entryCurrency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get entryAmountCents => $composableBuilder(
+    column: $table.entryAmountCents,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountCentsTo => $composableBuilder(
+    column: $table.amountCentsTo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9879,6 +10212,21 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get entryCurrency => $composableBuilder(
+    column: $table.entryCurrency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get entryAmountCents => $composableBuilder(
+    column: $table.entryAmountCents,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountCentsTo => $composableBuilder(
+    column: $table.amountCentsTo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$WalletsTableOrderingComposer get walletId {
     final $$WalletsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -9988,6 +10336,21 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get entryCurrency => $composableBuilder(
+    column: $table.entryCurrency,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get entryAmountCents => $composableBuilder(
+    column: $table.entryAmountCents,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get amountCentsTo => $composableBuilder(
+    column: $table.amountCentsTo,
+    builder: (column) => column,
+  );
 
   $$WalletsTableAnnotationComposer get walletId {
     final $$WalletsTableAnnotationComposer composer = $composerBuilder(
@@ -10235,6 +10598,9 @@ class $$TransactionsTableTableManager
                 Value<String?> categoryId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<String?> note = const Value.absent(),
+                Value<String?> entryCurrency = const Value.absent(),
+                Value<int?> entryAmountCents = const Value.absent(),
+                Value<int?> amountCentsTo = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
@@ -10249,6 +10615,9 @@ class $$TransactionsTableTableManager
                 categoryId: categoryId,
                 description: description,
                 note: note,
+                entryCurrency: entryCurrency,
+                entryAmountCents: entryAmountCents,
+                amountCentsTo: amountCentsTo,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -10265,6 +10634,9 @@ class $$TransactionsTableTableManager
                 Value<String?> categoryId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<String?> note = const Value.absent(),
+                Value<String?> entryCurrency = const Value.absent(),
+                Value<int?> entryAmountCents = const Value.absent(),
+                Value<int?> amountCentsTo = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
@@ -10279,6 +10651,9 @@ class $$TransactionsTableTableManager
                 categoryId: categoryId,
                 description: description,
                 note: note,
+                entryCurrency: entryCurrency,
+                entryAmountCents: entryAmountCents,
+                amountCentsTo: amountCentsTo,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -22,6 +22,8 @@ abstract interface class TransactionRepository {
     required DateTime date,
     String? categoryId,
     String description,
+    String? entryCurrency,
+    int? entryAmountCents,
   });
   Future<String> createIncome({
     required String walletId,
@@ -29,6 +31,8 @@ abstract interface class TransactionRepository {
     required DateTime date,
     String? categoryId,
     String description,
+    String? entryCurrency,
+    int? entryAmountCents,
   });
   Future<String> createTransfer({
     required String fromWalletId,
@@ -36,6 +40,12 @@ abstract interface class TransactionRepository {
     required int amountCents,
     required DateTime date,
     String description,
+    String? entryCurrency,
+    int? entryAmountCents,
+
+    /// Solo se il portafoglio di destinazione ha valuta diversa: importo
+    /// accreditato nella SUA valuta.
+    int? amountCentsTo,
   });
 
   /// Saldo del portafoglio: iniziale + entrate − spese ± trasferimenti.
@@ -92,6 +102,9 @@ class DriftTransactionRepository implements TransactionRepository {
     required DateTime date,
     String? categoryId,
     String description = '',
+    String? entryCurrency,
+    int? entryAmountCents,
+    int? amountCentsTo,
   }) async {
     assert(amountCents > 0, 'amountCents deve essere positivo');
     final id = _uuid.v4();
@@ -108,6 +121,9 @@ class DriftTransactionRepository implements TransactionRepository {
             walletToId: Value(walletToId),
             categoryId: Value(categoryId),
             description: Value(description),
+            entryCurrency: Value(entryCurrency),
+            entryAmountCents: Value(entryAmountCents),
+            amountCentsTo: Value(amountCentsTo),
             createdAt: now,
             updatedAt: now,
           ),
@@ -122,6 +138,8 @@ class DriftTransactionRepository implements TransactionRepository {
     required DateTime date,
     String? categoryId,
     String description = '',
+    String? entryCurrency,
+    int? entryAmountCents,
   }) => _insert(
     type: TransactionType.expense,
     walletId: walletId,
@@ -129,6 +147,8 @@ class DriftTransactionRepository implements TransactionRepository {
     date: date,
     categoryId: categoryId,
     description: description,
+    entryCurrency: entryCurrency,
+    entryAmountCents: entryAmountCents,
   );
 
   @override
@@ -138,6 +158,8 @@ class DriftTransactionRepository implements TransactionRepository {
     required DateTime date,
     String? categoryId,
     String description = '',
+    String? entryCurrency,
+    int? entryAmountCents,
   }) => _insert(
     type: TransactionType.income,
     walletId: walletId,
@@ -145,6 +167,8 @@ class DriftTransactionRepository implements TransactionRepository {
     date: date,
     categoryId: categoryId,
     description: description,
+    entryCurrency: entryCurrency,
+    entryAmountCents: entryAmountCents,
   );
 
   @override
@@ -154,6 +178,9 @@ class DriftTransactionRepository implements TransactionRepository {
     required int amountCents,
     required DateTime date,
     String description = '',
+    String? entryCurrency,
+    int? entryAmountCents,
+    int? amountCentsTo,
   }) => _insert(
     type: TransactionType.transfer,
     walletId: fromWalletId,
@@ -161,6 +188,9 @@ class DriftTransactionRepository implements TransactionRepository {
     amountCents: amountCents,
     date: date,
     description: description,
+    entryCurrency: entryCurrency,
+    entryAmountCents: entryAmountCents,
+    amountCentsTo: amountCentsTo,
   );
 
   @override
@@ -186,7 +216,11 @@ class DriftTransactionRepository implements TransactionRepository {
           balance -= tx.amountCents;
         case TransactionType.transfer:
           if (tx.walletId == walletId) balance -= tx.amountCents;
-          if (tx.walletToId == walletId) balance += tx.amountCents;
+          // Cross-valuta: il credito usa l'importo convertito nella valuta
+          // del portafoglio di destinazione, se presente.
+          if (tx.walletToId == walletId) {
+            balance += tx.amountCentsTo ?? tx.amountCents;
+          }
       }
     }
     return balance;

@@ -55,6 +55,27 @@ void main() {
     expect(await repo.balanceOf(contanti), 5000 + 10000);
   });
 
+  test(
+    'cross-currency transfer credits amountCentsTo, not amountCents',
+    () async {
+      // Es. addebita 100,00 nella valuta di "conto", ma "contanti" ha
+      // valuta diversa: il credito deve usare l'importo già convertito.
+      await repo.createTransfer(
+        fromWalletId: conto,
+        toWalletId: contanti,
+        amountCents: 10000,
+        date: DateTime(2026, 6, 30),
+        entryCurrency: 'USD',
+        entryAmountCents: 10800,
+        amountCentsTo: 9200,
+      );
+
+      expect(await repo.balanceOf(conto), 100000 - 10000);
+      // Il credito usa amountCentsTo (9200), non amountCents (10000).
+      expect(await repo.balanceOf(contanti), 5000 + 9200);
+    },
+  );
+
   test('period totals exclude transfers', () async {
     await repo.createIncome(
       walletId: conto,
@@ -162,6 +183,23 @@ void main() {
       expect(series[2].expenseCents, 700);
     },
   );
+
+  test('monthlySeries with months <= 0 returns an empty list, not a crash', () async {
+    await repo.createIncome(
+      walletId: conto,
+      amountCents: 1000,
+      date: DateTime(2026, 6, 1),
+    );
+
+    expect(
+      await repo.monthlySeries(months: 0, until: DateTime(2026, 7, 15)),
+      isEmpty,
+    );
+    expect(
+      await repo.monthlySeries(months: -3, until: DateTime(2026, 7, 15)),
+      isEmpty,
+    );
+  });
 
   test(
     'updateTransaction edits amount, date, category and description',

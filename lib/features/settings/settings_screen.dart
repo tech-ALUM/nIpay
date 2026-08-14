@@ -5,48 +5,23 @@ import '../../core/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../budgets/budget_manager_screen.dart';
 import '../recurring/recurring_manager_screen.dart';
-import 'backup_actions.dart';
 import 'category_manager_screen.dart';
 import 'cost_center_manager_screen.dart';
 import 'custom_field_manager_screen.dart';
 import 'tag_manager_screen.dart';
 
-/// Conferma distruttiva prima dell'import, poi esegue e notifica l'esito.
-Future<void> _confirmAndImport(
-  BuildContext context,
-  WidgetRef ref,
-  Future<bool> Function(WidgetRef) action,
-) async {
-  final l10n = AppLocalizations.of(context)!;
-  final messenger = ScaffoldMessenger.of(context);
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(l10n.importConfirmTitle),
-      content: Text(l10n.importConfirmBody),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: Text(l10n.save),
-        ),
-      ],
-    ),
-  );
-  if (confirmed != true) return;
-
-  try {
-    final done = await action(ref);
-    if (done) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.importDone)));
-    }
-  } on FormatException {
-    messenger.showSnackBar(SnackBar(content: Text(l10n.importFailed)));
-  }
-}
+/// Lingue supportate: codice + nome nella lingua stessa (non tradotto),
+/// così ognuno riconosce la propria indipendentemente dalla lingua attiva.
+const _languages = [
+  (Locale('en'), 'English'),
+  (Locale('it'), 'Italiano'),
+  (Locale('es'), 'Español'),
+  (Locale('fr'), 'Français'),
+  (Locale('de'), 'Deutsch'),
+  (Locale('ar'), 'العربية'),
+  (Locale('zh'), '中文'),
+  (Locale('hi'), 'हिन्दी'),
+];
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -55,6 +30,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final mode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
 
     return SafeArea(
       child: ListView(
@@ -111,85 +87,24 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Text(l10n.backup, style: Theme.of(context).textTheme.titleMedium),
+          Text(l10n.language, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 6),
           Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.wallet_outlined, size: 20),
-                  title: Text(
-                    l10n.exportWalletJson,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  onTap: () => exportWalletBackup(ref),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.wallet_outlined, size: 20),
-                  title: Text(
-                    l10n.exportWalletExcel,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  onTap: () => exportWalletExcelBackup(ref),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.move_to_inbox_outlined, size: 20),
-                  title: Text(
-                    l10n.importWallet,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  onTap: () async {
-                    final messenger = ScaffoldMessenger.of(context);
-                    try {
-                      if (await importWalletBackup(ref) && context.mounted) {
-                        messenger.showSnackBar(
-                          SnackBar(content: Text(l10n.walletImported)),
-                        );
-                      }
-                    } on FormatException {
-                      messenger.showSnackBar(
-                        SnackBar(content: Text(l10n.importFailed)),
-                      );
-                    }
-                  },
-                ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.upload_file_outlined, size: 20),
-                  title: Text(
-                    l10n.exportJson,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  onTap: () => exportJsonBackup(ref),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.table_view_outlined, size: 20),
-                  title: Text(
-                    l10n.exportExcel,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  onTap: () => exportExcelBackup(ref),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.download_outlined, size: 20),
-                  title: Text(
-                    l10n.importJson,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  onTap: () =>
-                      _confirmAndImport(context, ref, importJsonBackup),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.grid_on_outlined, size: 20),
-                  title: Text(
-                    l10n.importExcel,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  onTap: () =>
-                      _confirmAndImport(context, ref, importExcelBackup),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              child: DropdownButtonFormField<Locale>(
+                initialValue: locale,
+                isExpanded: true,
+                decoration: const InputDecoration(border: InputBorder.none),
+                items: [
+                  for (final (value, label) in _languages)
+                    DropdownMenuItem(
+                      value: value,
+                      child: Text(label, style: const TextStyle(fontSize: 14)),
+                    ),
+                ],
+                onChanged: (v) => ref.read(localeProvider.notifier).set(v!),
+              ),
             ),
           ),
           const SizedBox(height: 20),

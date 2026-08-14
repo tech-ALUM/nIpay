@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nipay/data/db/app_database.dart';
@@ -65,6 +66,26 @@ Future<void> seed(AppDatabase db) async {
 }
 
 void main() {
+  // Stessa config di main.dart: DateTime serializzati come testo ISO, non
+  // millisecondi Unix, così i file di export restano leggibili/portabili.
+  setUpAll(() {
+    driftRuntimeOptions.defaultSerializer = const ValueSerializer.defaults(
+      serializeDateTimeValuesAsString: true,
+    );
+  });
+
+  test('exported DateTimes are ISO-8601 strings, not epoch millis', () async {
+    final db = AppDatabase(NativeDatabase.memory());
+    await seed(db);
+
+    final json = await exportToJson(db);
+    final createdAt = (json['wallets'] as List).single['createdAt'];
+    expect(createdAt, isA<String>());
+    expect(DateTime.tryParse(createdAt as String), isNotNull);
+
+    await db.close();
+  });
+
   test('JSON export → import into empty DB restores everything', () async {
     final source = AppDatabase(NativeDatabase.memory());
     await seed(source);

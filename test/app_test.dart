@@ -6,15 +6,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nipay/app.dart';
 import 'package:nipay/core/money.dart';
 import 'package:nipay/core/providers.dart';
+import 'package:nipay/data/repositories/custom_field_repository.dart'
+    show CustomFieldType;
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<Widget> _app() async {
+import 'data/exchange_rate_service_test.dart' show FakeExchangeRateService;
+
+Future<Widget> _app({List<Override> extraOverrides = const []}) async {
   SharedPreferences.setMockInitialValues({});
   final prefs = await SharedPreferences.getInstance();
   return ProviderScope(
     overrides: [
       databaseExecutorProvider.overrideWithValue(NativeDatabase.memory()),
       sharedPreferencesProvider.overrideWithValue(prefs),
+      ...extraOverrides,
     ],
     child: const NipayApp(),
   );
@@ -65,6 +70,30 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('creating a wallet without a name shows an error, not a crash', (
+    tester,
+  ) async {
+    await tester.pumpWidget(await _app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('addWalletButton')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('walletBalanceField')), '1000');
+    await tester.ensureVisible(find.byKey(const Key('walletSaveButton')));
+    await tester.tap(find.byKey(const Key('walletSaveButton')));
+    await tester.pumpAndSettle();
+
+    // Il foglio resta aperto con l'errore, nessun portafoglio creato.
+    expect(find.text('Enter a wallet name'), findsOneWidget);
+    expect(find.byKey(const Key('walletNameField')), findsOneWidget);
+    expect(
+      find.text('Create your first wallet to get started.'),
+      findsOneWidget,
+    );
+
+    await _unmount(tester);
+  });
+
   testWidgets('adding an expense updates balance and recent list', (
     tester,
   ) async {
@@ -91,6 +120,89 @@ void main() {
 
     await _unmount(tester);
   });
+
+  testWidgets(
+    'currency conversion rounding to zero is blocked, not saved silently',
+    (tester) async {
+      // Tasso volutamente estremo: 0,01 nella valuta di inserimento diventa
+      // 0,00 nel portafoglio (1 centesimo * 0.001 = 0.001, arrotonda a 0).
+      await tester.pumpWidget(
+        await _app(
+          extraOverrides: [
+            exchangeRateServiceProvider.overrideWithValue(
+              FakeExchangeRateService({('USD', 'EUR'): 0.001}),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _createWallet(tester); // EUR di default
+
+      await tester.tap(find.byKey(const Key('addTransactionFab')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('amountField')), '0,01');
+
+      await tester.tap(find.byKey(const Key('transactionCurrencyDropdown')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('USD \$').last);
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+      await tester.tap(find.byKey(const Key('txSaveButton')));
+      await tester.pumpAndSettle();
+
+      // Bloccato con errore, non salvato come transazione fantasma da 0€.
+      expect(find.text('Invalid amount'), findsOneWidget);
+      expect(
+        find.text('Create your first wallet to get started.'),
+        findsNothing,
+      );
+      expect(find.text('No transactions yet. Tap + to add the first one.'), findsOneWidget);
+
+      await _unmount(tester);
+    },
+  );
+
+  testWidgets(
+    'changing a wallet currency via Save rescales only the initial balance',
+    (tester) async {
+      await tester.pumpWidget(
+        await _app(
+          extraOverrides: [
+            exchangeRateServiceProvider.overrideWithValue(
+              FakeExchangeRateService({('EUR', 'USD'): 1.1}),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _createWallet(tester); // EUR, saldo 1000,00
+
+      // Il bottone edit sulla card apre il foglio azioni (il long-press,
+      // ora, serve solo a trascinare per riordinare).
+      await tester.tap(find.byKey(const Key('walletEditButton')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('walletActionsCurrencyDropdown')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('USD \$').last);
+      await tester.pumpAndSettle();
+
+      // "Salva" è l'unica conferma: rinomina + cambio valuta insieme.
+      await tester.tap(find.byKey(const Key('walletActionsSaveButton')));
+      await tester.pumpAndSettle();
+
+      // Saldo riscalato al tasso 1.1: 1000,00 € → 1.100,00 $.
+      expect(
+        find.text(formatCents(110000, currency: 'USD', symbolOnly: true)),
+        findsWidgets,
+      );
+
+      await _unmount(tester);
+    },
+  );
 
   testWidgets('creating a tag inline attaches it and the tag filter finds it', (
     tester,
@@ -126,11 +238,152 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('#casa').last);
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Apply'));
+    await tester.pumpAndSettle();
 
     expect(find.text('Bolletta'), findsOneWidget);
 
     await _unmount(tester);
   });
+
+  testWidgets(
+    'editing a transaction shows its existing tags selected, and '
+    'deselecting one actually removes it',
+    (tester) async {
+      await tester.pumpWidget(await _app());
+      await tester.pumpAndSettle();
+
+      await _createWallet(tester);
+
+      await tester.tap(find.byKey(const Key('addTransactionFab')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('amountField')), '10');
+      await tester.enterText(
+        find.byKey(const Key('descriptionField')),
+        'Bolletta',
+      );
+      await tester.ensureVisible(find.byKey(const Key('addTagChip')));
+      await tester.tap(find.byKey(const Key('addTagChip')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('newTagField')), 'casa');
+      await tester.tap(find.byKey(const Key('tagSaveButton')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+      await tester.tap(find.byKey(const Key('txSaveButton')));
+      await tester.pumpAndSettle();
+
+      // Riapri in modifica: il tag già assegnato deve risultare selezionato,
+      // non deselezionato come prima del fix.
+      await tester.tap(find.text('Bolletta'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('editTransactionButton')));
+      await tester.pumpAndSettle();
+
+      final chip = tester.widget<FilterChip>(
+        find.widgetWithText(FilterChip, '#casa'),
+      );
+      expect(chip.selected, isTrue);
+
+      // Deseleziona e salva: il tag deve sparire davvero, non solo dalla UI.
+      await tester.tap(find.text('#casa'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+      await tester.tap(find.byKey(const Key('txSaveButton')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Transactions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('All tags'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('#casa').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bolletta'), findsNothing);
+
+      await _unmount(tester);
+    },
+  );
+
+  testWidgets(
+    'editing a transaction shows its existing custom field value, not blank',
+    (tester) async {
+      await tester.pumpWidget(await _app());
+      await tester.pumpAndSettle();
+
+      await _createWallet(tester);
+
+      // Nessuna UI per definire un campo custom in questo flusso: lo creo
+      // direttamente via repository, come farebbe la schermata dedicata.
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(MaterialApp)),
+      );
+      final walletId = container.read(activeWalletProvider)!.id;
+      await container
+          .read(customFieldRepositoryProvider)
+          .define(
+            walletId: walletId,
+            name: 'Riferimento',
+            type: CustomFieldType.text,
+          );
+      container.invalidate(customFieldDefsProvider);
+
+      await tester.tap(find.byKey(const Key('addTransactionFab')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('amountField')), '10');
+      await tester.enterText(
+        find.byKey(const Key('descriptionField')),
+        'Bolletta',
+      );
+      // La key del campo è per-id (non prevedibile qui): lo trovo dal suo
+      // label, come farebbe un utente.
+      final field = find.ancestor(
+        of: find.text('Riferimento'),
+        matching: find.byType(TextField),
+      );
+      await tester.ensureVisible(field);
+      await tester.enterText(field, 'ABC123');
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('txSaveButton')));
+      await tester.pumpAndSettle();
+
+      // Riapri in modifica: il valore già impostato deve essere precompilato.
+      await tester.ensureVisible(find.text('Bolletta'));
+      await tester.tap(find.text('Bolletta'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('editTransactionButton')));
+      await tester.pumpAndSettle();
+
+      final reopenedField = find.ancestor(
+        of: find.text('Riferimento'),
+        matching: find.byType(TextField),
+      );
+      final controller = tester.widget<TextField>(reopenedField).controller;
+      expect(controller?.text, 'ABC123');
+
+      // Svuota il campo e salva: il vecchio valore deve sparire davvero dal
+      // DB, non solo restare invisibile nella UI.
+      await tester.enterText(reopenedField, '');
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('txSaveButton')));
+      await tester.pumpAndSettle();
+
+      final tx = (await container
+              .read(recentTransactionsProvider.future))
+          .single;
+      final storedValues = await container
+          .read(customFieldRepositoryProvider)
+          .valuesOf(tx.id);
+      expect(storedValues.single.value, isEmpty);
+
+      await _unmount(tester);
+    },
+  );
 
   testWidgets('budget shows in home and warns when nearly exhausted', (
     tester,

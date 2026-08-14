@@ -19,8 +19,8 @@ class TransactionsScreen extends ConsumerStatefulWidget {
 class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
   String _query = '';
-  String? _categoryId;
-  String? _tagId;
+  Set<String> _categoryIds = {};
+  Set<String> _tagIds = {};
 
   void _shiftMonth(int delta) =>
       setState(() => _month = DateTime(_month.year, _month.month + delta));
@@ -29,13 +29,19 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
+    final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     // MVP: filtro client-side sulle ultime transazioni; query dedicata in M6.
     final all =
         ref.watch(recentTransactionsProvider).valueOrNull ??
         const <Transaction>[];
-    final tagIds = _tagId == null
-        ? null
-        : ref.watch(txIdsWithTagProvider(_tagId!)).valueOrNull ?? const {};
+    // Una transazione passa il filtro tag se ha ALMENO UNO dei tag selezionati.
+    Set<String>? tagFilterIds;
+    if (_tagIds.isNotEmpty) {
+      tagFilterIds = {
+        for (final id in _tagIds)
+          ...ref.watch(txIdsWithTagProvider(id)).valueOrNull ?? const {},
+      };
+    }
     // La ricerca guarda anche i valori dei campi custom.
     final fieldMatchIds = _query.isEmpty
         ? const <String>{}
@@ -46,8 +52,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       (t) =>
           t.date.year == _month.year &&
           t.date.month == _month.month &&
-          (_categoryId == null || t.categoryId == _categoryId) &&
-          (tagIds == null || tagIds.contains(t.id)) &&
+          (_categoryIds.isEmpty || _categoryIds.contains(t.categoryId)) &&
+          (tagFilterIds == null || tagFilterIds.contains(t.id)) &&
           (_query.isEmpty ||
               t.description.toLowerCase().contains(_query.toLowerCase()) ||
               fieldMatchIds.contains(t.id)),
@@ -91,8 +97,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: _FilterDropdown<String>(
-                        value: _categoryId,
+                      child: _MultiFilterDropdown<String>(
+                        title: l10n.category,
+                        selected: _categoryIds,
                         nullLabel: l10n.allCategories,
                         items: [
                           for (final c
@@ -100,13 +107,14 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                   const <Category>[])
                             (c.id, '${c.icon} ${c.name}'),
                         ],
-                        onChanged: (v) => setState(() => _categoryId = v),
+                        onChanged: (v) => setState(() => _categoryIds = v),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: _FilterDropdown<String>(
-                        value: _tagId,
+                      child: _MultiFilterDropdown<String>(
+                        title: l10n.tags,
+                        selected: _tagIds,
                         nullLabel: l10n.allTags,
                         items: [
                           for (final t
@@ -114,7 +122,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                   const <Tag>[])
                             (t.id, '#${t.name}'),
                         ],
-                        onChanged: (v) => setState(() => _tagId = v),
+                        onChanged: (v) => setState(() => _tagIds = v),
                       ),
                     ),
                   ],
@@ -166,7 +174,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                 ),
                               ),
                               Text(
-                                formatCents(_dayNet(byDay[day]!), signed: true),
+                                formatCents(
+                                  _dayNet(byDay[day]!),
+                                  currency: currency,
+                                  signed: true,
+                                ),
                                 style: moneyStyle(
                                   size: 11,
                                   weight: FontWeight.w500,
@@ -197,43 +209,141 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   }
 }
 
-/// Dropdown compatto per i filtri: la voce null è "tutti".
-class _FilterDropdown<T> extends StatelessWidget {
-  const _FilterDropdown({
-    required this.value,
+/// Filtro compatto multi-selezione: mostra [nullLabel] quando nulla è
+/// selezionato, altrimenti i nomi scelti; tocca per aprire il selettore.
+class _MultiFilterDropdown<T> extends StatelessWidget {
+  const _MultiFilterDropdown({
+    required this.title,
+    required this.selected,
     required this.nullLabel,
     required this.items,
     required this.onChanged,
   });
 
-  final T? value;
+  final String title;
+  final Set<T> selected;
   final String nullLabel;
   final List<(T, String)> items;
-  final ValueChanged<T?> onChanged;
+  final ValueChanged<Set<T>> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<T?>(
-      initialValue: value,
-      isDense: true,
-      decoration: InputDecoration(
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      style: TextStyle(
-        fontSize: 12,
-        color: Theme.of(context).colorScheme.onSurface,
-      ),
-      items: [
-        DropdownMenuItem<T?>(value: null, child: Text(nullLabel)),
-        for (final (v, label) in items)
-          DropdownMenuItem<T?>(
-            value: v,
-            child: Text(label, overflow: TextOverflow.ellipsis),
+    final label = selected.isEmpty
+        ? nullLabel
+        : items
+              .where((e) => selected.contains(e.$1))
+              .map((e) => e.$2)
+              .join(', ');
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () async {
+        final result = await showModalBottomSheet<Set<T>>(
+          context: context,
+          isScrollControlled: true,
+          builder: (_) => _MultiSelectSheet<T>(
+            title: title,
+            items: items,
+            selected: selected,
           ),
-      ],
-      onChanged: onChanged,
+        );
+        if (result != null) onChanged(result);
+      },
+      child: InputDecorator(
+        decoration: InputDecoration(
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 8,
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        child: Text(
+          label,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 12,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MultiSelectSheet<T> extends StatefulWidget {
+  const _MultiSelectSheet({
+    required this.title,
+    required this.items,
+    required this.selected,
+  });
+
+  final String title;
+  final List<(T, String)> items;
+  final Set<T> selected;
+
+  @override
+  State<_MultiSelectSheet<T>> createState() => _MultiSelectSheetState<T>();
+}
+
+class _MultiSelectSheetState<T> extends State<_MultiSelectSheet<T>> {
+  late final Set<T> _selected = {...widget.selected};
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 12, bottom: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => _selected.clear()),
+                    child: Text(l10n.none),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final (value, label) in widget.items)
+                    CheckboxListTile(
+                      value: _selected.contains(value),
+                      title: Text(label),
+                      onChanged: (checked) => setState(
+                        () => (checked ?? false)
+                            ? _selected.add(value)
+                            : _selected.remove(value),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(_selected),
+                  child: Text(l10n.apply),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

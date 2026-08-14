@@ -25,6 +25,7 @@ class NipayApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
+      locale: ref.watch(localeProvider),
       theme: nipayLightTheme(),
       darkTheme: nipayDarkTheme(),
       themeMode: ref.watch(themeModeProvider),

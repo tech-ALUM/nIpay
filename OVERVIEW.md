@@ -16,7 +16,7 @@ Tracciare spese e entrate mensili in modo flessibile per uso **personale/team AL
 | State management | **Riverpod** |
 | Persistenza | **Drift** (SQLite tipizzato, query reattive, migrazioni) |
 | Dati | **Solo locale**, offline-first, ma architettura **sync-ready** per futuro sync cloud |
-| Valuta | **Solo EUR** |
+| Valuta | **Multi-valuta** (decisione 2026-08-11, sostituisce "solo EUR"): ogni portafoglio ha una valuta scelta alla creazione; ogni transazione può essere inserita in una valuta diversa, convertita al salvataggio con tasso di cambio live |
 | Lingua | **IT + EN** (flutter l10n fin dall'inizio) |
 | Import/Export | JSON (canonico, backup/restore round-trip) + Excel multi-foglio |
 | Design | Mini design-system su **Claude Design** (claude.ai/design) prima della UI, poi tradotto in tema Flutter |
@@ -69,8 +69,8 @@ UI (Flutter widgets, tema da design-system)
 
 | Entità | Note |
 |---|---|
-| `Wallet` | nome, icona/colore, saldo iniziale, `archivedAt` |
-| `Transaction` | tipo (`expense` / `income` / `transfer`), importo (centesimi, int), data, wallet (e `walletTo` per i transfer), categoria, note |
+| `Wallet` | nome, icona/colore, saldo iniziale, **valuta** (ISO 4217, scelta alla creazione, modificabile in seguito — converte solo il saldo iniziale al tasso attuale, non lo storico), `archivedAt` |
+| `Transaction` | tipo (`expense` / `income` / `transfer`), importo (centesimi, int, nella valuta del wallet), data, wallet (e `walletTo` per i transfer), categoria, note; se inserita in valuta diversa: `entryCurrency`/`entryAmountCents` (importo originale) e, per i transfer cross-valuta, `amountCentsTo` (credito convertito nella valuta di destinazione) |
 | `Category` | gerarchica (`parentId`), colore, icona, tipo (spesa/entrata/entrambi), ordinamento |
 | `Tag` + `TransactionTag` | many-to-many |
 | `CustomFieldDef` / `CustomFieldValue` | definizione (nome, tipo, opzioni) + valore per transazione |
@@ -84,7 +84,6 @@ Importi sempre in **centesimi (int)** per evitare errori di floating point.
 ## Non-obiettivi (per ora)
 
 - Sync cloud / multi-dispositivo (architettura predisposta, non implementato)
-- Multi-valuta
 - Import da export bancari o altre app
 - Pubblicazione su App Store / Play Store
 - Multi-utente / portafogli condivisi

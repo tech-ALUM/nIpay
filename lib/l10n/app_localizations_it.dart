@@ -39,6 +39,15 @@ class AppLocalizationsIt extends AppLocalizations {
   String get walletName => 'Nome';
 
   @override
+  String get currency => 'Valuta';
+
+  @override
+  String get walletNameDuplicate => 'Esiste già un portafoglio con questo nome';
+
+  @override
+  String get walletNameRequired => 'Inserisci un nome per il portafoglio';
+
+  @override
   String get initialBalance => 'Saldo iniziale';
 
   @override
@@ -70,6 +79,15 @@ class AppLocalizationsIt extends AppLocalizations {
   String get invalidAmount => 'Importo non valido';
 
   @override
+  String get exchangeRateError =>
+      'Impossibile ottenere il tasso di cambio: controlla la connessione e riprova';
+
+  @override
+  String convertedPreview(String amount) {
+    return '≈ $amount al tasso attuale';
+  }
+
+  @override
   String get description => 'Descrizione';
 
   @override
@@ -91,10 +109,21 @@ class AppLocalizationsIt extends AppLocalizations {
   String get save => 'Salva';
 
   @override
+  String get apply => 'Applica';
+
+  @override
   String get cancel => 'Annulla';
 
   @override
   String get delete => 'Elimina';
+
+  @override
+  String get deleteWalletTitle => 'Eliminare il portafoglio?';
+
+  @override
+  String deleteWalletBody(String name) {
+    return 'Per confermare, scrivi \"$name\" nel campo qui sotto. L\'operazione non è reversibile.';
+  }
 
   @override
   String get allWallets => 'Tutti i portafogli';
@@ -228,6 +257,16 @@ class AppLocalizationsIt extends AppLocalizations {
   String get newTag => 'Nuovo tag';
 
   @override
+  String get tagNameRequired => 'Inserisci un nome per il tag';
+
+  @override
+  String get tagNameDuplicate => 'Esiste già un tag con questo nome';
+
+  @override
+  String get costCenterNameRequired =>
+      'Inserisci un nome per il centro di costo';
+
+  @override
   String get tagName => 'Nome tag';
 
   @override
@@ -265,46 +304,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get noItems => 'Ancora niente qui.';
-
-  @override
-  String get backup => 'Backup';
-
-  @override
-  String get exportJson => 'Esporta backup JSON';
-
-  @override
-  String get exportExcel => 'Esporta Excel';
-
-  @override
-  String get importJson => 'Importa backup JSON';
-
-  @override
-  String get importExcel => 'Importa Excel';
-
-  @override
-  String get exportWalletJson => 'Esporta portafoglio attivo (JSON)';
-
-  @override
-  String get exportWalletExcel => 'Esporta portafoglio attivo (Excel)';
-
-  @override
-  String get importWallet => 'Importa portafoglio (aggiunge uno spazio)';
-
-  @override
-  String get walletImported => 'Portafoglio importato';
-
-  @override
-  String get importConfirmTitle => 'Sostituire tutti i dati?';
-
-  @override
-  String get importConfirmBody =>
-      'L\'import sostituisce ogni portafoglio, transazione e impostazione con il contenuto del file. Operazione irreversibile.';
-
-  @override
-  String get importDone => 'Importazione completata';
-
-  @override
-  String get importFailed => 'Import fallito: file non valido';
 
   @override
   String get expenseReport => 'Nota spese';
@@ -377,6 +376,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get none => 'Nessuno';
+
+  @override
+  String get language => 'Lingua';
 
   @override
   String get settingsTheme => 'Tema';

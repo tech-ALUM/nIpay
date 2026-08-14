@@ -20,6 +20,7 @@ class BudgetProgressBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final progress = ref
         .watch(budgetProgressProvider(budget.categoryId))
         .valueOrNull;
@@ -43,7 +44,8 @@ class BudgetProgressBar extends ConsumerWidget {
               ),
             ),
             Text(
-              '${formatCents(spent)} / ${formatCents(budget.limitCents)}',
+              '${formatCents(spent, currency: currency)} / '
+              '${formatCents(budget.limitCents, currency: currency)}',
               style: moneyStyle(
                 size: 11,
                 weight: FontWeight.w500,

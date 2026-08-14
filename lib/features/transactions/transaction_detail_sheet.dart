@@ -30,6 +30,7 @@ class _TransactionDetailSheet extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
     final t = transaction;
+    final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final categories =
         ref.watch(categoriesProvider).valueOrNull ?? const <Category>[];
     final category = categories.where((c) => c.id == t.categoryId).firstOrNull;
@@ -38,14 +39,17 @@ class _TransactionDetailSheet extends ConsumerWidget {
     final appDir = ref.watch(appDirProvider).valueOrNull;
 
     final (color, amountText) = switch (t.type) {
-      TransactionType.expense => (palette.expense, formatCents(-t.amountCents)),
+      TransactionType.expense => (
+        palette.expense,
+        formatCents(-t.amountCents, currency: currency),
+      ),
       TransactionType.income => (
         palette.income,
-        formatCents(t.amountCents, signed: true),
+        formatCents(t.amountCents, currency: currency, signed: true),
       ),
       TransactionType.transfer => (
         palette.transfer,
-        formatCents(t.amountCents),
+        formatCents(t.amountCents, currency: currency),
       ),
     };
 
