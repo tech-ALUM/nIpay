@@ -391,4 +391,102 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get themeDark => 'Scuro';
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get accountLocalModeDescription =>
+      'Non hai fatto accesso: i tuoi dati restano solo su questo dispositivo. Accedi per sincronizzarli tra più dispositivi.';
+
+  @override
+  String get signIn => 'Accedi';
+
+  @override
+  String get signUp => 'Registrati';
+
+  @override
+  String get signOut => 'Esci';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get confirmSignOut =>
+      'Uscire dall\'account? I dati restano su questo dispositivo e continuano a funzionare offline.';
+
+  @override
+  String get noAccountYet => 'Non hai un account? Registrati';
+
+  @override
+  String get alreadyHaveAccount => 'Hai già un account? Accedi';
+
+  @override
+  String get forgotPassword => 'Password dimenticata?';
+
+  @override
+  String get resetPasswordSent =>
+      'Email per il reset della password inviata — controlla la posta.';
+
+  @override
+  String signedInAs(String email) {
+    return 'Accesso effettuato come $email';
+  }
+
+  @override
+  String get invalidEmail => 'Inserisci un indirizzo email valido';
+
+  @override
+  String get passwordTooShort => 'La password deve avere almeno 8 caratteri';
+
+  @override
+  String get changePassword => 'Cambia password';
+
+  @override
+  String get newPassword => 'Nuova password';
+
+  @override
+  String get confirmPassword => 'Conferma password';
+
+  @override
+  String get passwordsDontMatch => 'Le password non coincidono';
+
+  @override
+  String get passwordChanged =>
+      'Password cambiata. Gli altri dispositivi sono stati disconnessi.';
+
+  @override
+  String get syncNow => 'Sincronizza ora';
+
+  @override
+  String get syncComplete => 'Sincronizzazione completata';
+
+  @override
+  String get syncFailed =>
+      'Sincronizzazione fallita. Controlla la connessione e riprova.';
+
+  @override
+  String get deleteAccount => 'Elimina account';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Il tuo account verrà eliminato definitivamente tra 30 giorni. Puoi annullare in qualsiasi momento prima di allora effettuando di nuovo l\'accesso. I dati su questo dispositivo non vengono toccati e continuano a funzionare offline.';
+
+  @override
+  String get deleteAccountRequested =>
+      'Cancellazione account richiesta. Hai 30 giorni per annullare.';
+
+  @override
+  String deletionPending(String date) {
+    return 'Account programmato per la cancellazione il $date.';
+  }
+
+  @override
+  String get cancelDeletion => 'Annulla cancellazione';
+
+  @override
+  String get deletionCanceled => 'Cancellazione account annullata.';
 }

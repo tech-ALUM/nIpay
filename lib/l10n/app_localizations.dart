@@ -853,6 +853,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeDark;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @accountLocalModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re not signed in: your data stays on this device only. Sign in to sync it across devices.'**
+  String get accountLocalModeDescription;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signIn;
+
+  /// No description provided for @signUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get signUp;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOut;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @confirmSignOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of your account? Your data stays on this device and keeps working offline.'**
+  String get confirmSignOut;
+
+  /// No description provided for @noAccountYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? Sign up'**
+  String get noAccountYet;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get alreadyHaveAccount;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPassword;
+
+  /// No description provided for @resetPasswordSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset email sent — check your inbox.'**
+  String get resetPasswordSent;
+
+  /// No description provided for @signedInAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as {email}'**
+  String signedInAs(String email);
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address'**
+  String get invalidEmail;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get passwordTooShort;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change password'**
+  String get changePassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPassword;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get confirmPassword;
+
+  /// No description provided for @passwordsDontMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords don\'t match'**
+  String get passwordsDontMatch;
+
+  /// No description provided for @passwordChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed. Other devices have been signed out.'**
+  String get passwordChanged;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get syncNow;
+
+  /// No description provided for @syncComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync complete'**
+  String get syncComplete;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed. Check your connection and try again.'**
+  String get syncFailed;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account will be permanently deleted in 30 days. You can cancel any time before then by signing back in. This does not affect the data on this device, which keeps working offline.'**
+  String get deleteAccountConfirmBody;
+
+  /// No description provided for @deleteAccountRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deletion requested. You have 30 days to cancel.'**
+  String get deleteAccountRequested;
+
+  /// No description provided for @deletionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Account scheduled for deletion on {date}.'**
+  String deletionPending(String date);
+
+  /// No description provided for @cancelDeletion.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel deletion'**
+  String get cancelDeletion;
+
+  /// No description provided for @deletionCanceled.
+  ///
+  /// In en, this message translates to:
+  /// **'Account deletion canceled.'**
+  String get deletionCanceled;
 }
 
 class _AppLocalizationsDelegate

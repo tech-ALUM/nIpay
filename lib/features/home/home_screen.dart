@@ -6,6 +6,7 @@ import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/db/app_database.dart';
 import '../../l10n/app_localizations.dart';
+import '../account/account_screen.dart';
 import '../budgets/budget_manager_screen.dart';
 import '../budgets/budget_progress_bar.dart';
 import '../expense_report/expense_report_screen.dart';
@@ -25,11 +26,16 @@ class HomeScreen extends ConsumerWidget {
     final recent = ref.watch(recentTransactionsProvider).valueOrNull ?? [];
     final palette = context.nipay;
     final activeCurrency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
+    final signedInUser = ref.watch(authStateProvider).valueOrNull;
 
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
         children: [
+          if (signedInUser != null) ...[
+            _SignedInBadge(email: signedInUser.email ?? ''),
+            const SizedBox(height: 12),
+          ],
           Text(
             '${l10n.totalBalance}${ref.watch(activeWalletProvider) != null ? ' · ${ref.watch(activeWalletProvider)!.name}' : ''}',
             style: Theme.of(context).textTheme.bodySmall,
@@ -251,6 +257,48 @@ class _DeltaChip extends StatelessWidget {
           size: 12,
           weight: FontWeight.w500,
           color: palette.income,
+        ),
+      ),
+    );
+  }
+}
+
+/// Promemoria visivo di chi ha fatto accesso — l'app resta usabile in
+/// locale senza account, quindi questo compare solo quando ce n'è uno,
+/// non un banner permanente da dover ignorare.
+class _SignedInBadge extends StatelessWidget {
+  const _SignedInBadge({required this.email});
+
+  final String email;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const AccountScreen())),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.account_circle_outlined,
+              size: 15,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              email,
+              style: Theme.of(context).textTheme.bodySmall,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );

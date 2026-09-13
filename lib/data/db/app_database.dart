@@ -20,17 +20,25 @@ part 'app_database.g.dart';
     CostCenters,
     ExpenseReports,
     ExpenseReportEntries,
+    SyncStates,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onUpgrade: (m, from, to) async {
+      if (from < 6) {
+        // v6: motore di sync (M-ACC6). Nessun backfill: chi aggiorna da
+        // una versione precedente è per definizione senza account attivo
+        // ancora sincronizzato (la sync è opt-in), quindi la tabella parte
+        // vuota e la prima sync la popolerà al primo login.
+        await m.createTable(syncStates);
+      }
       if (from < 5) {
         // v5: multi-valuta. Default 'EUR' per i portafogli esistenti; le
         // nuove colonne su transactions restano NULL (= nessuna conversione,

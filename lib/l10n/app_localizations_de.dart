@@ -392,4 +392,101 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get themeDark => 'Dunkel';
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get accountLocalModeDescription =>
+      'You\'re not signed in: your data stays on this device only. Sign in to sync it across devices.';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get signUp => 'Sign up';
+
+  @override
+  String get signOut => 'Sign out';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get confirmSignOut =>
+      'Sign out of your account? Your data stays on this device and keeps working offline.';
+
+  @override
+  String get noAccountYet => 'Don\'t have an account? Sign up';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account? Sign in';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get resetPasswordSent =>
+      'Password reset email sent — check your inbox.';
+
+  @override
+  String signedInAs(String email) {
+    return 'Signed in as $email';
+  }
+
+  @override
+  String get invalidEmail => 'Enter a valid email address';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 8 characters';
+
+  @override
+  String get changePassword => 'Change password';
+
+  @override
+  String get newPassword => 'New password';
+
+  @override
+  String get confirmPassword => 'Confirm password';
+
+  @override
+  String get passwordsDontMatch => 'Passwords don\'t match';
+
+  @override
+  String get passwordChanged =>
+      'Password changed. Other devices have been signed out.';
+
+  @override
+  String get syncNow => 'Sync now';
+
+  @override
+  String get syncComplete => 'Sync complete';
+
+  @override
+  String get syncFailed => 'Sync failed. Check your connection and try again.';
+
+  @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get deleteAccountConfirmBody =>
+      'Your account will be permanently deleted in 30 days. You can cancel any time before then by signing back in. This does not affect the data on this device, which keeps working offline.';
+
+  @override
+  String get deleteAccountRequested =>
+      'Account deletion requested. You have 30 days to cancel.';
+
+  @override
+  String deletionPending(String date) {
+    return 'Account scheduled for deletion on $date.';
+  }
+
+  @override
+  String get cancelDeletion => 'Cancel deletion';
+
+  @override
+  String get deletionCanceled => 'Account deletion canceled.';
 }

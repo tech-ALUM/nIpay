@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../l10n/app_localizations.dart';
+import '../account/account_screen.dart';
 import '../budgets/budget_manager_screen.dart';
 import '../recurring/recurring_manager_screen.dart';
 import 'category_manager_screen.dart';
@@ -38,6 +39,21 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           Text(l10n.settingsTab, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              leading: const Icon(Icons.account_circle_outlined, size: 20),
+              title: Text(
+                l10n.account,
+                style: const TextStyle(fontSize: 14),
+              ),
+              trailing: const Icon(Icons.chevron_right, size: 18),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const AccountScreen()),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
           Text(
             l10n.customization,
             style: Theme.of(context).textTheme.titleMedium,

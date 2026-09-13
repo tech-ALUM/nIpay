@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../data/repositories/attachment_repository.dart';
 
@@ -20,7 +21,9 @@ import '../data/repositories/recurring_repository.dart';
 import '../data/repositories/tag_repository.dart';
 import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/wallet_repository.dart';
+import '../data/services/auth_service.dart';
 import '../data/services/exchange_rate_service.dart';
+import '../data/services/sync_service.dart';
 
 /// Executor del DB: nei test viene sostituito con NativeDatabase.memory().
 final databaseExecutorProvider = Provider<QueryExecutor>(
@@ -362,3 +365,26 @@ class LocaleNotifier extends Notifier<Locale> {
     ref.read(sharedPreferencesProvider).setString(_key, locale.languageCode);
   }
 }
+
+final authServiceProvider = Provider<AuthService>(
+  (ref) => SupabaseAuthService(Supabase.instance.client),
+);
+
+/// Utente loggato, o null in modalità solo-locale. Si aggiorna da solo a
+/// login/logout/scadenza sessione: la UI osserva questo, mai
+/// `authService.currentUser` direttamente (non reattivo).
+final authStateProvider = StreamProvider<User?>((ref) {
+  final service = ref.watch(authServiceProvider);
+  return service.authStateChanges;
+});
+
+/// Motore di sync (M-ACC6). `currentUserId` letto pigro ad ogni sync
+/// (non un valore catturato una volta) così riflette sempre lo stato di
+/// login corrente, incluso il caso limite di un logout a metà sync.
+final syncServiceProvider = Provider<SyncService>(
+  (ref) => SupabaseSyncService(
+    SupabaseSyncRemote(Supabase.instance.client),
+    ref.watch(databaseProvider),
+    currentUserId: () => ref.read(authServiceProvider).currentUser?.id,
+  ),
+);

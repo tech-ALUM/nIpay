@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,14 +43,55 @@ class RootShell extends ConsumerStatefulWidget {
   ConsumerState<RootShell> createState() => _RootShellState();
 }
 
-class _RootShellState extends ConsumerState<RootShell> {
+class _RootShellState extends ConsumerState<RootShell>
+    with WidgetsBindingObserver {
   int _tab = 0;
+  Timer? _periodicSyncTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Periodico "di sicurezza": il grosso del lavoro lo fanno il trigger
+    // al login e il resume dell'app: questo copre solo il caso di una
+    // sessione app lasciata aperta a lungo in primo piano.
+    _periodicSyncTimer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => _sync(),
+    );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _periodicSyncTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _sync();
+  }
+
+  /// Sync in background, mai bloccante per la UI. `syncNow()` è già un
+  /// no-op silenzioso in modalità solo-locale — un eventuale errore di
+  /// rete qui non deve mai propagarsi come eccezione non gestita.
+  void _sync() {
+    unawaited(
+      ref.read(syncServiceProvider).syncNow().catchError((_) {}),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // Seed categorie + catch-up ricorrenze prima di mostrare i dati.
     final ready = ref.watch(bootstrapProvider);
+    // Sync subito dopo il login (incluso l'avvio app con sessione già
+    // valida) — non al logout, dove non c'è nulla da sincronizzare.
+    ref.listen(authStateProvider, (previous, next) {
+      if (next.valueOrNull != null) _sync();
+    });
 
     return Scaffold(
       body: ready.when(

@@ -133,5 +133,44 @@
   "settingsTheme": "Tema",
   "themeSystem": "Sistema",
   "themeLight": "Chiaro",
-  "themeDark": "Scuro"
+  "themeDark": "Scuro",
+  "account": "Account",
+  "accountLocalModeDescription": "Non hai fatto accesso: i tuoi dati restano solo su questo dispositivo. Accedi per sincronizzarli tra più dispositivi.",
+  "signIn": "Accedi",
+  "signUp": "Registrati",
+  "signOut": "Esci",
+  "email": "Email",
+  "password": "Password",
+  "confirmSignOut": "Uscire dall'account? I dati restano su questo dispositivo e continuano a funzionare offline.",
+  "noAccountYet": "Non hai un account? Registrati",
+  "alreadyHaveAccount": "Hai già un account? Accedi",
+  "forgotPassword": "Password dimenticata?",
+  "resetPasswordSent": "Email per il reset della password inviata — controlla la posta.",
+  "signedInAs": "Accesso effettuato come {email}",
+  "@signedInAs": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "invalidEmail": "Inserisci un indirizzo email valido",
+  "passwordTooShort": "La password deve avere almeno 8 caratteri",
+  "changePassword": "Cambia password",
+  "newPassword": "Nuova password",
+  "confirmPassword": "Conferma password",
+  "passwordsDontMatch": "Le password non coincidono",
+  "passwordChanged": "Password cambiata. Gli altri dispositivi sono stati disconnessi.",
+  "syncNow": "Sincronizza ora",
+  "syncComplete": "Sincronizzazione completata",
+  "syncFailed": "Sincronizzazione fallita. Controlla la connessione e riprova.",
+  "deleteAccount": "Elimina account",
+  "deleteAccountConfirmBody": "Il tuo account verrà eliminato definitivamente tra 30 giorni. Puoi annullare in qualsiasi momento prima di allora effettuando di nuovo l'accesso. I dati su questo dispositivo non vengono toccati e continuano a funzionare offline.",
+  "deleteAccountRequested": "Cancellazione account richiesta. Hai 30 giorni per annullare.",
+  "deletionPending": "Account programmato per la cancellazione il {date}.",
+  "@deletionPending": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "cancelDeletion": "Annulla cancellazione",
+  "deletionCanceled": "Cancellazione account annullata."
 }

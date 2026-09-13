@@ -221,3 +221,25 @@ class Wallets extends Table with SyncColumns {
   /// del portafoglio (saldo, transazioni) è in questa valuta.
   TextColumn get currency => text().withDefault(const Constant('EUR'))();
 }
+
+/// Stato della sync (M-ACC6): una riga per utente loggato su questo device
+/// (in pratica sempre una sola, dato che l'app supporta un solo account
+/// attivo alla volta). Non c'è bisogno di una tabella di tombstone
+/// separata: `deletedAt`, già presente su ogni tabella, si propaga come
+/// una riga normale.
+///
+/// Due watermark separati invece di uno solo, per evitare bug di
+/// clock-skew: [lastPushedAt] è nel dominio dell'orologio LOCALE (i dati
+/// locali hanno `updatedAt` scritto dal client, quindi confrontarlo con
+/// un watermark scritto dallo stesso client è sempre coerente);
+/// [lastPulledAt] è nel dominio dell'orologio SERVER (i dati remoti hanno
+/// `updated_at` assegnato da un trigger Postgres, M-ACC1 — il watermark va
+/// aggiornato al massimo valore server osservato, mai al clock locale).
+class SyncStates extends Table {
+  TextColumn get userId => text()();
+  DateTimeColumn get lastPushedAt => dateTime()();
+  DateTimeColumn get lastPulledAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {userId};
+}
