@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ipa non firmata generata da scripts/build_ios_unsigned.sh
+nipay-unsigned.ipa

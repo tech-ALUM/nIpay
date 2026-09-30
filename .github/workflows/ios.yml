@@ -12,6 +12,7 @@ on:
       - 'ios/**'
       - 'pubspec.yaml'
       - '.github/workflows/ios.yml'
+      - 'scripts/build_ios_unsigned.sh'
 
 jobs:
   build-ios:
@@ -25,20 +26,8 @@ jobs:
           flutter-version: 3.44.6
           cache: true
 
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Generate l10n
-        run: flutter gen-l10n
-
-      - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
-
-      - name: Package unsigned IPA
-        run: |
-          mkdir -p Payload
-          cp -r build/ios/iphoneos/Runner.app Payload/
-          zip -qr nipay-unsigned.ipa Payload
+      - name: Build unsigned IPA
+        run: ./scripts/build_ios_unsigned.sh
 
       - uses: actions/upload-artifact@v4
         with:
