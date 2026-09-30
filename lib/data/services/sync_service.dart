@@ -60,7 +60,28 @@ class SupabaseSyncRemote implements SyncRemote {
 abstract interface class SyncService {
   /// Sincronizza subito. No-op silenzioso se non c'è un utente loggato
   /// (modalità solo-locale) — mai un errore per questo caso, è normale.
+  ///
+  /// Lancia [LocalDataOwnedByAnotherUserException] se i dati locali
+  /// appartengono a un altro account: in quel caso non viene inviato né
+  /// scaricato nulla.
   Future<void> syncNow();
+
+  /// True se l'utente loggato è diverso da quello a cui appartengono i
+  /// dati locali (sync bloccato finché i dati non vengono rimossi).
+  Future<bool> hasLocalDataOfAnotherUser();
+}
+
+/// I dati locali sono legati a un altro account (login A → logout →
+/// login B sullo stesso device). Il sync si rifiuta di partire: senza
+/// questo blocco i portafogli di A verrebbero caricati con
+/// `owner_user_id` = B (dati di A finiti nell'account di B).
+class LocalDataOwnedByAnotherUserException implements Exception {
+  const LocalDataOwnedByAnotherUserException();
+
+  @override
+  String toString() =>
+      'LocalDataOwnedByAnotherUserException: i dati locali appartengono a '
+      'un altro account';
 }
 
 /// Ordine di sync: genitori prima dei figli, sia per il push (rispetta le
@@ -83,6 +104,25 @@ class SupabaseSyncService implements SyncService {
   Future<void> syncNow() async {
     final userId = _currentUserId();
     if (userId == null) return;
+
+    if (await _isOwnedByAnotherUser(userId)) {
+      throw const LocalDataOwnedByAnotherUserException();
+    }
+    // Il device viene "rivendicato" PRIMA di inviare qualunque riga: se
+    // questa prima sync si interrompe a metà (rete), la riga di stato
+    // esiste già e un login successivo di un altro utente resta bloccato
+    // comunque. I dati creati in modalità solo-locale, mai sincronizzati,
+    // vanno al primo account che fa login (first-sync da locale, voluto).
+    await _db
+        .into(_db.syncStates)
+        .insert(
+          SyncStatesCompanion.insert(
+            userId: userId,
+            lastPushedAt: _epoch,
+            lastPulledAt: _epoch,
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
 
     final state = await (_db.select(
       _db.syncStates,
@@ -124,6 +164,24 @@ class SupabaseSyncService implements SyncService {
             lastPulledAt: maxPulled,
           ),
         );
+  }
+
+  @override
+  Future<bool> hasLocalDataOfAnotherUser() async {
+    final userId = _currentUserId();
+    if (userId == null) return false;
+    return _isOwnedByAnotherUser(userId);
+  }
+
+  /// Le righe di `SyncStates` sono il marchio di proprietà dei dati locali:
+  /// ne esiste una per ogni utente che ha sincronizzato su questo device,
+  /// e vengono rimosse solo insieme ai dati (`LocalDataService.wipe`).
+  Future<bool> _isOwnedByAnotherUser(String userId) async {
+    final other = await (_db.select(_db.syncStates)
+          ..where((t) => t.userId.equals(userId).not())
+          ..limit(1))
+        .getSingleOrNull();
+    return other != null;
   }
 
   DateTime? _maxUpdatedAt(

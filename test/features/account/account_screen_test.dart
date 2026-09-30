@@ -6,11 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nipay/core/providers.dart';
 import 'package:nipay/data/services/auth_service.dart';
+import 'package:nipay/data/services/local_data_service.dart';
+import 'package:nipay/data/services/sync_service.dart';
 import 'package:nipay/features/account/account_screen.dart';
 import 'package:nipay/l10n/app_localizations.dart';
 // `AuthException` nascosto: nipay/data/services/auth_service.dart ne
 // definisce uno proprio con un messaggio già pronto per la UI, altrimenti
 // ambiguo con quello di gotrue re-esportato qui.
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 
 /// Doppio in-memory di [AuthService]: nessuna chiamata di rete, nessuna
@@ -92,9 +95,58 @@ class FakeAuthService implements AuthService {
   }
 }
 
-Widget _wrap(Widget child, {required FakeAuthService fakeAuth}) {
+/// Doppio di [SyncService]: [foreignData] simula un device che contiene i
+/// dati di un altro account.
+class FakeSyncService implements SyncService {
+  bool foreignData = false;
+  bool failNextSync = false;
+  int syncCalls = 0;
+
+  @override
+  Future<void> syncNow() async {
+    syncCalls++;
+    if (foreignData) throw const LocalDataOwnedByAnotherUserException();
+    if (failNextSync) {
+      failNextSync = false;
+      throw Exception('rete non disponibile');
+    }
+  }
+
+  @override
+  Future<bool> hasLocalDataOfAnotherUser() async => foreignData;
+}
+
+class FakeLocalDataService implements LocalDataService {
+  FakeLocalDataService(this._sync);
+
+  final FakeSyncService _sync;
+  bool wiped = false;
+
+  @override
+  Future<void> wipe() async {
+    wiped = true;
+    _sync.foreignData = false; // i dati dell'altro account non ci sono più
+  }
+}
+
+late SharedPreferences _prefs;
+
+Widget _wrap(
+  Widget child, {
+  required FakeAuthService fakeAuth,
+  FakeSyncService? fakeSync,
+  FakeLocalDataService? fakeLocalData,
+}) {
+  final sync = fakeSync ?? FakeSyncService();
   return ProviderScope(
-    overrides: [authServiceProvider.overrideWithValue(fakeAuth)],
+    overrides: [
+      authServiceProvider.overrideWithValue(fakeAuth),
+      syncServiceProvider.overrideWithValue(sync),
+      localDataServiceProvider.overrideWithValue(
+        fakeLocalData ?? FakeLocalDataService(sync),
+      ),
+      sharedPreferencesProvider.overrideWithValue(_prefs),
+    ],
     child: MaterialApp(
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -113,6 +165,11 @@ Widget _wrap(Widget child, {required FakeAuthService fakeAuth}) {
 }
 
 void main() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({'activeWalletId': 'w1'});
+    _prefs = await SharedPreferences.getInstance();
+  });
+
   testWidgets('form validation rejects invalid email and short password', (
     tester,
   ) async {
@@ -281,5 +338,171 @@ void main() {
 
     expect(fakeAuth.deletionRequestedAt, isNull);
     expect(find.widgetWithText(OutlinedButton, 'Cancel deletion'), findsNothing);
+  });
+
+  group('dati locali e cambio utente', () {
+    Future<void> openSignOutDialog(WidgetTester tester) async {
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Sign out'));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> confirmSignOut(WidgetTester tester) async {
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign out'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('signing out without the option keeps local data', (
+      tester,
+    ) async {
+      final fakeAuth = FakeAuthService();
+      final fakeSync = FakeSyncService();
+      final fakeLocal = FakeLocalDataService(fakeSync);
+      await tester.pumpWidget(
+        _wrap(
+          const AccountScreen(),
+          fakeAuth: fakeAuth,
+          fakeSync: fakeSync,
+          fakeLocalData: fakeLocal,
+        ),
+      );
+      await signIn(tester);
+
+      await openSignOutDialog(tester);
+      await confirmSignOut(tester);
+
+      expect(fakeAuth.currentUser, isNull);
+      expect(fakeLocal.wiped, isFalse);
+      expect(_prefs.getString('activeWalletId'), 'w1');
+    });
+
+    testWidgets('signing out with "remove data" syncs first, then signs out '
+        'and wipes the device', (tester) async {
+      final fakeAuth = FakeAuthService();
+      final fakeSync = FakeSyncService();
+      final fakeLocal = FakeLocalDataService(fakeSync);
+      await tester.pumpWidget(
+        _wrap(
+          const AccountScreen(),
+          fakeAuth: fakeAuth,
+          fakeSync: fakeSync,
+          fakeLocalData: fakeLocal,
+        ),
+      );
+      await signIn(tester);
+
+      await openSignOutDialog(tester);
+      await tester.tap(find.byKey(const Key('removeLocalDataCheckbox')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Receipt photos are not synced'), findsOneWidget);
+      await confirmSignOut(tester);
+
+      expect(fakeSync.syncCalls, 1);
+      expect(fakeAuth.currentUser, isNull);
+      expect(fakeLocal.wiped, isTrue);
+      expect(_prefs.getString('activeWalletId'), isNull);
+      expect(find.text('Data removed from this device'), findsOneWidget);
+    });
+
+    testWidgets('if the final sync fails nothing is removed and the user '
+        'stays signed in', (tester) async {
+      final fakeAuth = FakeAuthService();
+      final fakeSync = FakeSyncService();
+      final fakeLocal = FakeLocalDataService(fakeSync);
+      await tester.pumpWidget(
+        _wrap(
+          const AccountScreen(),
+          fakeAuth: fakeAuth,
+          fakeSync: fakeSync,
+          fakeLocalData: fakeLocal,
+        ),
+      );
+      await signIn(tester);
+      fakeSync.failNextSync = true;
+
+      await openSignOutDialog(tester);
+      await tester.tap(find.byKey(const Key('removeLocalDataCheckbox')));
+      await tester.pumpAndSettle();
+      await confirmSignOut(tester);
+
+      expect(fakeLocal.wiped, isFalse);
+      expect(fakeAuth.currentUser, isNotNull);
+      expect(find.textContaining("Couldn't sync before removing"), findsOneWidget);
+    });
+
+    testWidgets('data of another account blocks sync with a banner; removing '
+        'it wipes the device and syncs this account', (tester) async {
+      final fakeAuth = FakeAuthService();
+      final fakeSync = FakeSyncService()..foreignData = true;
+      final fakeLocal = FakeLocalDataService(fakeSync);
+      await tester.pumpWidget(
+        _wrap(
+          const AccountScreen(),
+          fakeAuth: fakeAuth,
+          fakeSync: fakeSync,
+          fakeLocalData: fakeLocal,
+        ),
+      );
+      await signIn(tester);
+
+      expect(find.byKey(const Key('foreignLocalDataBanner')), findsOneWidget);
+
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'Remove data and sync'),
+      );
+      await tester.pumpAndSettle();
+      // Dialog di conferma: il pulsante distruttivo è l'ultimo.
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'Remove data and sync').last,
+      );
+      await tester.pumpAndSettle();
+
+      expect(fakeLocal.wiped, isTrue);
+      expect(fakeSync.syncCalls, 1);
+      expect(find.byKey(const Key('foreignLocalDataBanner')), findsNothing);
+      expect(find.text('Sync complete'), findsOneWidget);
+    });
+
+    testWidgets('canceling the confirmation removes nothing', (tester) async {
+      final fakeAuth = FakeAuthService();
+      final fakeSync = FakeSyncService()..foreignData = true;
+      final fakeLocal = FakeLocalDataService(fakeSync);
+      await tester.pumpWidget(
+        _wrap(
+          const AccountScreen(),
+          fakeAuth: fakeAuth,
+          fakeSync: fakeSync,
+          fakeLocalData: fakeLocal,
+        ),
+      );
+      await signIn(tester);
+
+      await tester.tap(
+        find.widgetWithText(FilledButton, 'Remove data and sync'),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(fakeLocal.wiped, isFalse);
+      expect(find.byKey(const Key('foreignLocalDataBanner')), findsOneWidget);
+    });
+
+    testWidgets('"Sync now" with data of another account explains why it is '
+        'blocked', (tester) async {
+      final fakeAuth = FakeAuthService();
+      final fakeSync = FakeSyncService()..foreignData = true;
+      await tester.pumpWidget(
+        _wrap(const AccountScreen(), fakeAuth: fakeAuth, fakeSync: fakeSync),
+      );
+      await signIn(tester);
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Sync now'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Sync paused: this device holds data from another account.'),
+        findsOneWidget,
+      );
+    });
   });
 }

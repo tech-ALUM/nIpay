@@ -1027,6 +1027,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Account deletion canceled.'**
   String get deletionCanceled;
+
+  /// No description provided for @signOutRemoveLocalData.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove data from this device'**
+  String get signOutRemoveLocalData;
+
+  /// No description provided for @signOutRemoveLocalDataHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is synced to your account first, then removed from this device. Receipt photos are not synced yet and will be lost.'**
+  String get signOutRemoveLocalDataHint;
+
+  /// No description provided for @signOutSyncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sync before removing your data. Nothing was removed and you are still signed in: check your connection and try again.'**
+  String get signOutSyncFailed;
+
+  /// No description provided for @localDataRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Data removed from this device'**
+  String get localDataRemoved;
+
+  /// No description provided for @foreignLocalDataBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This device holds data from another account, so sync is paused to keep it separate. Remove that data to start syncing this account, or sign out.'**
+  String get foreignLocalDataBody;
+
+  /// No description provided for @removeLocalDataAndSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove data and sync'**
+  String get removeLocalDataAndSync;
+
+  /// No description provided for @removeForeignLocalDataConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'All wallets, transactions and receipt photos on this device will be deleted. Whatever the other account already synced stays safe in that account. Continue?'**
+  String get removeForeignLocalDataConfirmBody;
+
+  /// No description provided for @syncBlockedForeignData.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync paused: this device holds data from another account.'**
+  String get syncBlockedForeignData;
 }
 
 class _AppLocalizationsDelegate

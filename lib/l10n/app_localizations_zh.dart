@@ -484,4 +484,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get deletionCanceled => 'Account deletion canceled.';
+
+  @override
+  String get signOutRemoveLocalData => '从此设备移除数据';
+
+  @override
+  String get signOutRemoveLocalDataHint =>
+      '数据会先同步到你的账户，然后从此设备移除。收据照片尚不支持同步，将会丢失。';
+
+  @override
+  String get signOutSyncFailed => '移除前同步失败。没有删除任何数据，你仍处于登录状态：请检查网络连接后重试。';
+
+  @override
+  String get localDataRemoved => '已从此设备移除数据';
+
+  @override
+  String get foreignLocalDataBody =>
+      '此设备上有另一个账户的数据，为保持隔离，同步已暂停。移除这些数据以开始同步此账户，或退出登录。';
+
+  @override
+  String get removeLocalDataAndSync => '移除数据并同步';
+
+  @override
+  String get removeForeignLocalDataConfirmBody =>
+      '此设备上的所有钱包、交易和收据照片都将被删除。另一个账户已同步的数据仍安全保存在该账户中。是否继续？';
+
+  @override
+  String get syncBlockedForeignData => '同步已暂停：此设备上有另一个账户的数据。';
 }

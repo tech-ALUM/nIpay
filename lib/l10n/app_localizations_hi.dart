@@ -486,4 +486,33 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get deletionCanceled => 'Account deletion canceled.';
+
+  @override
+  String get signOutRemoveLocalData => 'इस डिवाइस से डेटा हटाएँ';
+
+  @override
+  String get signOutRemoveLocalDataHint =>
+      'आपका डेटा पहले आपके खाते में सिंक होगा, फिर इस डिवाइस से हटाया जाएगा। रसीदों की फ़ोटो अभी सिंक नहीं होतीं और खो जाएँगी।';
+
+  @override
+  String get signOutSyncFailed =>
+      'डेटा हटाने से पहले सिंक नहीं हो सका। कुछ भी नहीं हटाया गया और आप अभी भी साइन इन हैं: अपना कनेक्शन जाँचें और फिर से कोशिश करें।';
+
+  @override
+  String get localDataRemoved => 'इस डिवाइस से डेटा हटा दिया गया';
+
+  @override
+  String get foreignLocalDataBody =>
+      'इस डिवाइस पर किसी दूसरे खाते का डेटा है, इसलिए उसे अलग रखने के लिए सिंक रोक दिया गया है। इस खाते को सिंक करने के लिए वह डेटा हटाएँ, या साइन आउट करें।';
+
+  @override
+  String get removeLocalDataAndSync => 'डेटा हटाएँ और सिंक करें';
+
+  @override
+  String get removeForeignLocalDataConfirmBody =>
+      'इस डिवाइस के सभी वॉलेट, लेन-देन और रसीदों की फ़ोटो मिटा दी जाएँगी। दूसरे खाते ने जो पहले ही सिंक किया है, वह उसी खाते में सुरक्षित रहेगा। जारी रखें?';
+
+  @override
+  String get syncBlockedForeignData =>
+      'सिंक रुका हुआ है: इस डिवाइस पर किसी दूसरे खाते का डेटा है।';
 }

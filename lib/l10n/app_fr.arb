@@ -144,5 +144,13 @@
   "settingsTheme": "Thème",
   "themeSystem": "Système",
   "themeLight": "Clair",
-  "themeDark": "Sombre"
+  "themeDark": "Sombre",
+  "signOutRemoveLocalData": "Supprimer les données de cet appareil",
+  "signOutRemoveLocalDataHint": "Vos données sont d'abord synchronisées avec votre compte, puis supprimées de cet appareil. Les photos des reçus ne sont pas encore synchronisées et seront perdues.",
+  "signOutSyncFailed": "La synchronisation avant la suppression a échoué. Rien n'a été supprimé et vous êtes toujours connecté : vérifiez votre connexion et réessayez.",
+  "localDataRemoved": "Données supprimées de cet appareil",
+  "foreignLocalDataBody": "Cet appareil contient les données d'un autre compte : la synchronisation est suspendue pour les garder séparées. Supprimez ces données pour synchroniser ce compte, ou déconnectez-vous.",
+  "removeLocalDataAndSync": "Supprimer les données et synchroniser",
+  "removeForeignLocalDataConfirmBody": "Tous les portefeuilles, transactions et photos de reçus de cet appareil seront supprimés. Ce que l'autre compte a déjà synchronisé reste en sécurité dans ce compte. Continuer ?",
+  "syncBlockedForeignData": "Synchronisation suspendue : cet appareil contient les données d'un autre compte."
 }

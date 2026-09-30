@@ -144,5 +144,13 @@
   "settingsTheme": "主题",
   "themeSystem": "系统",
   "themeLight": "浅色",
-  "themeDark": "深色"
+  "themeDark": "深色",
+  "signOutRemoveLocalData": "从此设备移除数据",
+  "signOutRemoveLocalDataHint": "数据会先同步到你的账户，然后从此设备移除。收据照片尚不支持同步，将会丢失。",
+  "signOutSyncFailed": "移除前同步失败。没有删除任何数据，你仍处于登录状态：请检查网络连接后重试。",
+  "localDataRemoved": "已从此设备移除数据",
+  "foreignLocalDataBody": "此设备上有另一个账户的数据，为保持隔离，同步已暂停。移除这些数据以开始同步此账户，或退出登录。",
+  "removeLocalDataAndSync": "移除数据并同步",
+  "removeForeignLocalDataConfirmBody": "此设备上的所有钱包、交易和收据照片都将被删除。另一个账户已同步的数据仍安全保存在该账户中。是否继续？",
+  "syncBlockedForeignData": "同步已暂停：此设备上有另一个账户的数据。"
 }

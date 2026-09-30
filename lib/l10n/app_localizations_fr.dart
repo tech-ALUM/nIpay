@@ -487,4 +487,33 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get deletionCanceled => 'Account deletion canceled.';
+
+  @override
+  String get signOutRemoveLocalData => 'Supprimer les données de cet appareil';
+
+  @override
+  String get signOutRemoveLocalDataHint =>
+      'Vos données sont d\'abord synchronisées avec votre compte, puis supprimées de cet appareil. Les photos des reçus ne sont pas encore synchronisées et seront perdues.';
+
+  @override
+  String get signOutSyncFailed =>
+      'La synchronisation avant la suppression a échoué. Rien n\'a été supprimé et vous êtes toujours connecté : vérifiez votre connexion et réessayez.';
+
+  @override
+  String get localDataRemoved => 'Données supprimées de cet appareil';
+
+  @override
+  String get foreignLocalDataBody =>
+      'Cet appareil contient les données d\'un autre compte : la synchronisation est suspendue pour les garder séparées. Supprimez ces données pour synchroniser ce compte, ou déconnectez-vous.';
+
+  @override
+  String get removeLocalDataAndSync => 'Supprimer les données et synchroniser';
+
+  @override
+  String get removeForeignLocalDataConfirmBody =>
+      'Tous les portefeuilles, transactions et photos de reçus de cet appareil seront supprimés. Ce que l\'autre compte a déjà synchronisé reste en sécurité dans ce compte. Continuer ?';
+
+  @override
+  String get syncBlockedForeignData =>
+      'Synchronisation suspendue : cet appareil contient les données d\'un autre compte.';
 }

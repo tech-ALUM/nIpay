@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' hide isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nipay/data/db/app_database.dart';
 import 'package:nipay/data/db/tables.dart';
+import 'package:nipay/data/services/local_data_service.dart';
 import 'package:nipay/data/services/sync_service.dart';
 
 import '../support/property.dart';
@@ -22,6 +25,10 @@ class FakeSyncRemote implements SyncRemote {
     'expense_report_entries': ['transaction_id'],
   };
 
+  /// Se valorizzato, l'upsert su questa tabella fallisce (rete caduta a
+  /// metà sync).
+  String? failOnUpsertTo;
+
   List<String> _pkColumns(String table) => _primaryKeys[table] ?? ['id'];
 
   String _keyOf(String table, Map<String, dynamic> row) =>
@@ -29,6 +36,7 @@ class FakeSyncRemote implements SyncRemote {
 
   @override
   Future<void> upsert(String table, List<Map<String, dynamic>> rows) async {
+    if (table == failOnUpsertTo) throw Exception('rete non disponibile');
     final store = _tables.putIfAbsent(table, () => {});
     for (final row in rows) {
       _clock++;
@@ -57,6 +65,7 @@ class FakeSyncRemote implements SyncRemote {
 }
 
 const _userId = 'user-1';
+const _otherUserId = 'user-2';
 
 Future<void> _insertWallet(
   AppDatabase db, {
@@ -212,6 +221,109 @@ void main() {
       expect(wallet.deletedAt, isNotNull);
     },
   );
+
+  group('cambio utente sullo stesso device', () {
+    Future<Set<Object?>> remoteWalletOwners() async => (await remote
+            .selectChangedSince('wallets', DateTime.utc(2000)))
+        .map((row) => row['owner_user_id'])
+        .toSet();
+
+    test('another user signing in is blocked and nothing is pushed under '
+        'their id, not even data created after the logout', () async {
+      await _insertWallet(
+        deviceA,
+        id: 'w1',
+        name: 'Conto di A',
+        updatedAt: DateTime.utc(2024),
+      );
+      await serviceFor(deviceA).syncNow();
+      // Dopo il logout di A i dati restano; ne nascono anche di nuovi.
+      await _insertWallet(
+        deviceA,
+        id: 'w2',
+        name: 'Creato dopo il logout',
+        updatedAt: DateTime.now(),
+      );
+
+      final asOther = SupabaseSyncService(
+        remote,
+        deviceA,
+        currentUserId: () => _otherUserId,
+      );
+      expect(await asOther.hasLocalDataOfAnotherUser(), isTrue);
+      await expectLater(
+        asOther.syncNow(),
+        throwsA(isA<LocalDataOwnedByAnotherUserException>()),
+      );
+
+      expect(await remoteWalletOwners(), {_userId});
+      final remoteIds = (await remote.selectChangedSince(
+        'wallets',
+        DateTime.utc(2000),
+      )).map((row) => row['id']);
+      expect(remoteIds, isNot(contains('w2')));
+      // Il proprietario dei dati invece continua a sincronizzare.
+      expect(await serviceFor(deviceA).hasLocalDataOfAnotherUser(), isFalse);
+    });
+
+    test('a first sync interrupted midway already claims the device', () async {
+      await _insertWallet(
+        deviceA,
+        id: 'w1',
+        name: 'Conto di A',
+        updatedAt: DateTime.utc(2024),
+      );
+      remote.failOnUpsertTo = 'categories';
+      await expectLater(serviceFor(deviceA).syncNow(), throwsException);
+      remote.failOnUpsertTo = null;
+
+      final asOther = SupabaseSyncService(
+        remote,
+        deviceA,
+        currentUserId: () => _otherUserId,
+      );
+      await expectLater(
+        asOther.syncNow(),
+        throwsA(isA<LocalDataOwnedByAnotherUserException>()),
+      );
+      expect(await remoteWalletOwners(), {_userId});
+    });
+
+    test('after wiping local data the new user syncs normally', () async {
+      await _insertWallet(
+        deviceA,
+        id: 'w1',
+        name: 'Conto di A',
+        updatedAt: DateTime.utc(2024),
+      );
+      await serviceFor(deviceA).syncNow();
+
+      final appDir = await Directory.systemTemp.createTemp('nipay_sync_');
+      addTearDown(() => appDir.delete(recursive: true));
+      await DeviceLocalDataService(deviceA, () async => appDir).wipe();
+
+      final asOther = SupabaseSyncService(
+        remote,
+        deviceA,
+        currentUserId: () => _otherUserId,
+      );
+      expect(await asOther.hasLocalDataOfAnotherUser(), isFalse);
+      await asOther.syncNow();
+      // Il FakeSyncRemote non applica la RLS: qui si verifica solo che
+      // nulla di A sia stato ricaricato con l'id di B.
+      expect(await remoteWalletOwners(), {_userId});
+    });
+
+    test('nobody signed in is never reported as another user', () async {
+      await serviceFor(deviceA).syncNow();
+      final signedOut = SupabaseSyncService(
+        remote,
+        deviceA,
+        currentUserId: () => null,
+      );
+      expect(await signedOut.hasLocalDataOfAnotherUser(), isFalse);
+    });
+  });
 
   forAll<List<int>>(
     'last-write-wins: whichever device syncs last always converges to the '

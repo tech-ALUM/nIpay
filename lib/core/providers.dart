@@ -23,6 +23,7 @@ import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/wallet_repository.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/exchange_rate_service.dart';
+import '../data/services/local_data_service.dart';
 import '../data/services/sync_service.dart';
 
 /// Executor del DB: nei test viene sostituito con NativeDatabase.memory().
@@ -112,6 +113,12 @@ class ActiveWalletNotifier extends Notifier<String?> {
   void set(String walletId) {
     state = walletId;
     ref.read(sharedPreferencesProvider).setString(_key, walletId);
+  }
+
+  /// Dopo la rimozione dei dati locali l'id salvato non punta più a nulla.
+  void clear() {
+    state = null;
+    ref.read(sharedPreferencesProvider).remove(_key);
   }
 }
 
@@ -386,5 +393,12 @@ final syncServiceProvider = Provider<SyncService>(
     SupabaseSyncRemote(Supabase.instance.client),
     ref.watch(databaseProvider),
     currentUserId: () => ref.read(authServiceProvider).currentUser?.id,
+  ),
+);
+
+final localDataServiceProvider = Provider<LocalDataService>(
+  (ref) => DeviceLocalDataService(
+    ref.watch(databaseProvider),
+    () => ref.read(appDirProvider.future),
   ),
 );

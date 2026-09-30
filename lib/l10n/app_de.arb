@@ -144,5 +144,13 @@
   "settingsTheme": "Design",
   "themeSystem": "System",
   "themeLight": "Hell",
-  "themeDark": "Dunkel"
+  "themeDark": "Dunkel",
+  "signOutRemoveLocalData": "Daten von diesem Gerät entfernen",
+  "signOutRemoveLocalDataHint": "Deine Daten werden zuerst mit deinem Konto synchronisiert und dann von diesem Gerät entfernt. Belegfotos werden noch nicht synchronisiert und gehen verloren.",
+  "signOutSyncFailed": "Synchronisierung vor dem Entfernen fehlgeschlagen. Es wurde nichts entfernt und du bist noch angemeldet: Prüfe deine Verbindung und versuche es erneut.",
+  "localDataRemoved": "Daten von diesem Gerät entfernt",
+  "foreignLocalDataBody": "Auf diesem Gerät befinden sich Daten eines anderen Kontos, daher ist die Synchronisierung pausiert. Entferne diese Daten, um dieses Konto zu synchronisieren, oder melde dich ab.",
+  "removeLocalDataAndSync": "Daten entfernen und synchronisieren",
+  "removeForeignLocalDataConfirmBody": "Alle Konten, Transaktionen und Belegfotos auf diesem Gerät werden gelöscht. Was das andere Konto bereits synchronisiert hat, bleibt dort sicher erhalten. Fortfahren?",
+  "syncBlockedForeignData": "Synchronisierung pausiert: Auf diesem Gerät befinden sich Daten eines anderen Kontos."
 }

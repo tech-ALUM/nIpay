@@ -64,7 +64,16 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
   (`lib/data/repositories/`), interfacce astratte.
 - Ogni tabella: `id` UUID, `createdAt`, `updatedAt`, `deletedAt` (soft-delete),
   DateTime come testo ISO (build.yaml). Niente cancellazioni fisiche (eccetto
-  il wipe dell'import globale).
+  il wipe dell'import globale e `LocalDataService.wipe`, vedi sotto).
+- **Dati locali legati a un account (decisione 2026-09-30)**: il primo utente
+  che sincronizza "rivendica" il device (riga in `SyncStates`, scritta PRIMA
+  di inviare dati). Se poi entra un account diverso, `syncNow` lancia
+  `LocalDataOwnedByAnotherUserException` senza inviare nulla e la schermata
+  account mostra un banner: rimuovere i dati locali o uscire. Il logout di
+  default **conserva** i dati; la casella "Rimuovi i dati da questo
+  dispositivo" fa sync finale (se fallisce, non cancella nulla) → logout →
+  `wipe()` (tutte le tabelle + cartella `attachments/`). Motivo: le foto
+  scontrini non sono sincronizzate, un wipe automatico le perderebbe.
 - Importi in **centesimi (int)**, formattazione SOLO via `lib/core/money.dart`
   (attenzione: NBSP prima di €, minus tipografico U+2212).
 - Stringhe UI sempre in l10n (arb IT + EN), mai hardcoded.

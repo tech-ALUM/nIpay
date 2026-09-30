@@ -485,4 +485,33 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get deletionCanceled => 'Account deletion canceled.';
+
+  @override
+  String get signOutRemoveLocalData => 'إزالة البيانات من هذا الجهاز';
+
+  @override
+  String get signOutRemoveLocalDataHint =>
+      'تتم مزامنة بياناتك مع حسابك أولًا، ثم تُزال من هذا الجهاز. صور الإيصالات لا تتم مزامنتها بعد وستُفقد.';
+
+  @override
+  String get signOutSyncFailed =>
+      'تعذّرت المزامنة قبل إزالة البيانات. لم تتم إزالة أي شيء وما زلت مسجّل الدخول: تحقّق من الاتصال وحاول مرة أخرى.';
+
+  @override
+  String get localDataRemoved => 'تمت إزالة البيانات من هذا الجهاز';
+
+  @override
+  String get foreignLocalDataBody =>
+      'يحتوي هذا الجهاز على بيانات حساب آخر، لذا أُوقفت المزامنة مؤقتًا لإبقائها منفصلة. أزل تلك البيانات لبدء مزامنة هذا الحساب، أو سجّل الخروج.';
+
+  @override
+  String get removeLocalDataAndSync => 'إزالة البيانات والمزامنة';
+
+  @override
+  String get removeForeignLocalDataConfirmBody =>
+      'سيتم حذف جميع المحافظ والمعاملات وصور الإيصالات على هذا الجهاز. ما قام الحساب الآخر بمزامنته يبقى آمنًا في ذلك الحساب. هل تريد المتابعة؟';
+
+  @override
+  String get syncBlockedForeignData =>
+      'المزامنة متوقفة مؤقتًا: يحتوي هذا الجهاز على بيانات حساب آخر.';
 }

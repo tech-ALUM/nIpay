@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/sync_service.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Ingresso account: mostra il form di login/registrazione in modalità
-/// solo-locale, o email + logout se già autenticato. Nessuna sincronizzazione
-/// dati collegata qui (arriva con M-ACC6): questo schermo gestisce solo
-/// l'identità, non toglie/aggiunge funzionalità offline.
+/// solo-locale, o email + logout se già autenticato, con sync manuale e
+/// gestione dei dati locali (rimozione al logout, blocco se appartengono a
+/// un altro account).
 class AccountScreen extends ConsumerWidget {
   const AccountScreen({super.key});
 
@@ -42,11 +43,19 @@ class _SignedInView extends ConsumerStatefulWidget {
 class _SignedInViewState extends ConsumerState<_SignedInView> {
   bool _isSyncing = false;
   Future<DateTime?>? _deletionStatus;
+  Future<bool>? _foreignLocalData;
 
   @override
   void initState() {
     super.initState();
     _refreshDeletionStatus();
+    _refreshForeignLocalData();
+  }
+
+  void _refreshForeignLocalData() {
+    _foreignLocalData = ref
+        .read(syncServiceProvider)
+        .hasLocalDataOfAnotherUser();
   }
 
   void _refreshDeletionStatus() {
@@ -81,6 +90,47 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
                       OutlinedButton(
                         onPressed: _cancelDeletion,
                         child: Text(l10n.cancelDeletion),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        FutureBuilder<bool>(
+          future: _foreignLocalData,
+          builder: (context, snapshot) {
+            if (snapshot.data != true) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Card(
+                key: const Key('foreignLocalDataBanner'),
+                color: Theme.of(context).colorScheme.errorContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l10n.foreignLocalDataBody),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          FilledButton(
+                            onPressed: _isSyncing
+                                ? null
+                                : _removeForeignDataAndSync,
+                            child: Text(l10n.removeLocalDataAndSync),
+                          ),
+                          OutlinedButton(
+                            onPressed: () => ref
+                                .read(authServiceProvider)
+                                .signOut(),
+                            child: Text(l10n.signOut),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -181,6 +231,39 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
     }
   }
 
+  /// I dati dell'altro account non vengono sincronizzati prima: questo
+  /// utente non ha i permessi per scriverli (RLS), e quelli già inviati da
+  /// quell'account restano al sicuro sul suo cloud.
+  Future<void> _removeForeignDataAndSync() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.removeLocalDataAndSync),
+        content: Text(l10n.removeForeignLocalDataConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.removeLocalDataAndSync),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await ref.read(localDataServiceProvider).wipe();
+    ref.read(activeWalletIdProvider.notifier).clear();
+    if (!mounted) return;
+    setState(_refreshForeignLocalData);
+    await _syncNow();
+  }
+
   Future<void> _syncNow() async {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _isSyncing = true);
@@ -190,6 +273,13 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.syncComplete)));
+      }
+    } on LocalDataOwnedByAnotherUserException {
+      if (mounted) {
+        setState(_refreshForeignLocalData);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.syncBlockedForeignData)));
       }
     } catch (_) {
       if (mounted) {
@@ -204,25 +294,72 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
 
   Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
+    var removeLocalData = false;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.signOut),
-        content: Text(l10n.confirmSignOut),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancel),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => AlertDialog(
+          title: Text(l10n.signOut),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                removeLocalData
+                    ? l10n.signOutRemoveLocalDataHint
+                    : l10n.confirmSignOut,
+              ),
+              const SizedBox(height: 8),
+              CheckboxListTile(
+                key: const Key('removeLocalDataCheckbox'),
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: removeLocalData,
+                onChanged: (value) =>
+                    setDialogState(() => removeLocalData = value ?? false),
+                title: Text(l10n.signOutRemoveLocalData),
+              ),
+            ],
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.signOut),
-          ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.signOut),
+            ),
+          ],
+        ),
       ),
     );
-    if (confirmed == true) {
-      await ref.read(authServiceProvider).signOut();
+    if (confirmed != true || !context.mounted) return;
+
+    // Letti prima del logout: dopo signOut() questa vista viene smontata
+    // (l'AccountScreen passa al form) e `ref` non è più utilizzabile.
+    final auth = ref.read(authServiceProvider);
+    final localData = ref.read(localDataServiceProvider);
+    final activeWallet = ref.read(activeWalletIdProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (removeLocalData) {
+      // Sync finale obbligatoria: se fallisce non si cancella nulla, così
+      // le modifiche non ancora inviate non vanno perse.
+      try {
+        await ref.read(syncServiceProvider).syncNow();
+      } catch (_) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.signOutSyncFailed)),
+        );
+        return;
+      }
+    }
+    await auth.signOut();
+    if (removeLocalData) {
+      await localData.wipe();
+      activeWallet.clear();
+      messenger.showSnackBar(SnackBar(content: Text(l10n.localDataRemoved)));
     }
   }
 }

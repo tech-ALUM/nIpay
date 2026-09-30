@@ -486,4 +486,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deletionCanceled => 'Account deletion canceled.';
+
+  @override
+  String get signOutRemoveLocalData => 'Remove data from this device';
+
+  @override
+  String get signOutRemoveLocalDataHint =>
+      'Your data is synced to your account first, then removed from this device. Receipt photos are not synced yet and will be lost.';
+
+  @override
+  String get signOutSyncFailed =>
+      'Couldn\'t sync before removing your data. Nothing was removed and you are still signed in: check your connection and try again.';
+
+  @override
+  String get localDataRemoved => 'Data removed from this device';
+
+  @override
+  String get foreignLocalDataBody =>
+      'This device holds data from another account, so sync is paused to keep it separate. Remove that data to start syncing this account, or sign out.';
+
+  @override
+  String get removeLocalDataAndSync => 'Remove data and sync';
+
+  @override
+  String get removeForeignLocalDataConfirmBody =>
+      'All wallets, transactions and receipt photos on this device will be deleted. Whatever the other account already synced stays safe in that account. Continue?';
+
+  @override
+  String get syncBlockedForeignData =>
+      'Sync paused: this device holds data from another account.';
 }

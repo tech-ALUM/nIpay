@@ -422,6 +422,18 @@ milestone resta esplicitamente aperta e documentata come rischio noto
   stesso nome restano due portafogli distinti). Nessuna schermata di
   conferma pre-sync per ora — valutata e rimandata deliberatamente,
   non dimenticata.
+- [x] **Fix 2026-09-30 — cambio utente sullo stesso device.** Prima,
+  login A → logout → login B faceva caricare i portafogli locali di A
+  con `owner_user_id` = B (quelli mai sincronizzati finivano davvero
+  nell'account di B; gli altri bloccavano il sync per la RLS). Ora il
+  primo utente che sincronizza rivendica il device (riga `SyncStates`
+  scritta prima di ogni push); un utente diverso riceve
+  `LocalDataOwnedByAnotherUserException` e la schermata account offre
+  "Rimuovi i dati e sincronizza" o "Esci". Il logout conserva i dati
+  di default, con opzione di rimozione (sync finale obbligatoria prima
+  del wipe). Test: 4 nuovi in `sync_service_test.dart`, 3 in
+  `local_data_service_test.dart`, 6 widget test in
+  `account_screen_test.dart`.
 
 **Fatto quando**: due device con lo stesso account convergono sugli
 stessi dati dopo sync ✓ (verificato con test automatici — verifica
