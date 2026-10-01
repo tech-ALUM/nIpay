@@ -200,6 +200,14 @@ nessuna policy "true" residua ✓, `service_role` key verificata assente
 da qualunque asset del client (grep su APK/IPA buildati) — da fare in
 M-ACC4/M-ACC8.
 
+**Aggiornamento 2026-10-01**: test pgTAP ripetibili in
+[`supabase/tests/rls_isolation_test.sql`](supabase/tests/rls_isolation_test.sql)
+(88 test, Supabase locale in Docker, workflow
+`.github/workflows/supabase.yml`): isolamento A/B su tutte le tabelle,
+`profiles` e Storage, client anonimo, upsert del sync. Nessuna falla di
+isolamento; trovata e corretta la policy UPDATE mancante su
+`transaction_tags` (migration `20261001000000`, bloccava la sync).
+
 ---
 
 ## M-ACC3 — Storage allegati (foto scontrini)

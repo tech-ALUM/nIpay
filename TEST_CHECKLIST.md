@@ -28,8 +28,10 @@ Waydroid + iPhone) e **2 account di test** (A e B), mai account reali.
 - [ ] Se lo schema Drift è cambiato: `dart run build_runner build --delete-conflicting-outputs`
       eseguito, `schemaVersion` incrementato, migration scritta in
       `app_database.dart`, valutato il bump di `kExportSchemaVersion`.
-- [ ] Se `supabase/migrations/` è cambiata: migration applicata al progetto
-      e `./scripts/test_rls.sh` → *0 falliti* (vedi sezione 14).
+- [ ] Se `supabase/` è cambiata: workflow **Supabase RLS** verde su GitHub
+      (`supabase/tests/`, gira da solo al push), poi migration applicata al
+      progetto reale (`supabase db push`) e `./scripts/test_rls.sh` →
+      *0 falliti* (vedi sezione 14).
 - [ ] `git status`: nessun file sensibile in staging (`android/key.properties`,
       `*.jks`, `.env*`, `supabase/.temp/`, `*.ipa`, `build/`).
 - [ ] CI GitHub Actions verde dopo il push (Android + workflow iOS se toccato
@@ -202,17 +204,17 @@ Con account A loggato su **dispositivo 1** e **dispositivo 2**:
 - [ ] Nessun accesso a Drift dalla UI (sempre tramite repository).
 
 **Se toccato `supabase/`, sync o auth**
-- [ ] `./scripts/test_rls.sh` verde (isolamento su `wallets`).
-- [ ] ⚠️ Isolamento sulle **tabelle figlie**, a mano dall'account di test (la
-      parte automatica copre solo `wallets`): impossibile creare una
-      transazione/categoria/tag con `wallet_id` di un wallet altrui;
-      impossibile un trasferimento verso un wallet altrui (`wallet_to_id`);
-      `transaction_tags` con tag altrui respinto; select su `profiles`
-      restituisce solo il proprio profilo.
-- [ ] Storage: upload nel prefisso di un altro utente → 403; lettura di un
-      file altrui → 404.
-- [ ] Client anonimo (solo anon key, niente token) non legge nulla da nessuna
-      tabella.
+- [ ] Workflow GitHub **Supabase RLS** verde: isolamento tra due utenti su
+      **tutte** le tabelle, `profiles` e Storage (lettura, inserimenti
+      agganciati a dati altrui, spostamenti, upsert, update/delete, client
+      anonimo), più l'upsert del sync sulle tabelle di join. 🤖 `supabase/tests/rls_isolation_test.sql`
+- [ ] Nuova tabella o nuova policy → aggiunti i casi corrispondenti in
+      `rls_isolation_test.sql` (il test fallisce da solo se una tabella di
+      `public` non ha la RLS abilitata, ma non sa quali policy servono).
+- [ ] Contro il progetto **reale**, dopo `supabase db push`:
+      `./scripts/test_rls.sh` verde (verifica che la produzione abbia
+      davvero le policy, `wallets`) e, una volta per release, upload/lettura
+      di un file Storage altrui con l'account di test → 403/404.
 - [ ] Ogni nuova tabella Postgres ha **RLS abilitata + policy** e trigger
       `set_updated_at`.
 - [ ] **Cambio utente sullo stesso dispositivo**: login A → sync → logout
@@ -252,11 +254,13 @@ aperti, i punti ⚠️ vanno controllati a mano.
    può rimuovere i dati dal dispositivo (vedi CLAUDE.md). Resta un limite
    voluto: con il logout "semplice" chi usa il telefono dopo vede ancora i
    dati in locale (serve per non perdere le foto scontrini).
-2. **I test RLS coprono solo `wallets`.** Le policy sulle altre 14 tabelle
-   (incluse le verifiche su `wallet_to_id`, `reimburse_tx_id`, tabelle di
-   join), su `profiles` e sullo Storage non hanno test ripetibili. Lo
-   Storage è stato verificato una volta a mano (M-ACC3). `test_rls.sh` non
-   gira in CI.
+2. ~~**I test RLS coprono solo `wallets`.**~~ **Risolto 2026-10-01**: 88
+   test pgTAP su Supabase locale in CI (`supabase/tests/`), nessuna falla
+   di isolamento trovata. Hanno scoperto un bug di sync: mancava la policy
+   UPDATE su `transaction_tags`, l'upsert di un collegamento già presente
+   veniva negato e la sync falliva a ripetizione (migration
+   `20261001000000`). `test_rls.sh` resta come controllo a mano sulla
+   produzione.
 3. **La purge dell'account può lasciare file.** `storage.list(userId)` in
    `purge-deleted-accounts` restituisce al massimo 100 elementi per chiamata:
    oltre 100 allegati, i file restanti non vengono cancellati (problema GDPR).
