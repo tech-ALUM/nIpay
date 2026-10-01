@@ -1,0 +1,32 @@
+name: Supabase RLS
+
+# Test di isolamento RLS/Storage (supabase/tests/) su un Postgres Supabase
+# locale in Docker: mai contro il progetto reale. Gira su qualunque
+# branch quando cambiano migration o test, così una policy sbagliata
+# viene fermata prima di arrivare in produzione.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase.yml'
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase.yml'
+
+jobs:
+  rls-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.117.0
+
+      - name: Start local database (applica le migration)
+        run: supabase db start
+
+      - name: Run pgTAP tests
+        run: supabase test db
