@@ -256,6 +256,16 @@ select throws_ok(
   '42501', null, 'A non può trasformare una transazione in trasferimento verso B'
 );
 select throws_ok(
+  $$ update transaction_tags set tag_id = 'b0000000-0000-0000-0000-000000000003'
+     where transaction_id = 'a0000000-0000-0000-0000-000000000004' $$,
+  '42501', null, 'A non può far puntare un proprio transaction_tag a un tag di B'
+);
+select throws_ok(
+  $$ update custom_field_values set field_id = 'b0000000-0000-0000-0000-000000000005'
+     where transaction_id = 'a0000000-0000-0000-0000-000000000004' $$,
+  '42501', null, 'A non può far puntare un proprio valore custom a un campo di B'
+);
+select throws_ok(
   $$ update expense_reports set reimburse_tx_id = 'b0000000-0000-0000-0000-000000000004'
      where id = 'a0000000-0000-0000-0000-00000000000b' $$,
   '42501', null, 'A non può collegare a posteriori un rimborso di B'
@@ -303,6 +313,10 @@ delete from dashboard_cards where id = 'b0000000-0000-0000-0000-000000000009';
 delete from cost_centers where id = 'b0000000-0000-0000-0000-00000000000a';
 delete from expense_reports where id = 'b0000000-0000-0000-0000-00000000000b';
 delete from custom_field_defs where id = 'b0000000-0000-0000-0000-000000000005';
+-- Supabase blocca ogni DELETE diretto su storage.objects (trigger
+-- storage.protect_delete); l'API Storage lo sblocca con questa variabile
+-- e si affida alla RLS: la stessa condizione la riproduciamo qui.
+set local storage.allow_delete_query = 'true';
 select lives_ok(
   $$ delete from storage.objects
      where name = '22222222-2222-2222-2222-222222222222/scontrino-b.jpg' $$,
