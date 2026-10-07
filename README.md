@@ -3,7 +3,8 @@
 App mobile (iOS + Android) per il tracciamento di spese ed entrate multi-portafoglio — progetto ALUM.
 
 - **Visione e decisioni**: [OVERVIEW.md](OVERVIEW.md)
-- **Piano di implementazione**: [STEPS.md](STEPS.md)
+- **Account e sync**: [ACCOUNT_SYNC_PLAN.md](ACCOUNT_SYNC_PLAN.md)
+- **Checklist di test pre-commit**: [TEST_CHECKLIST.md](TEST_CHECKLIST.md)
 
 ## Stack
 

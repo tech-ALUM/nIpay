@@ -83,13 +83,31 @@ Importi sempre in **centesimi (int)** per evitare errori di floating point.
 
 ## Non-obiettivi (per ora)
 
-- Sync cloud / multi-dispositivo (architettura predisposta, non implementato)
 - Import da export bancari o altre app
 - Pubblicazione su App Store / Play Store
 - Multi-utente / portafogli condivisi
 
+## Rimandati noti
+
+Lasciati fuori deliberatamente durante le milestone M0–M11 (completate il
+2026-07-16; il piano di dettaglio `STEPS.md` è stato rimosso, resta nella
+storia git):
+
+- Archivio portafogli nella UI (il campo `archivedAt` esiste già).
+- UI per le sottocategorie (`parentId` già nel modello dati).
+- Notifiche push locali per i budget (oggi solo snackbar in-app; servirebbe
+  `flutter_local_notifications` + permessi Android 13).
+- Confronto periodi come card dedicata e filtri per-card nella dashboard
+  (il selettore periodo è globale).
+- Pulizia dei file allegati orfani (le foto di transazioni eliminate
+  restano su disco).
+- In modifica di una transazione non si cambiano tag e allegati (solo in
+  creazione).
+
 ## Riferimenti
 
 - Repo: https://github.com/tech-ALUM/nIpay
-- Piano di implementazione: [STEPS.md](STEPS.md)
-- Design system: progetto Claude Design "nIpay" (da creare — vedi STEPS.md, M1)
+- Account e sync: [ACCOUNT_SYNC_PLAN.md](ACCOUNT_SYNC_PLAN.md)
+- Checklist di test: [TEST_CHECKLIST.md](TEST_CHECKLIST.md)
+- Design system: progetto Claude Design "nIpay" + mockup in `design/`; tema
+  in `lib/core/theme/app_theme.dart`

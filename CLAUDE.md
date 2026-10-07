@@ -12,7 +12,8 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
 
 ## Documenti di riferimento
 - [OVERVIEW.md](OVERVIEW.md) — visione, decisioni, architettura, modello dati.
-- [STEPS.md](STEPS.md) — piano milestone M0–M11, tutte ✅ (2026-07-16). Lì sono annotati anche i rimandati.
+- [ACCOUNT_SYNC_PLAN.md](ACCOUNT_SYNC_PLAN.md) — account e sync (M-ACC0–M-ACC9). Le milestone M0–M11 sono chiuse (2026-07-16); i rimandati noti sono in OVERVIEW.md.
+- [TEST_CHECKLIST.md](TEST_CHECKLIST.md) — checklist da passare prima dei commit importanti.
 
 ## Modello concettuale (IMPORTANTE, deciso 2026-07-16)
 - **Portafogli = spazi separati**: categorie, tag, campi custom, budget e dashboard

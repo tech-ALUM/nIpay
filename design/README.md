@@ -37,4 +37,4 @@ Le altre direzioni (B, C) restano come riferimento storico.
 Commenti del team: issue GitHub sul repo o direttamente ad Alberto.
 Questi mockup verranno caricati anche su Claude Design (claude.ai/design) come
 progetto "nIpay" appena autorizzato l'accesso da una sessione interattiva.
-Dopo l'approvazione, il design viene tradotto in `ThemeData` Flutter (vedi STEPS.md, M1).
+Dopo l'approvazione, il design viene tradotto in `ThemeData` Flutter (`lib/core/theme/app_theme.dart`).
