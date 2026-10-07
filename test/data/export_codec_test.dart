@@ -91,7 +91,7 @@ void main() {
     await seed(source);
 
     final json = await exportToJson(source);
-    expect(json['schemaVersion'], 3);
+    expect(json['schemaVersion'], kExportSchemaVersion);
 
     final target = AppDatabase(NativeDatabase.memory());
     await importFromJson(target, json);
@@ -190,4 +190,60 @@ void main() {
       await target.close();
     },
   );
+
+  group('SECURITY_AUDIT NIP-18: import di file non fidati', () {
+    Future<Map<String, dynamic>> exportWithAttachment(String relativePath) async {
+      final source = AppDatabase(NativeDatabase.memory());
+      addTearDown(source.close);
+      await seed(source);
+      final tx = (await source.select(source.transactions).get()).first;
+      await source
+          .into(source.attachments)
+          .insert(
+            AttachmentsCompanion.insert(
+              id: '0b8e1f3a-1111-4c55-8b0e-2f6d3a8e7c41',
+              createdAt: DateTime(2026),
+              updatedAt: DateTime(2026),
+              transactionId: tx.id,
+              relativePath: relativePath,
+              mimeType: 'image/jpeg',
+            ),
+          );
+      return exportToJson(source);
+    }
+
+    for (final evil in [
+      '../shared_prefs/FlutterSharedPreferences.xml',
+      '/etc/passwd',
+      'attachments/../../Library/Preferences/x.plist',
+      'attachments/0b8e1f3a-1111-4c55-8b0e-2f6d3a8e7c41.jpg/../../x',
+    ]) {
+      test('an attachment path like "$evil" is rejected', () async {
+        final json = await exportWithAttachment(evil);
+        final target = AppDatabase(NativeDatabase.memory());
+        addTearDown(target.close);
+
+        await expectLater(importFromJson(target, json), throwsFormatException);
+        expect(await target.select(target.attachments).get(), isEmpty);
+
+        final walletJson = Map<String, dynamic>.from(json)..['kind'] = 'wallet';
+        walletJson['wallets'] = [(json['wallets'] as List).first];
+        await expectLater(
+          importWalletFromJson(target, walletJson),
+          throwsFormatException,
+        );
+        expect(await target.select(target.attachments).get(), isEmpty);
+      });
+    }
+
+    test('a legitimate attachment path is accepted', () async {
+      final json = await exportWithAttachment(
+        'attachments/0b8e1f3a-2222-4c55-8b0e-2f6d3a8e7c41.jpg',
+      );
+      final target = AppDatabase(NativeDatabase.memory());
+      addTearDown(target.close);
+      await importFromJson(target, json);
+      expect(await target.select(target.attachments).get(), hasLength(1));
+    });
+  });
 }

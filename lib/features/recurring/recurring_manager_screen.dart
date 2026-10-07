@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/validation.dart';
 import '../../data/db/tables.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -196,6 +198,7 @@ Future<void> _showRecurringSheet(BuildContext context, WidgetRef ref) {
                 const SizedBox(height: 12),
                 TextField(
                   controller: description,
+                  inputFormatters: [LengthLimitingTextInputFormatter(kMaxDescriptionLength)],
                   decoration: InputDecoration(labelText: l10n.description),
                 ),
                 const SizedBox(height: 12),

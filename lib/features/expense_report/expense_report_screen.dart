@@ -1,14 +1,16 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/attachment_files.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../data/export/expense_report_pdf.dart';
 import '../../data/repositories/expense_report_repository.dart';
@@ -86,8 +88,8 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
       final list = await attachRepo.listOf(r.transaction.id);
       final images = <Uint8List>[];
       for (final a in list) {
-        final f = File('${appDir.path}/${a.relativePath}');
-        if (await f.exists()) images.add(await f.readAsBytes());
+        final f = attachmentFile(appDir, a.relativePath);
+        if (f != null && await f.exists()) images.add(await f.readAsBytes());
       }
       if (images.isNotEmpty) attachmentsByTx[r.transaction.id] = images;
     }
@@ -102,9 +104,15 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
       costCentersById: {for (final c in costCenters) c.id: c},
       attachmentsByTx: attachmentsByTx,
     );
-    final tmp = await getTemporaryDirectory();
+    // Cartella dedicata, svuotata a ogni export: il PDF dell'export
+    // precedente (dati e scontrini) non resta nella cache del device
+    // (SECURITY_AUDIT NIP-16). Non si cancella subito dopo la condivisione:
+    // l'app di destinazione potrebbe leggerlo ancora.
+    final exports = Directory('${(await getTemporaryDirectory()).path}/nipay_exports');
+    if (await exports.exists()) await exports.delete(recursive: true);
+    await exports.create(recursive: true);
     final out = File(
-      '${tmp.path}/nota-spese-${_from.year}${_from.month.toString().padLeft(2, "0")}${_from.day.toString().padLeft(2, "0")}.pdf',
+      '${exports.path}/nota-spese-${_from.year}${_from.month.toString().padLeft(2, "0")}${_from.day.toString().padLeft(2, "0")}.pdf',
     );
     await out.writeAsBytes(bytes);
     await SharePlus.instance.share(ShareParams(files: [XFile(out.path)]));
@@ -123,6 +131,7 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
         title: Text(l10n.createReport),
         content: TextField(
           controller: controller,
+          inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
           autofocus: true,
           decoration: InputDecoration(labelText: l10n.reportName),
         ),

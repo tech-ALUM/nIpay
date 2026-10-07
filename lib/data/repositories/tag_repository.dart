@@ -45,24 +45,45 @@ class DriftTagRepository implements TagRepository {
   )..where((t) => t.deletedAt.isNull() & t.walletId.equals(walletId))).get();
 
   @override
-  Future<void> tagTransaction(String transactionId, String tagId) => _db
-      .into(_db.transactionTags)
-      .insert(
-        TransactionTagsCompanion.insert(
-          transactionId: transactionId,
-          tagId: tagId,
-          createdAt: DateTime.now(),
-        ),
-        mode: InsertMode.insertOrIgnore,
-      );
+  Future<void> tagTransaction(String transactionId, String tagId) {
+    final now = DateTime.now();
+    return _db
+        .into(_db.transactionTags)
+        .insert(
+          TransactionTagsCompanion.insert(
+            transactionId: transactionId,
+            tagId: tagId,
+            createdAt: now,
+            updatedAt: Value(now),
+          ),
+          // Già collegato (anche se rimosso in passato): si riattiva.
+          onConflict: DoUpdate(
+            (_) => TransactionTagsCompanion(
+              deletedAt: const Value(null),
+              updatedAt: Value(now),
+            ),
+          ),
+        );
+  }
 
+  /// Soft-delete: una cancellazione fisica non arriverebbe mai agli altri
+  /// device, dove il tag ricomparirebbe (SECURITY_AUDIT NIP-15).
   @override
-  Future<void> untagTransaction(String transactionId, String tagId) =>
-      (_db.delete(_db.transactionTags)..where(
-            (t) =>
-                t.transactionId.equals(transactionId) & t.tagId.equals(tagId),
-          ))
-          .go();
+  Future<void> untagTransaction(String transactionId, String tagId) {
+    final now = DateTime.now();
+    return (_db.update(_db.transactionTags)..where(
+          (t) =>
+              t.transactionId.equals(transactionId) &
+              t.tagId.equals(tagId) &
+              t.deletedAt.isNull(),
+        ))
+        .write(
+          TransactionTagsCompanion(
+            deletedAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
+  }
 
   @override
   Future<List<Tag>> tagsOf(String transactionId) {
@@ -74,6 +95,7 @@ class DriftTagRepository implements TagRepository {
           ),
         ])..where(
           _db.transactionTags.transactionId.equals(transactionId) &
+              _db.transactionTags.deletedAt.isNull() &
               _db.tags.deletedAt.isNull(),
         );
     return query.map((row) => row.readTable(_db.tags)).get();
@@ -83,7 +105,7 @@ class DriftTagRepository implements TagRepository {
   Future<Set<String>> transactionIdsWithTag(String tagId) async {
     final rows = await (_db.select(
       _db.transactionTags,
-    )..where((t) => t.tagId.equals(tagId))).get();
+    )..where((t) => t.tagId.equals(tagId) & t.deletedAt.isNull())).get();
     return rows.map((r) => r.transactionId).toSet();
   }
 

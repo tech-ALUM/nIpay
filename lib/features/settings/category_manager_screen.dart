@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
 import '../../l10n/app_localizations.dart';
@@ -122,12 +124,14 @@ Future<void> _showCategorySheet(
             const SizedBox(height: 16),
             TextField(
               controller: name,
+              inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
               autofocus: true,
               decoration: InputDecoration(labelText: l10n.walletName),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: icon,
+              inputFormatters: [LengthLimitingTextInputFormatter(kMaxIconLength)],
               decoration: InputDecoration(labelText: l10n.icon),
             ),
             const SizedBox(height: 12),

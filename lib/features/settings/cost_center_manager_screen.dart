@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -58,6 +60,7 @@ class _CostCenterManagerScreenState
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
                     onChanged: (_) {
                       if (_error != null) setState(() => _error = null);
                     },

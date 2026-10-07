@@ -414,7 +414,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get confirmSignOut =>
-      'Sign out of your account? Your data stays on this device and keeps working offline.';
+      'Sign out of your account? Your data stays on this device, but it can only be opened again by signing in with this account.';
 
   @override
   String get noAccountYet => 'Don\'t have an account? Sign up';
@@ -470,7 +470,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountConfirmBody =>
-      'Your account will be permanently deleted in 30 days. You can cancel any time before then by signing back in. This does not affect the data on this device, which keeps working offline.';
+      'Your account and its cloud data will be permanently deleted in 30 days. Until then you can cancel from this screen. The data on this device is not deleted.';
 
   @override
   String get deleteAccountRequested =>
@@ -515,4 +515,112 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get syncBlockedForeignData =>
       'Sync paused: this device holds data from another account.';
+
+  @override
+  String get currentPassword => 'Current password';
+
+  @override
+  String get wrongCurrentPassword => 'The current password is not correct.';
+
+  @override
+  String get confirmWithPassword => 'Enter your password to confirm.';
+
+  @override
+  String get passwordTooWeak =>
+      'Use at least 12 characters, with letters and numbers.';
+
+  @override
+  String get signOutEverywhere => 'Sign out of all devices';
+
+  @override
+  String get signOutEverywhereConfirmBody =>
+      'Every session of this account will be closed, including this one. Use it if a device was lost or stolen. Data on this device stays here.';
+
+  @override
+  String get signedOutEverywhere => 'Signed out of all devices.';
+
+  @override
+  String get authErrorInvalidCredentials =>
+      'Invalid email or password, or email not confirmed yet.';
+
+  @override
+  String get authErrorWeakPassword =>
+      'This password isn\'t accepted: choose a longer, less common one.';
+
+  @override
+  String get authErrorSamePassword =>
+      'The new password must be different from the current one.';
+
+  @override
+  String get authErrorRateLimited =>
+      'Too many attempts. Wait a few minutes and try again.';
+
+  @override
+  String get authErrorReauthRequired =>
+      'For security, enter your password again and retry.';
+
+  @override
+  String get authErrorNetwork =>
+      'Can\'t reach the server. Check your connection and try again.';
+
+  @override
+  String get authErrorGeneric => 'Something went wrong. Please try again.';
+
+  @override
+  String get resetPasswordTitle => 'Set a new password';
+
+  @override
+  String get passwordResetDone =>
+      'Password updated. Other devices have been signed out.';
+
+  @override
+  String get resetPasswordCooldown =>
+      'Wait a minute before requesting another email.';
+
+  @override
+  String lastSyncAt(String date) {
+    return 'Last sync: $date';
+  }
+
+  @override
+  String get lastSyncNever => 'Not synced yet';
+
+  @override
+  String get syncLastFailed =>
+      'The last sync failed: it will be retried automatically.';
+
+  @override
+  String syncIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items couldn\'t be synced and will be retried.',
+      one: '1 item couldn\'t be synced and will be retried.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lockedDataTitle => 'Data locked';
+
+  @override
+  String lockedDataBody(String email) {
+    return 'This device holds the data of $email. Sign in with that account to see it, or remove it from this device.';
+  }
+
+  @override
+  String get lockedDataBodyUnknownOwner =>
+      'This device holds the data of an account that is not signed in. Sign in with that account to see it, or remove it from this device.';
+
+  @override
+  String get lockedDataOtherAccountBody =>
+      'This device holds the data of a different account. To use this account here, remove that data from the device (open Account), or sign out.';
+
+  @override
+  String get startupError =>
+      'Couldn\'t open your data. Restart the app; if it keeps happening, contact support.';
+
+  @override
+  String get attachmentUnsupported =>
+      'This image format isn\'t supported: use a JPEG, PNG or WebP photo.';
 }

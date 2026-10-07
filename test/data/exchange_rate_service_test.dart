@@ -137,6 +137,62 @@ void main() {
       },
     );
 
+    group('SECURITY_AUDIT NIP-23: tassi non plausibili', () {
+      MockClient respondWith(Map<String, Object?> rates) => MockClient(
+        (request) async => http.Response(
+          jsonEncode({'amount': 1, 'base': 'EUR', 'rates': rates}),
+          200,
+        ),
+      );
+
+      for (final bad in <Object>[0, -1.1, 1e12]) {
+        test('a rate of $bad is rejected and nothing is cached', () async {
+          final service = CachedExchangeRateService(
+            prefs: prefs,
+            client: respondWith({'USD': bad, 'GBP': 0.9}),
+          );
+          await expectLater(
+            service.getRate(from: 'EUR', to: 'USD'),
+            throwsA(isA<ExchangeRateException>()),
+          );
+          expect(prefs.getString('exchangeRates.ratesJson'), isNull);
+        });
+      }
+
+      test('an anomalous jump versus the cache is discarded: the old rate '
+          'stays', () async {
+        await prefs.setString(
+          'exchangeRates.ratesJson',
+          jsonEncode({'EUR': 1.0, 'USD': 1.1}),
+        );
+        await prefs.setString('exchangeRates.fetchedOn', '2000-01-01');
+        final service = CachedExchangeRateService(
+          prefs: prefs,
+          client: respondWith({'USD': 11.0}),
+        );
+
+        expect(await service.getRate(from: 'EUR', to: 'USD'), 1.1);
+        await Future<void>.delayed(Duration.zero); // refresh in background
+        expect(await service.getRate(from: 'EUR', to: 'USD'), 1.1);
+        expect(prefs.getString('exchangeRates.fetchedOn'), '2000-01-01');
+      });
+
+      test('a normal daily change is accepted', () async {
+        await prefs.setString(
+          'exchangeRates.ratesJson',
+          jsonEncode({'EUR': 1.0, 'USD': 1.1}),
+        );
+        await prefs.setString('exchangeRates.fetchedOn', '2000-01-01');
+        final service = CachedExchangeRateService(
+          prefs: prefs,
+          client: respondWith({'USD': 1.12}),
+        );
+        await service.getRate(from: 'EUR', to: 'USD');
+        await Future<void>.delayed(Duration.zero);
+        expect(await service.getRate(from: 'EUR', to: 'USD'), 1.12);
+      });
+    });
+
     test('same currency returns 1.0 without any cache or network', () async {
       final client = MockClient(
         (request) async => throw StateError('non doveva chiamare la rete'),

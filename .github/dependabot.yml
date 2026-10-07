@@ -1,0 +1,13 @@
+# Aggiornamenti automatici (SECURITY_AUDIT NIP-20): le action dei workflow
+# sono fissate per SHA, Dependabot apre una PR quando esce una versione nuova.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

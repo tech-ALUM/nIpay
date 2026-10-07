@@ -66,6 +66,17 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.alum.nipay.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.alum.nipay</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>nIpay usa la fotocamera per fotografare gli scontrini da allegare alle transazioni.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

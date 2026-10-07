@@ -1,12 +1,27 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/attachment_files.dart';
 import '../db/app_database.dart';
 
 /// Versione dello schema di export: da incrementare a ogni cambiamento
 /// incompatibile del formato. v3: nota spese (costCenters, expenseReports,
-/// expenseReportEntries, expenseReportOnly sui campi custom).
-const kExportSchemaVersion = 3;
+/// expenseReportEntries, expenseReportOnly sui campi custom). v4: soft-delete
+/// di transactionTags (updatedAt, deletedAt) ed expenseReportEntries
+/// (deletedAt).
+const kExportSchemaVersion = 4;
+
+/// Gli allegati importati devono puntare a un file dentro `attachments/`
+/// con un nome generato dall'app: un `relativePath` come
+/// `../shared_prefs/...` farebbe leggere (e finire nel PDF condiviso) file
+/// arbitrari della sandbox (SECURITY_AUDIT NIP-18).
+Map<String, dynamic> _checkAttachmentPath(Map<String, dynamic> row) {
+  final path = row['relativePath'];
+  if (path is! String || !isValidAttachmentPath(path)) {
+    throw const FormatException('Percorso allegato non valido');
+  }
+  return row;
+}
 
 /// Serializza l'intero DB in una mappa JSON-encodable (formato canonico).
 Future<Map<String, dynamic>> exportToJson(AppDatabase db) async => {
@@ -221,7 +236,9 @@ Future<String> importWalletFromJson(
       ]);
       b.insertAll(db.attachments, [
         for (final r in rows('attachments'))
-          Attachment.fromJson(rewrite(r, ['id', 'transactionId'])),
+          Attachment.fromJson(
+            _checkAttachmentPath(rewrite(r, ['id', 'transactionId'])),
+          ),
       ]);
       b.insertAll(db.dashboardCards, [
         for (final r in rows('dashboardCards'))
@@ -301,7 +318,10 @@ Future<void> importFromJson(AppDatabase db, Map<String, dynamic> json) async {
         db.recurringRules,
         rows('recurringRules').map(RecurringRule.fromJson),
       );
-      b.insertAll(db.attachments, rows('attachments').map(Attachment.fromJson));
+      b.insertAll(
+        db.attachments,
+        rows('attachments').map((r) => Attachment.fromJson(_checkAttachmentPath(r))),
+      );
       b.insertAll(
         db.dashboardCards,
         rows('dashboardCards').map(DashboardCard.fromJson),

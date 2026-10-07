@@ -24,6 +24,7 @@ import '../data/repositories/wallet_repository.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/exchange_rate_service.dart';
 import '../data/services/local_data_service.dart';
+import '../data/services/sync_lock.dart';
 import '../data/services/sync_service.dart';
 
 /// Executor del DB: nei test viene sostituito con NativeDatabase.memory().
@@ -74,7 +75,8 @@ final expenseReportRepositoryProvider = Provider<ExpenseReportRepository>(
 /// Tassi scaricati una volta al giorno e messi in cache (usati anche
 /// offline); overridabile nei test con un fake a tassi fissi.
 final exchangeRateServiceProvider = Provider<ExchangeRateService>(
-  (ref) => CachedExchangeRateService(prefs: ref.watch(sharedPreferencesProvider)),
+  (ref) =>
+      CachedExchangeRateService(prefs: ref.watch(sharedPreferencesProvider)),
 );
 
 /// Directory documenti dell'app (base per i path relativi degli allegati).
@@ -385,14 +387,19 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return service.authStateChanges;
 });
 
+/// Lock condiviso da sync, logout e rimozione dei dati locali.
+final syncLockProvider = Provider<SyncLock>((ref) => SyncLock());
+
 /// Motore di sync (M-ACC6). `currentUserId` letto pigro ad ogni sync
 /// (non un valore catturato una volta) così riflette sempre lo stato di
-/// login corrente, incluso il caso limite di un logout a metà sync.
+/// login corrente: se cambia a metà sync, la sync si ferma.
 final syncServiceProvider = Provider<SyncService>(
   (ref) => SupabaseSyncService(
-    SupabaseSyncRemote(Supabase.instance.client),
+    SupabaseSyncRemote(() => Supabase.instance.client),
     ref.watch(databaseProvider),
     currentUserId: () => ref.read(authServiceProvider).currentUser?.id,
+    currentUserEmail: () => ref.read(authServiceProvider).currentUser?.email,
+    lock: ref.watch(syncLockProvider),
   ),
 );
 
@@ -400,5 +407,56 @@ final localDataServiceProvider = Provider<LocalDataService>(
   (ref) => DeviceLocalDataService(
     ref.watch(databaseProvider),
     () => ref.read(appDirProvider.future),
+    lock: ref.watch(syncLockProvider),
   ),
 );
+
+/// Chi può vedere i dati di questo device (SECURITY_AUDIT NIP-13).
+enum LocalDataAccessState {
+  /// Non ancora noto (sessione in caricamento).
+  pending,
+
+  /// Dati mai sincronizzati (solo-locale) o dell'account loggato.
+  open,
+
+  /// Dati di un account, ma nessuno è loggato (dopo il logout "conserva i
+  /// dati"): restano sul device ma non sono visibili senza rifare il login.
+  ownerSignedOut,
+
+  /// Loggato un account diverso da quello a cui appartengono i dati:
+  /// l'app non si usa finché i dati non vengono rimossi o si esce, così i
+  /// movimenti di un account non finiscono nell'altro.
+  otherAccount,
+}
+
+class LocalDataAccess {
+  const LocalDataAccess(this.state, {this.ownerEmail});
+
+  final LocalDataAccessState state;
+  final String? ownerEmail;
+
+  bool get isOpen => state == LocalDataAccessState.open;
+}
+
+final localDataAccessProvider = FutureProvider<LocalDataAccess>((ref) async {
+  final auth = ref.watch(authStateProvider);
+  final owner = await ref.read(syncServiceProvider).localDataOwner();
+  if (owner == null) return const LocalDataAccess(LocalDataAccessState.open);
+  if (auth.isLoading && !auth.hasValue && !auth.hasError) {
+    return const LocalDataAccess(LocalDataAccessState.pending);
+  }
+  final user = auth.valueOrNull;
+  if (user == null) {
+    return LocalDataAccess(
+      LocalDataAccessState.ownerSignedOut,
+      ownerEmail: owner.email,
+    );
+  }
+  if (user.id != owner.userId) {
+    return LocalDataAccess(
+      LocalDataAccessState.otherAccount,
+      ownerEmail: owner.email,
+    );
+  }
+  return const LocalDataAccess(LocalDataAccessState.open);
+});

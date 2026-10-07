@@ -7,10 +7,28 @@ plugins {
 }
 
 // Firma release da android/key.properties (fuori da git); il keystore vive
-// in ~/Documents/ALUM/keys/. Senza il file si firma col debug key (CI).
+// in ~/Documents/ALUM/keys/. Senza il file la build release FALLISCE invece
+// di firmare in silenzio con la chiave debug (APK non aggiornabili e non
+// attribuibili, SECURITY_AUDIT NIP-20). La CI compila solo build debug.
 val keystoreProperties = Properties().apply {
     val f = rootProject.file("key.properties")
     if (f.exists()) f.inputStream().use { load(it) }
+}
+
+gradle.taskGraph.whenReady {
+    val releaseTask = allTasks.any { task ->
+        task.project == project &&
+            task.name.contains("Release") &&
+            (task.name.startsWith("assemble") ||
+                task.name.startsWith("bundle") ||
+                task.name.startsWith("package"))
+    }
+    if (releaseTask && keystoreProperties.isEmpty) {
+        throw GradleException(
+            "Build release senza android/key.properties: serve il keystore " +
+                "di release (vedi CLAUDE.md). Nessun fallback sulla chiave debug.",
+        )
+    }
 }
 
 android {
@@ -44,10 +62,8 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (keystoreProperties.isNotEmpty()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
+            if (keystoreProperties.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
             }
         }
     }

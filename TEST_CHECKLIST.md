@@ -160,15 +160,29 @@ Waydroid + iPhone) e **2 account di test** (A e B), mai account reali.
       errori nel form. 🤖 `account_screen_test.dart`
 - [ ] Login con credenziali sbagliate → errore leggibile, resta disconnesso. 🤖
 - [ ] Login corretto → schermata account con l'email. 🤖
-- [ ] Reset password: arriva l'email.
-- [ ] Cambio password: conferma diversa → errore 🤖; dopo il cambio, **l'altro
-      dispositivo viene disconnesso**, questo no.
-- [ ] Logout: chiede conferma e torna al form; i dati locali restano. 🤖
+- [ ] Reset password: arriva l'email; il link, aperto **sullo stesso
+      dispositivo** che l'ha richiesto, riapre l'app (deep link
+      `com.alum.nipay://auth-callback`) e chiede la nuova password; dopo il
+      salvataggio gli altri dispositivi vengono disconnessi. Prerequisito: il
+      deep link è negli "Additional Redirect URLs" del progetto Supabase.
+- [ ] Cambio password: serve la password attuale (sbagliata → errore, nessun
+      cambio) 🤖; password nuova < 12 caratteri o senza numeri → errore 🤖;
+      dopo il cambio, **l'altro dispositivo viene disconnesso**, questo no.
+- [ ] "Esci da tutti i dispositivi" chiude anche le sessioni degli altri
+      device. 🤖 (servizio finto) + verifica a mano su 2 device.
+- [ ] Logout: chiede conferma e torna al form; i dati locali restano ma
+      l'app mostra la schermata "Dati bloccati" finché non si rientra con lo
+      stesso account. 🤖 `app_test.dart`
 - [ ] Logout con "Rimuovi i dati da questo dispositivo": avviso sulle foto
       scontrini, sync finale, poi app vuota. Offline → messaggio d'errore,
       nessun dato rimosso, ancora connesso. 🤖 `account_screen_test.dart`
-- [ ] Richiesta cancellazione account → banner con la data esatta (+30 gg);
-      "Annulla cancellazione" rimuove il banner. 🤖
+- [ ] Richiesta cancellazione account: serve la password attuale 🤖 → banner
+      con la data esatta (+30 gg, data decisa dal server); "Annulla
+      cancellazione" rimuove il banner. 🤖 Lato server: `authenticated` non
+      può scrivere `deletion_requested_at` direttamente. 🤖
+      `security_hardening_test.sql`
+- [ ] La schermata Account mostra l'ultima sync riuscita, l'eventuale errore
+      e le righe in attesa. 🤖
 
 ## 13. Sync multi-dispositivo (livello completo)
 
@@ -180,13 +194,18 @@ Con account A loggato su **dispositivo 1** e **dispositivo 2**:
       o dopo aver riaperto l'app, per **ogni tipo**: portafoglio,
       categoria, tag, campo custom, centro di costo, budget, ricorrenza,
       card dashboard, transazione, tag su transazione, valore campo
-      custom, nota spese. 🤖 parziale (solo portafogli e categorie)
-- [ ] L'eliminazione si propaga (sparisce anche sull'altro). 🤖 solo portafogli
-- [ ] ⚠️ **Togliere il flag nota spese** su 1 → il flag sparisce anche su 2
-      (vedi sezione 16).
+      custom, nota spese. 🤖 parziale `sync_service_test.dart`
+- [ ] L'eliminazione si propaga (sparisce anche sull'altro), anche per
+      "togli tag" e "togli flag nota spese". 🤖
 - [ ] **Conflitto**: entrambi offline, modifica la *stessa* transazione in
-      modo diverso, poi riconnetti → entrambi convergono sull'ultima scritta,
-      nessun duplicato. 🤖 `sync_service_test.dart` (property test)
+      modo diverso, poi riconnetti **in ordine inverso** → entrambi
+      convergono sulla modifica fatta per ultima (non sull'ultimo push),
+      nessun duplicato; una spesa cancellata non ricompare. 🤖
+      `sync_service_test.dart` (PoC 3 + property test)
+- [ ] Device nuovo su un account con > 1000 transazioni: dopo il primo
+      login il numero di transazioni coincide con il server. 🤖 (paginazione)
+- [ ] Orologio del device avanti/indietro di un giorno: le modifiche degli
+      altri device continuano ad arrivare. 🤖 (PoC 1)
 - [ ] Offline: l'app resta usabile, nessun errore bloccante; al ritorno della
       rete sincronizza.
 - [ ] Allegati: **non** si sincronizzano ancora (fuori scope, M-ACC6). Solo
@@ -208,6 +227,9 @@ Con account A loggato su **dispositivo 1** e **dispositivo 2**:
       **tutte** le tabelle, `profiles` e Storage (lettura, inserimenti
       agganciati a dati altrui, spostamenti, upsert, update/delete, client
       anonimo), più l'upsert del sync sulle tabelle di join. 🤖 `supabase/tests/rls_isolation_test.sql`
+- [ ] Regressione dell'audit di sicurezza (FK cross-tenant, timestamp del
+      server, LWW, vincoli di dominio, cancellazione via RPC, limiti Storage,
+      superficie RPC). 🤖 `supabase/tests/security_hardening_test.sql`
 - [ ] Nuova tabella o nuova policy → aggiunti i casi corrispondenti in
       `rls_isolation_test.sql` (il test fallisce da solo se una tabella di
       `public` non ha la RLS abilitata, ma non sa quali policy servono).
@@ -215,21 +237,31 @@ Con account A loggato su **dispositivo 1** e **dispositivo 2**:
       `./scripts/test_rls.sh` verde (verifica che la produzione abbia
       davvero le policy, `wallets`) e, una volta per release, upload/lettura
       di un file Storage altrui con l'account di test → 403/404.
-- [ ] Ogni nuova tabella Postgres ha **RLS abilitata + policy** e trigger
-      `set_updated_at`.
+- [ ] Ogni nuova tabella Postgres ha **RLS abilitata + policy `to
+      authenticated`**, colonne `updated_at`/`modified_at` e trigger
+      `sync_stamp` (BEFORE INSERT OR UPDATE); FK verso righe dello stesso
+      portafoglio (FK composite o check nella policy).
 - [ ] **Cambio utente sullo stesso dispositivo**: login A → sync → logout
       (senza rimuovere i dati) → login B. Atteso: banner "questo dispositivo
-      contiene i dati di un altro account", "Sincronizza ora" bloccato, e
-      nella dashboard Supabase **nessun** portafoglio di A con
-      `owner_user_id` di B. "Rimuovi i dati e sincronizza" → app vuota,
-      poi arrivano solo i dati di B. 🤖 `sync_service_test.dart`, `account_screen_test.dart`
+      contiene i dati di un altro account", app bloccata (non si possono
+      inserire movimenti), "Sincronizza ora" bloccato, e nella dashboard
+      Supabase **nessun** portafoglio di A con `owner_user_id` di B.
+      "Rimuovi i dati e sincronizza" → app vuota, poi arrivano solo i dati
+      di B. 🤖 `sync_service_test.dart`, `account_screen_test.dart`, `app_test.dart`
 - [ ] Rientro dello stesso utente (A → logout → A): nessun banner, dati e
       scontrini ancora presenti, sync regolare.
 - [ ] Dopo il logout, riaprendo l'app non resta nessuna sessione attiva
       (la sessione è salvata nel Keychain/Keystore, non in SharedPreferences).
 - [ ] Cancellazione account (livello release, su account di test): dopo la
-      purge, login impossibile, righe e **tutti** i file Storage rimossi.
-      ⚠️ Provare con più di 100 allegati (vedi sezione 16).
+      purge, login impossibile, righe e **tutti** i file Storage rimossi,
+      anche con più di 100 allegati e sottocartelle; chiamata senza
+      `x-cron-secret` → 401; `?dry_run=1` non cancella nulla. La Edge
+      Function non ha test automatici (serve l'edge runtime).
+- [ ] Allegati: una foto scattata con la posizione attiva, una volta
+      salvata e nel PDF della nota spese, non contiene più EXIF/GPS
+      (`exiftool`). 🤖 `image_sanitizer_test.dart`
+- [ ] App in background: l'anteprima nell'app switcher non mostra i dati. 🤖
+      (Flutter) + verifica a mano su iOS e Android.
 
 ## 15. Build e release
 
@@ -251,9 +283,10 @@ aperti, i punti ⚠️ vanno controllati a mano.
 
 1. ~~**Il logout non isola i dati locali.**~~ **Risolto 2026-09-30**: il sync
    si blocca se i dati locali appartengono a un altro account e il logout
-   può rimuovere i dati dal dispositivo (vedi CLAUDE.md). Resta un limite
-   voluto: con il logout "semplice" chi usa il telefono dopo vede ancora i
-   dati in locale (serve per non perdere le foto scontrini).
+   può rimuovere i dati dal dispositivo (vedi CLAUDE.md). **Esteso
+   2026-10-05** (SECURITY_FIX_REPORT.md): dopo il logout "semplice" i dati
+   restano ma l'app è bloccata finché non si rientra con lo stesso account.
+   Restano aperti: DB e foto non cifrati (M-ACC5), nessun app-lock.
 2. ~~**I test RLS coprono solo `wallets`.**~~ **Risolto 2026-10-01**: 88
    test pgTAP su Supabase locale in CI (`supabase/tests/`), nessuna falla
    di isolamento trovata. Hanno scoperto un bug di sync: mancava la policy
@@ -261,13 +294,11 @@ aperti, i punti ⚠️ vanno controllati a mano.
    veniva negato e la sync falliva a ripetizione (migration
    `20261001000000`). `test_rls.sh` resta come controllo a mano sulla
    produzione.
-3. **La purge dell'account può lasciare file.** `storage.list(userId)` in
-   `purge-deleted-accounts` restituisce al massimo 100 elementi per chiamata:
-   oltre 100 allegati, i file restanti non vengono cancellati (problema GDPR).
-   La Edge Function non ha test.
-4. **Togliere il flag nota spese è una cancellazione fisica.**
-   `clearExpenseData` usa `delete` invece del soft-delete: la rimozione non
-   si propaga agli altri dispositivi.
+3. ~~**La purge dell'account può lasciare file.**~~ **Risolto 2026-10-05**:
+   elenco paginato e ricorsivo, verifica a zero oggetti prima di
+   `deleteUser`. La Edge Function resta senza test automatici.
+4. ~~**Togliere il flag nota spese è una cancellazione fisica.**~~
+   **Risolto 2026-10-05**: soft-delete (anche per i tag tolti).
 5. **Nessun test per la sessione nel Keychain/Keystore**
    (`SecureAuthLocalStorage`) né per il logout degli altri dispositivi dopo
    il cambio password (il test usa un servizio finto).

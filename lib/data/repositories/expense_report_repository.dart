@@ -74,19 +74,33 @@ class DriftExpenseReportRepository implements ExpenseReportRepository {
             eInvoice: Value(eInvoice),
             reportId: Value(existing?.reportId),
             updatedAt: DateTime.now(),
+            deletedAt: const Value(null),
+          ),
+        );
+  }
+
+  /// Soft-delete: con una cancellazione fisica la spesa restava "da
+  /// rimborsare" sugli altri device e nei loro PDF (SECURITY_AUDIT NIP-15).
+  @override
+  Future<void> clearExpenseData(String transactionId) {
+    final now = DateTime.now();
+    return (_db.update(_db.expenseReportEntries)..where(
+          (t) => t.transactionId.equals(transactionId) & t.deletedAt.isNull(),
+        ))
+        .write(
+          ExpenseReportEntriesCompanion(
+            deletedAt: Value(now),
+            updatedAt: Value(now),
           ),
         );
   }
 
   @override
-  Future<void> clearExpenseData(String transactionId) => (_db.delete(
-    _db.expenseReportEntries,
-  )..where((t) => t.transactionId.equals(transactionId))).go();
-
-  @override
-  Future<ExpenseReportEntry?> dataOf(String transactionId) => (_db.select(
-    _db.expenseReportEntries,
-  )..where((t) => t.transactionId.equals(transactionId))).getSingleOrNull();
+  Future<ExpenseReportEntry?> dataOf(String transactionId) =>
+      (_db.select(_db.expenseReportEntries)..where(
+            (t) => t.transactionId.equals(transactionId) & t.deletedAt.isNull(),
+          ))
+          .getSingleOrNull();
 
   JoinedSelectStatement<HasResultSet, dynamic> _flaggedQuery(
     String walletId,
@@ -99,7 +113,8 @@ class DriftExpenseReportRepository implements ExpenseReportRepository {
           _db.transactions.id.equalsExp(_db.expenseReportEntries.transactionId),
         ),
       ])..where(
-        _db.transactions.deletedAt.isNull() &
+        _db.expenseReportEntries.deletedAt.isNull() &
+            _db.transactions.deletedAt.isNull() &
             _db.transactions.walletId.equals(walletId) &
             _db.transactions.type.equalsValue(TransactionType.expense) &
             _db.transactions.date.isBiggerOrEqualValue(from) &
@@ -218,7 +233,8 @@ class DriftExpenseReportRepository implements ExpenseReportRepository {
                 ),
               ),
             ])..where(
-              _db.transactions.deletedAt.isNull() &
+              _db.expenseReportEntries.deletedAt.isNull() &
+                  _db.transactions.deletedAt.isNull() &
                   _db.transactions.walletId.equals(walletId) &
                   _db.transactions.type.equalsValue(TransactionType.expense) &
                   _db.expenseReportEntries.reimbursable.equals(true),

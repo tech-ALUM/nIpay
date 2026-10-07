@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../data/repositories/custom_field_repository.dart';
 import '../../l10n/app_localizations.dart';
@@ -103,6 +105,7 @@ Future<void> _showFieldSheet(BuildContext context, WidgetRef ref) {
             const SizedBox(height: 16),
             TextField(
               controller: name,
+              inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
               autofocus: true,
               decoration: InputDecoration(labelText: l10n.fieldName),
             ),
@@ -120,6 +123,7 @@ Future<void> _showFieldSheet(BuildContext context, WidgetRef ref) {
               const SizedBox(height: 12),
               TextField(
                 controller: options,
+                inputFormatters: [LengthLimitingTextInputFormatter(kMaxChoiceOptionsLength)],
                 decoration: InputDecoration(labelText: l10n.choiceOptions),
               ),
             ],
@@ -146,6 +150,12 @@ Future<void> _showFieldSheet(BuildContext context, WidgetRef ref) {
                             .split(',')
                             .map((s) => s.trim())
                             .where((s) => s.isNotEmpty)
+                            .map(
+                              (s) => s.length > kMaxNameLength
+                                  ? s.substring(0, kMaxNameLength)
+                                  : s,
+                            )
+                            .take(kMaxChoiceOptions)
                             .toList()
                       : null;
                   final active = ref.read(activeWalletProvider);

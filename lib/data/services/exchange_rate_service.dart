@@ -37,6 +37,19 @@ class CachedExchangeRateService implements ExchangeRateService {
   static const _ratesKey = 'exchangeRates.ratesJson';
   static const _dateKey = 'exchangeRates.fetchedOn';
 
+  static final _currencyCode = RegExp(r'^[A-Z]{3}$');
+
+  /// Un tasso (unità di valuta per 1 EUR) fuori da questo intervallo non è
+  /// plausibile per nessuna valuta reale: un valore 0, negativo o enorme
+  /// (servizio compromesso, risposta corrotta) altererebbe in modo
+  /// permanente gli importi salvati (SECURITY_AUDIT NIP-23).
+  static bool _plausible(double rate) =>
+      rate.isFinite && rate >= 1e-3 && rate <= 1e6;
+
+  /// Variazione massima accettata rispetto alla cache in un aggiornamento:
+  /// oltre si tiene la cache e si riprova il giorno dopo.
+  static const _maxDailyChange = 1.5;
+
   final SharedPreferences _prefs;
   final http.Client _client;
 
@@ -71,8 +84,13 @@ class CachedExchangeRateService implements ExchangeRateService {
   Map<String, double>? _readCachedRates() {
     final json = _prefs.getString(_ratesKey);
     if (json == null) return null;
-    final decoded = jsonDecode(json) as Map<String, dynamic>;
-    return decoded.map((k, v) => MapEntry(k, (v as num).toDouble()));
+    try {
+      final decoded = jsonDecode(json) as Map<String, dynamic>;
+      final rates = decoded.map((k, v) => MapEntry(k, (v as num).toDouble()));
+      return rates.values.every(_plausible) ? rates : null;
+    } catch (_) {
+      return null; // cache illeggibile: come se non ci fosse
+    }
   }
 
   String _today() {
@@ -104,8 +122,26 @@ class CachedExchangeRateService implements ExchangeRateService {
       }
       final rates = <String, double>{'EUR': 1.0};
       for (final entry in rawRates.entries) {
-        if (entry.value is num) {
-          rates[entry.key] = (entry.value as num).toDouble();
+        final value = entry.value;
+        if (!_currencyCode.hasMatch(entry.key) || value is! num) continue;
+        if (!_plausible(value.toDouble())) {
+          throw const ExchangeRateException(
+            'Risposta del servizio tassi di cambio non valida',
+          );
+        }
+        rates[entry.key] = value.toDouble();
+      }
+      final previous = _readCachedRates();
+      if (previous != null) {
+        for (final MapEntry(key: code, value: rate) in rates.entries) {
+          final old = previous[code];
+          if (old == null) continue;
+          final change = rate / old;
+          if (change > _maxDailyChange || change < 1 / _maxDailyChange) {
+            throw const ExchangeRateException(
+              'Variazione anomala dei tassi di cambio: aggiornamento scartato',
+            );
+          }
         }
       }
       await _prefs.setString(_ratesKey, jsonEncode(rates));

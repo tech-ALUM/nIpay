@@ -152,7 +152,7 @@
   "signOut": "Sign out",
   "email": "Email",
   "password": "Password",
-  "confirmSignOut": "Sign out of your account? Your data stays on this device and keeps working offline.",
+  "confirmSignOut": "Sign out of your account? Your data stays on this device, but it can only be opened again by signing in with this account.",
   "noAccountYet": "Don't have an account? Sign up",
   "alreadyHaveAccount": "Already have an account? Sign in",
   "forgotPassword": "Forgot password?",
@@ -174,7 +174,7 @@
   "syncComplete": "Sync complete",
   "syncFailed": "Sync failed. Check your connection and try again.",
   "deleteAccount": "Delete account",
-  "deleteAccountConfirmBody": "Your account will be permanently deleted in 30 days. You can cancel any time before then by signing back in. This does not affect the data on this device, which keeps working offline.",
+  "deleteAccountConfirmBody": "Your account and its cloud data will be permanently deleted in 30 days. Until then you can cancel from this screen. The data on this device is not deleted.",
   "deleteAccountRequested": "Account deletion requested. You have 30 days to cancel.",
   "deletionPending": "Account scheduled for deletion on {date}.",
   "@deletionPending": {
@@ -191,5 +191,47 @@
   "foreignLocalDataBody": "This device holds data from another account, so sync is paused to keep it separate. Remove that data to start syncing this account, or sign out.",
   "removeLocalDataAndSync": "Remove data and sync",
   "removeForeignLocalDataConfirmBody": "All wallets, transactions and receipt photos on this device will be deleted. Whatever the other account already synced stays safe in that account. Continue?",
-  "syncBlockedForeignData": "Sync paused: this device holds data from another account."
+  "syncBlockedForeignData": "Sync paused: this device holds data from another account.",
+  "currentPassword": "Current password",
+  "wrongCurrentPassword": "The current password is not correct.",
+  "confirmWithPassword": "Enter your password to confirm.",
+  "passwordTooWeak": "Use at least 12 characters, with letters and numbers.",
+  "signOutEverywhere": "Sign out of all devices",
+  "signOutEverywhereConfirmBody": "Every session of this account will be closed, including this one. Use it if a device was lost or stolen. Data on this device stays here.",
+  "signedOutEverywhere": "Signed out of all devices.",
+  "authErrorInvalidCredentials": "Invalid email or password, or email not confirmed yet.",
+  "authErrorWeakPassword": "This password isn't accepted: choose a longer, less common one.",
+  "authErrorSamePassword": "The new password must be different from the current one.",
+  "authErrorRateLimited": "Too many attempts. Wait a few minutes and try again.",
+  "authErrorReauthRequired": "For security, enter your password again and retry.",
+  "authErrorNetwork": "Can't reach the server. Check your connection and try again.",
+  "authErrorGeneric": "Something went wrong. Please try again.",
+  "resetPasswordTitle": "Set a new password",
+  "passwordResetDone": "Password updated. Other devices have been signed out.",
+  "resetPasswordCooldown": "Wait a minute before requesting another email.",
+  "lastSyncAt": "Last sync: {date}",
+  "@lastSyncAt": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "lastSyncNever": "Not synced yet",
+  "syncLastFailed": "The last sync failed: it will be retried automatically.",
+  "syncIssues": "{count, plural, =1{1 item couldn't be synced and will be retried.} other{{count} items couldn't be synced and will be retried.}}",
+  "@syncIssues": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "lockedDataTitle": "Data locked",
+  "lockedDataBody": "This device holds the data of {email}. Sign in with that account to see it, or remove it from this device.",
+  "@lockedDataBody": {
+    "placeholders": {
+      "email": {"type": "String"}
+    }
+  },
+  "lockedDataBodyUnknownOwner": "This device holds the data of an account that is not signed in. Sign in with that account to see it, or remove it from this device.",
+  "lockedDataOtherAccountBody": "This device holds the data of a different account. To use this account here, remove that data from the device (open Account), or sign out.",
+  "startupError": "Couldn't open your data. Restart the app; if it keeps happening, contact support.",
+  "attachmentUnsupported": "This image format isn't supported: use a JPEG, PNG or WebP photo."
 }

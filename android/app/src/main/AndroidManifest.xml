@@ -1,8 +1,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Sync con Supabase, tassi di cambio: senza questo permesso la build
+         release non ha rete (era dichiarato solo nei manifest debug/profile,
+         SECURITY_AUDIT NIP-20). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Backup disattivati: DB e foto degli scontrini non devono finire nei
+         backup cloud o nel trasferimento tra device (SECURITY_AUDIT NIP-13).
+         allowBackup/fullBackupContent valgono fino ad Android 11,
+         dataExtractionRules da Android 12. -->
     <application
         android:label="nipay"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -23,6 +35,17 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <!-- Link delle email di Supabase Auth (recupero password),
+                 SECURITY_AUDIT NIP-09. Deve coincidere con kAuthRedirectUrl
+                 (lib/data/services/auth_service.dart). Anche se un'altra app
+                 registrasse lo stesso schema, il codice nel link è inutile
+                 senza il code verifier PKCE, che resta in questa app. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="com.alum.nipay" android:host="auth-callback"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

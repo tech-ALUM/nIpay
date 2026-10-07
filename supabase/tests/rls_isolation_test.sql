@@ -230,8 +230,9 @@ select throws_ok(
 );
 select lives_ok(
   $$ insert into storage.objects (bucket_id, name)
-     values ('attachments', '11111111-1111-1111-1111-111111111111/nuovo.jpg') $$,
-  'A può caricare file nel proprio prefisso Storage'
+     values ('attachments',
+             '11111111-1111-1111-1111-111111111111/a0000000-0000-0000-0000-0000000000e1.jpg') $$,
+  'A può caricare file nel proprio prefisso Storage ({uid}/{uuid}.{ext})'
 );
 
 -- 3. Spostare le proprie righe dentro il wallet di B --------------------
@@ -295,8 +296,13 @@ select throws_ok(
 );
 
 -- 5. Update/delete sulle righe di B: nessun effetto (verificato sotto) --
-update profiles set deletion_requested_at = now()
-  where id = '22222222-2222-2222-2222-222222222222';
+-- profiles non è più modificabile direttamente dal client (NIP-05): la
+-- cancellazione passa dalla RPC request_account_deletion().
+select throws_ok(
+  $$ update profiles set deletion_requested_at = now()
+     where id = '22222222-2222-2222-2222-222222222222' $$,
+  '42501', null, 'A non può modificare il profilo di B (nessun update diretto su profiles)'
+);
 update wallets set name = 'hacked' where id = 'b0000000-0000-0000-0000-000000000001';
 update categories set name = 'hacked' where id = 'b0000000-0000-0000-0000-000000000002';
 update tags set name = 'hacked' where id = 'b0000000-0000-0000-0000-000000000003';

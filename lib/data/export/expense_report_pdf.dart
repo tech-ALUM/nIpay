@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../core/image_sanitizer.dart';
 import '../../core/money.dart';
 import '../db/app_database.dart';
 import '../repositories/expense_report_repository.dart';
@@ -21,6 +22,12 @@ const _ink = PdfColor.fromInt(0xFF15181D);
 
 /// Genera il PDF della nota spese: intestazione, tabella spese e
 /// giustificativi (foto scontrini) in appendice, numerati e riferiti.
+///
+/// Le foto vengono ripulite dai metadati (EXIF con GPS, XMP...) prima di
+/// essere incorporate, anche quelle salvate prima che l'app lo facesse al
+/// momento dell'allegato: il PDF è fatto per essere condiviso con terzi
+/// (SECURITY_AUDIT NIP-16). File non riconosciuti come immagini vengono
+/// esclusi.
 Future<Uint8List> buildExpenseReportPdf({
   required String walletName,
   String currency = 'EUR',
@@ -33,6 +40,12 @@ Future<Uint8List> buildExpenseReportPdf({
   String? reportName,
 }) async {
   final doc = pw.Document();
+  final cleanAttachments = <String, List<Uint8List>>{
+    for (final MapEntry(key: txId, value: images) in attachmentsByTx.entries)
+      txId: [
+        for (final image in images) ?_sanitizedOrNull(image),
+      ],
+  };
   final total = rows.fold(0, (s, r) => s + r.transaction.amountCents);
   final reimbursable = rows
       .where((r) => r.entry.reimbursable)
@@ -42,7 +55,7 @@ Future<Uint8List> buildExpenseReportPdf({
   final receiptNumbers = <String, List<int>>{};
   var receiptCounter = 0;
   for (final r in rows) {
-    final images = attachmentsByTx[r.transaction.id] ?? const [];
+    final images = cleanAttachments[r.transaction.id] ?? const [];
     receiptNumbers[r.transaction.id] = [
       for (var i = 0; i < images.length; i++) ++receiptCounter,
     ];
@@ -148,7 +161,7 @@ Future<Uint8List> buildExpenseReportPdf({
 
   // Appendice giustificativi: una pagina per foto, con riferimento.
   for (final r in rows) {
-    final images = attachmentsByTx[r.transaction.id] ?? const [];
+    final images = cleanAttachments[r.transaction.id] ?? const [];
     final numbers = receiptNumbers[r.transaction.id]!;
     for (var i = 0; i < images.length; i++) {
       final image = pw.MemoryImage(images[i]);
@@ -182,4 +195,12 @@ Future<Uint8List> buildExpenseReportPdf({
   }
 
   return doc.save();
+}
+
+Uint8List? _sanitizedOrNull(Uint8List image) {
+  try {
+    return sanitizeImage(image).bytes;
+  } on UnsupportedImageException {
+    return null;
+  }
 }

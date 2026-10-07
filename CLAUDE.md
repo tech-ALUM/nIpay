@@ -59,6 +59,37 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
   cache pregressa (mai scaricata con successo, tipicamente al primissimo
   utilizzo offline) — l'unico caso in cui serve ancora un fetch bloccante.
 
+- **Security fix (2026-10-05, vedi SECURITY_FIX_REPORT.md)**:
+  - **Sync**: coda `SyncOutbox` riempita da trigger SQLite (niente più
+    `updatedAt > lastPushedAt`), watermark di pull **per tabella**
+    (`SyncCursors`, orologio del server) con paginazione keyset e finestra
+    di sovrapposizione, **last-write-wins** su `modified_at` (= `updatedAt`
+    locale, limitato a "adesso" dal server; trigger `sync_stamp`), righe
+    malformate/rifiutate isolate senza bloccare la sync, `SyncLock` condiviso
+    con logout e `wipe()`. Il client non invia mai `updated_at`. Schema
+    Drift **v7**. Tag e voci nota spese: soft-delete. Budget e categorie di
+    default hanno id deterministici (`lib/core/ids.dart`).
+  - **Dati locali legati all'account**: se appartengono a un account non
+    loggato (dopo il logout) o diverso da quello loggato, l'app mostra una
+    schermata di blocco (`localDataAccessProvider`) finché non si rientra
+    con l'account giusto o si rimuovono i dati.
+  - **Auth**: password nuove ≥ 12 caratteri con lettere e numeri
+    (`lib/core/validation.dart`, da tenere uguale alla dashboard); cambio
+    password e cancellazione account chiedono la password attuale; la
+    cancellazione passa dalla RPC `request_account_deletion` (data del
+    server, login recente via claim `amr`); reset via deep link
+    `com.alum.nipay://auth-callback` (da aggiungere agli Additional
+    Redirect URLs dell'hosted). Errori sempre tradotti, mai il testo del
+    server.
+  - **Supabase**: migration `20261005*` da applicare PRIMA di distribuire
+    l'app aggiornata; helper RLS nello schema `private` (non esposto);
+    `profiles` non scrivibile dal client; Storage limitato a
+    JPEG/PNG/WebP/PDF ≤ 10 MiB, nome `{uid}/{uuid}.{ext}`, quota per utente.
+    Test: `supabase/tests/security_hardening_test.sql`.
+  - **Allegati**: EXIF/GPS rimossi alla scelta della foto e nel PDF
+    (`lib/core/image_sanitizer.dart`); path solo `attachments/<uuid>.<ext>`
+    (`lib/core/attachment_files.dart`).
+
 ## Regole di progetto
 - Stack: Flutter 3.44.6 + Riverpod 2.6 (v3 confligge con drift_dev) + Drift.
 - La UI non accede mai a Drift direttamente: sempre attraverso i repository
@@ -102,11 +133,13 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
   NON funziona (firma rifiutata da iOS 27, errore AMFI CoreTrust).
 - **Waydroid** (form factor telefono già configurato): usare l'APK **debug** —
   il driver Vulkan del container crasha, solo il manifest debug forza
-  Impeller→OpenGLES. Install: `adb install -r build/app/outputs/flutter-apk/app-debug.apk`
+  Impeller→OpenGLES. Solo per sviluppo: mai distribuire build debug
+  (`debuggable`) su device reali, ora la release ha il permesso INTERNET. Install: `adb install -r build/app/outputs/flutter-apk/app-debug.apk`
   (adb su 192.168.240.112:5555).
 - **Release firmata**: `flutter build apk --release`; keystore in
   `~/Documents/ALUM/keys/nipay-release.jks` + `android/key.properties` (fuori
-  da git). NON perdere il keystore.
+  da git). NON perdere il keystore. Senza `key.properties` la build release
+  fallisce (niente più fallback sulla chiave debug).
 - iOS: non buildabile da questo PC Linux (serve Mac/Codemagic).
 - Git: remote via alias `github.com-alum`; identità folder-based (albertoboffi-ALUM).
 - Design system: repo `design/` + progetto Claude Design "nIpay"

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nipay/app.dart';
 import 'package:nipay/core/money.dart';
 import 'package:nipay/core/providers.dart';
+import 'package:nipay/data/db/app_database.dart';
 import 'package:nipay/data/repositories/custom_field_repository.dart'
     show CustomFieldType;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -528,5 +530,62 @@ void main() {
     expect(find.text('Flagged expenses: 1'), findsOneWidget);
 
     await _unmount(tester);
+  });
+
+  group('SECURITY_AUDIT NIP-13', () {
+    testWidgets('data tied to an account stays locked while nobody is '
+        'signed in', (tester) async {
+      final db = AppDatabase(NativeDatabase.memory());
+      await db
+          .into(db.syncStates)
+          .insert(
+            SyncStatesCompanion.insert(
+              userId: 'user-a',
+              lastPushedAt: DateTime.utc(2026),
+              lastPulledAt: DateTime.utc(2026),
+              userEmail: const Value('a@example.com'),
+            ),
+          );
+      await tester.pumpWidget(
+        await _app(extraOverrides: [databaseProvider.overrideWithValue(db)]),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('lockedLocalData')), findsOneWidget);
+      expect(find.textContaining('a@example.com'), findsOneWidget);
+      expect(find.byKey(const Key('addTransactionFab')), findsNothing);
+      expect(find.byType(NavigationBar), findsNothing);
+
+      await _unmount(tester);
+      await db.close();
+    });
+
+    testWidgets('local-only data (never synced) stays usable without an '
+        'account', (tester) async {
+      await tester.pumpWidget(await _app());
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('lockedLocalData')), findsNothing);
+      expect(find.byKey(const Key('addTransactionFab')), findsOneWidget);
+
+      await _unmount(tester);
+    });
+
+    testWidgets('the app is covered while in the background (app switcher '
+        'preview)', (tester) async {
+      await tester.pumpWidget(await _app());
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('privacyShield')), findsNothing);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await tester.pump();
+      expect(find.byKey(const Key('privacyShield')), findsOneWidget);
+
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      expect(find.byKey(const Key('privacyShield')), findsNothing);
+
+      await _unmount(tester);
+    });
   });
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/attachment_files.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
@@ -37,6 +38,12 @@ class _TransactionDetailSheet extends ConsumerWidget {
     final attachments =
         ref.watch(attachmentsOfProvider(t.id)).valueOrNull ?? const [];
     final appDir = ref.watch(appDirProvider).valueOrNull;
+    // Solo path di allegato generati dall'app (SECURITY_AUDIT NIP-18).
+    final files = appDir == null
+        ? const <File>[]
+        : [
+            for (final a in attachments) ?attachmentFile(appDir, a.relativePath),
+          ];
 
     final (color, amountText) = switch (t.type) {
       TransactionType.expense => (
@@ -73,7 +80,7 @@ class _TransactionDetailSheet extends ConsumerWidget {
             '${t.date.day}/${t.date.month}/${t.date.year}',
             style: TextStyle(fontSize: 12, color: palette.muted),
           ),
-          if (attachments.isNotEmpty && appDir != null) ...[
+          if (files.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
               l10n.attachments,
@@ -84,12 +91,10 @@ class _TransactionDetailSheet extends ConsumerWidget {
               height: 90,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: attachments.length,
+                itemCount: files.length,
                 separatorBuilder: (_, i) => const SizedBox(width: 8),
                 itemBuilder: (context, i) {
-                  final file = File(
-                    '${appDir.path}/${attachments[i].relativePath}',
-                  );
+                  final file = files[i];
                   return GestureDetector(
                     onTap: () => showDialog<void>(
                       context: context,

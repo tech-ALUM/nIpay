@@ -2,9 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
+import '../../core/validation.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/sync_service.dart';
 import '../../l10n/app_localizations.dart';
+
+/// Messaggio l10n per un errore di autenticazione: mai il testo grezzo del
+/// server (SECURITY_AUDIT NIP-17).
+String authErrorText(AppLocalizations l10n, AuthErrorCode code) =>
+    switch (code) {
+      AuthErrorCode.invalidCredentials => l10n.authErrorInvalidCredentials,
+      AuthErrorCode.wrongCurrentPassword => l10n.wrongCurrentPassword,
+      AuthErrorCode.weakPassword => l10n.authErrorWeakPassword,
+      AuthErrorCode.samePassword => l10n.authErrorSamePassword,
+      AuthErrorCode.rateLimited => l10n.authErrorRateLimited,
+      AuthErrorCode.reauthenticationRequired => l10n.authErrorReauthRequired,
+      AuthErrorCode.network => l10n.authErrorNetwork,
+      AuthErrorCode.unknown => l10n.authErrorGeneric,
+    };
+
+String? _newPasswordError(AppLocalizations l10n, String? value) =>
+    (value == null || !isStrongPassword(value)) ? l10n.passwordTooWeak : null;
+
+String _formatDate(DateTime date) =>
+    '${date.day.toString().padLeft(2, '0')}/'
+    '${date.month.toString().padLeft(2, '0')}/'
+    '${date.year}';
+
+String _formatDateTime(DateTime date) {
+  final local = date.toLocal();
+  return '${_formatDate(local)} '
+      '${local.hour.toString().padLeft(2, '0')}:'
+      '${local.minute.toString().padLeft(2, '0')}';
+}
 
 /// Ingresso account: mostra il form di login/registrazione in modalità
 /// solo-locale, o email + logout se già autenticato, con sync manuale e
@@ -20,7 +50,7 @@ class AccountScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.account)),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: user == null
               ? const _AuthForm()
@@ -44,12 +74,14 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
   bool _isSyncing = false;
   Future<DateTime?>? _deletionStatus;
   Future<bool>? _foreignLocalData;
+  Future<SyncStatus?>? _syncStatus;
 
   @override
   void initState() {
     super.initState();
     _refreshDeletionStatus();
     _refreshForeignLocalData();
+    _refreshSyncStatus();
   }
 
   void _refreshForeignLocalData() {
@@ -59,7 +91,21 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
   }
 
   void _refreshDeletionStatus() {
-    _deletionStatus = ref.read(authServiceProvider).getAccountDeletionRequestedAt();
+    _deletionStatus = ref
+        .read(authServiceProvider)
+        .getAccountDeletionRequestedAt()
+        .catchError((Object _) => null);
+  }
+
+  void _refreshSyncStatus() {
+    _syncStatus = ref.read(syncServiceProvider).status();
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -70,6 +116,38 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(l10n.signedInAs(widget.email)),
+        FutureBuilder<SyncStatus?>(
+          future: _syncStatus,
+          builder: (context, snapshot) {
+            final status = snapshot.data;
+            final muted = Theme.of(context).textTheme.bodySmall;
+            final error = TextStyle(
+              color: Theme.of(context).colorScheme.error,
+              fontSize: muted?.fontSize,
+            );
+            return Padding(
+              key: const Key('syncStatus'),
+              padding: const EdgeInsets.only(top: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    status?.lastSuccessAt == null
+                        ? l10n.lastSyncNever
+                        : l10n.lastSyncAt(
+                            _formatDateTime(status!.lastSuccessAt!),
+                          ),
+                    style: muted,
+                  ),
+                  if (status?.lastError != null)
+                    Text(l10n.syncLastFailed, style: error),
+                  if ((status?.pendingIssues ?? 0) > 0)
+                    Text(l10n.syncIssues(status!.pendingIssues), style: error),
+                ],
+              ),
+            );
+          },
+        ),
         FutureBuilder<DateTime?>(
           future: _deletionStatus,
           builder: (context, snapshot) {
@@ -125,9 +203,7 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
                             child: Text(l10n.removeLocalDataAndSync),
                           ),
                           OutlinedButton(
-                            onPressed: () => ref
-                                .read(authServiceProvider)
-                                .signOut(),
+                            onPressed: _signOutKeepingData,
                             child: Text(l10n.signOut),
                           ),
                         ],
@@ -164,6 +240,11 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
           onPressed: () => _confirmSignOut(context, ref),
           child: Text(l10n.signOut),
         ),
+        const SizedBox(height: 12),
+        OutlinedButton(
+          onPressed: _confirmSignOutEverywhere,
+          child: Text(l10n.signOutEverywhere),
+        ),
         const SizedBox(height: 24),
         OutlinedButton(
           style: OutlinedButton.styleFrom(
@@ -177,57 +258,26 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
     );
   }
 
-  String _formatDate(DateTime date) =>
-      '${date.day.toString().padLeft(2, '0')}/'
-      '${date.month.toString().padLeft(2, '0')}/'
-      '${date.year}';
-
   Future<void> _confirmDeleteAccount() async {
     final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
+    final requested = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.deleteAccount),
-        content: Text(l10n.deleteAccountConfirmBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogContext).colorScheme.error,
-            ),
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.deleteAccount),
-          ),
-        ],
-      ),
+      builder: (_) => const _DeleteAccountDialog(),
     );
-    if (confirmed != true) return;
-    try {
-      await ref.read(authServiceProvider).requestAccountDeletion();
-      setState(_refreshDeletionStatus);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.deleteAccountRequested)));
-      }
-    } on AuthException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    }
+    if (requested != true || !mounted) return;
+    setState(_refreshDeletionStatus);
+    _showSnack(l10n.deleteAccountRequested);
   }
 
   Future<void> _cancelDeletion() async {
     final l10n = AppLocalizations.of(context)!;
-    await ref.read(authServiceProvider).cancelAccountDeletion();
-    setState(_refreshDeletionStatus);
-    if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.deletionCanceled)));
+    try {
+      await ref.read(authServiceProvider).cancelAccountDeletion();
+      if (!mounted) return;
+      setState(_refreshDeletionStatus);
+      _showSnack(l10n.deletionCanceled);
+    } on AuthException catch (e) {
+      _showSnack(authErrorText(l10n, e.code));
     }
   }
 
@@ -259,6 +309,7 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
     if (confirmed != true || !mounted) return;
     await ref.read(localDataServiceProvider).wipe();
     ref.read(activeWalletIdProvider.notifier).clear();
+    ref.invalidate(localDataAccessProvider);
     if (!mounted) return;
     setState(_refreshForeignLocalData);
     await _syncNow();
@@ -269,26 +320,56 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
     setState(() => _isSyncing = true);
     try {
       await ref.read(syncServiceProvider).syncNow();
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.syncComplete)));
-      }
+      _showSnack(l10n.syncComplete);
     } on LocalDataOwnedByAnotherUserException {
-      if (mounted) {
-        setState(_refreshForeignLocalData);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.syncBlockedForeignData)));
-      }
+      if (mounted) setState(_refreshForeignLocalData);
+      _showSnack(l10n.syncBlockedForeignData);
     } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.syncFailed)));
-      }
+      _showSnack(l10n.syncFailed);
     } finally {
-      if (mounted) setState(() => _isSyncing = false);
+      if (mounted) {
+        setState(() {
+          _isSyncing = false;
+          _refreshSyncStatus();
+        });
+      }
+    }
+  }
+
+  Future<void> _signOutKeepingData() async {
+    final auth = ref.read(authServiceProvider);
+    await ref.read(syncServiceProvider).exclusive(auth.signOut);
+  }
+
+  Future<void> _confirmSignOutEverywhere() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.signOutEverywhere),
+        content: Text(l10n.signOutEverywhereConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.signOutEverywhere),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final auth = ref.read(authServiceProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(syncServiceProvider).exclusive(auth.signOutEverywhere);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.signedOutEverywhere)));
+    } on AuthException catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(authErrorText(l10n, e.code))),
+      );
     }
   }
 
@@ -339,28 +420,133 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
     // Letti prima del logout: dopo signOut() questa vista viene smontata
     // (l'AccountScreen passa al form) e `ref` non è più utilizzabile.
     final auth = ref.read(authServiceProvider);
+    final sync = ref.read(syncServiceProvider);
     final localData = ref.read(localDataServiceProvider);
     final activeWallet = ref.read(activeWalletIdProvider.notifier);
+    final container = ProviderScope.containerOf(context, listen: false);
     final messenger = ScaffoldMessenger.of(context);
 
-    if (removeLocalData) {
-      // Sync finale obbligatoria: se fallisce non si cancella nulla, così
-      // le modifiche non ancora inviate non vanno perse.
-      try {
-        await ref.read(syncServiceProvider).syncNow();
-      } catch (_) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.signOutSyncFailed)),
-        );
-        return;
+    // Sync finale, logout e rimozione nello stesso lock della sync: una
+    // sync in background non può infilarsi in mezzo e reinserire dati
+    // dopo la rimozione (SECURITY_AUDIT NIP-14).
+    final removed = await sync.exclusive(() async {
+      if (removeLocalData) {
+        // Sync finale obbligatoria: se fallisce non si cancella nulla, così
+        // le modifiche non ancora inviate non vanno perse.
+        try {
+          await sync.syncNow();
+        } catch (_) {
+          messenger.showSnackBar(
+            SnackBar(content: Text(l10n.signOutSyncFailed)),
+          );
+          return null;
+        }
       }
-    }
-    await auth.signOut();
-    if (removeLocalData) {
+      await auth.signOut();
+      if (!removeLocalData) return false;
       await localData.wipe();
+      return true;
+    });
+    if (removed == true) {
       activeWallet.clear();
+      container.invalidate(localDataAccessProvider);
       messenger.showSnackBar(SnackBar(content: Text(l10n.localDataRemoved)));
     }
+  }
+}
+
+/// Richiesta di cancellazione dell'account: serve la password attuale
+/// (SECURITY_AUDIT NIP-05). La data la decide il server.
+class _DeleteAccountDialog extends ConsumerStatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  ConsumerState<_DeleteAccountDialog> createState() =>
+      _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
+  final _passwordController = TextEditingController();
+  bool _isSubmitting = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (_passwordController.text.isEmpty) {
+      setState(() => _error = l10n.confirmWithPassword);
+      return;
+    }
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(authServiceProvider)
+          .requestAccountDeletion(currentPassword: _passwordController.text);
+      if (mounted) Navigator.of(context).pop(true);
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _error = authErrorText(l10n, e.code));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(l10n.deleteAccount),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.deleteAccountConfirmBody),
+          const SizedBox(height: 12),
+          TextField(
+            key: const Key('deleteAccountPassword'),
+            controller: _passwordController,
+            obscureText: true,
+            autocorrect: false,
+            enableSuggestions: false,
+            maxLength: kMaxPasswordLength,
+            decoration: InputDecoration(
+              labelText: l10n.currentPassword,
+              helperText: l10n.confirmWithPassword,
+              counterText: '',
+            ),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting
+              ? null
+              : () => Navigator.of(context).pop(false),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+          onPressed: _isSubmitting ? null : _submit,
+          child: Text(l10n.deleteAccount),
+        ),
+      ],
+    );
   }
 }
 
@@ -372,11 +558,17 @@ class _AuthForm extends ConsumerStatefulWidget {
 }
 
 class _AuthFormState extends ConsumerState<_AuthForm> {
+  /// Pausa tra due richieste di email di recupero dallo stesso device: il
+  /// provider email di Supabase ha un limite globale molto basso
+  /// (SECURITY_AUDIT NIP-11). Il limite vero resta quello del server.
+  static const _resetCooldown = Duration(seconds: 60);
+
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSignUp = false;
   bool _isSubmitting = false;
+  DateTime? _lastResetRequest;
 
   @override
   void dispose() {
@@ -403,9 +595,9 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
-            decoration: InputDecoration(labelText: l10n.email),
-            validator: (value) =>
-                (value == null || !value.contains('@'))
+            maxLength: 254,
+            decoration: InputDecoration(labelText: l10n.email, counterText: ''),
+            validator: (value) => (value == null || !isValidEmail(value.trim()))
                 ? l10n.invalidEmail
                 : null,
           ),
@@ -413,9 +605,18 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
           TextFormField(
             controller: _passwordController,
             obscureText: true,
-            decoration: InputDecoration(labelText: l10n.password),
-            validator: (value) =>
-                (value == null || value.length < 8)
+            autocorrect: false,
+            enableSuggestions: false,
+            maxLength: kMaxPasswordLength,
+            decoration: InputDecoration(
+              labelText: l10n.password,
+              helperText: _isSignUp ? l10n.passwordTooWeak : null,
+              helperMaxLines: 2,
+              counterText: '',
+            ),
+            validator: (value) => _isSignUp
+                ? _newPasswordError(l10n, value)
+                : (value == null || value.length < 8)
                 ? l10n.passwordTooShort
                 : null,
           ),
@@ -439,7 +640,9 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
             onPressed: _isSubmitting
                 ? null
                 : () => setState(() => _isSignUp = !_isSignUp),
-            child: Text(_isSignUp ? l10n.alreadyHaveAccount : l10n.noAccountYet),
+            child: Text(
+              _isSignUp ? l10n.alreadyHaveAccount : l10n.noAccountYet,
+            ),
           ),
         ],
       ),
@@ -448,6 +651,7 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isSubmitting = true);
     final service = ref.read(authServiceProvider);
     final email = _emailController.text.trim();
@@ -459,7 +663,7 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
         await service.signInWithEmail(email: email, password: password);
       }
     } on AuthException catch (e) {
-      _showError(e.message);
+      _showError(authErrorText(l10n, e.code));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -468,20 +672,26 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
   Future<void> _sendPasswordReset() async {
     final l10n = AppLocalizations.of(context)!;
     final email = _emailController.text.trim();
-    if (!email.contains('@')) {
+    if (!isValidEmail(email)) {
       _showError(l10n.invalidEmail);
+      return;
+    }
+    final last = _lastResetRequest;
+    if (last != null && DateTime.now().difference(last) < _resetCooldown) {
+      _showError(l10n.resetPasswordCooldown);
       return;
     }
     setState(() => _isSubmitting = true);
     try {
       await ref.read(authServiceProvider).sendPasswordResetEmail(email);
+      _lastResetRequest = DateTime.now();
       if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(l10n.resetPasswordSent)));
       }
     } on AuthException catch (e) {
-      _showError(e.message);
+      _showError(authErrorText(l10n, e.code));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -495,9 +705,8 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
   }
 }
 
-/// Cambio password per l'utente già loggato: a differenza del reset via
-/// email (per chi ha dimenticato la password), qui la nuova password si
-/// imposta direttamente, senza email intermedia.
+/// Cambio password per l'utente già loggato: serve la password attuale
+/// (SECURITY_AUDIT NIP-08), poi tutte le altre sessioni vengono chiuse.
 class _ChangePasswordDialog extends ConsumerStatefulWidget {
   const _ChangePasswordDialog();
 
@@ -506,9 +715,9 @@ class _ChangePasswordDialog extends ConsumerStatefulWidget {
       _ChangePasswordDialogState();
 }
 
-class _ChangePasswordDialogState
-    extends ConsumerState<_ChangePasswordDialog> {
+class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
   final _formKey = GlobalKey<FormState>();
+  final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isSubmitting = false;
@@ -516,6 +725,7 @@ class _ChangePasswordDialogState
 
   @override
   void dispose() {
+    _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -532,21 +742,47 @@ class _ChangePasswordDialogState
           mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
-              controller: _newPasswordController,
+              key: const Key('currentPasswordField'),
+              controller: _currentPasswordController,
               obscureText: true,
-              decoration: InputDecoration(labelText: l10n.newPassword),
-              validator: (value) =>
-                  (value == null || value.length < 8)
-                  ? l10n.passwordTooShort
+              autocorrect: false,
+              enableSuggestions: false,
+              maxLength: kMaxPasswordLength,
+              decoration: InputDecoration(
+                labelText: l10n.currentPassword,
+                counterText: '',
+              ),
+              validator: (value) => (value == null || value.isEmpty)
+                  ? l10n.confirmWithPassword
                   : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
+              key: const Key('newPasswordField'),
+              controller: _newPasswordController,
+              obscureText: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              maxLength: kMaxPasswordLength,
+              decoration: InputDecoration(
+                labelText: l10n.newPassword,
+                counterText: '',
+              ),
+              validator: (value) => _newPasswordError(l10n, value),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              key: const Key('confirmPasswordField'),
               controller: _confirmPasswordController,
               obscureText: true,
-              decoration: InputDecoration(labelText: l10n.confirmPassword),
-              validator: (value) =>
-                  value != _newPasswordController.text
+              autocorrect: false,
+              enableSuggestions: false,
+              maxLength: kMaxPasswordLength,
+              decoration: InputDecoration(
+                labelText: l10n.confirmPassword,
+                counterText: '',
+              ),
+              validator: (value) => value != _newPasswordController.text
                   ? l10n.passwordsDontMatch
                   : null,
             ),
@@ -562,9 +798,7 @@ class _ChangePasswordDialogState
       ),
       actions: [
         TextButton(
-          onPressed: _isSubmitting
-              ? null
-              : () => Navigator.of(context).pop(),
+          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
           child: Text(l10n.cancel),
         ),
         FilledButton(
@@ -585,7 +819,10 @@ class _ChangePasswordDialogState
     try {
       await ref
           .read(authServiceProvider)
-          .changePassword(_newPasswordController.text);
+          .changePassword(
+            currentPassword: _currentPasswordController.text,
+            newPassword: _newPasswordController.text,
+          );
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(
@@ -593,9 +830,122 @@ class _ChangePasswordDialogState
         ).showSnackBar(SnackBar(content: Text(l10n.passwordChanged)));
       }
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) setState(() => _error = authErrorText(l10n, e.code));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+}
+
+/// Nuova password dopo aver aperto il link di recupero dall'email
+/// (SECURITY_AUDIT NIP-09). Mostrata dalla shell dell'app quando
+/// [AuthService.passwordRecoveryRequests] emette.
+class PasswordRecoveryDialog extends ConsumerStatefulWidget {
+  const PasswordRecoveryDialog({super.key});
+
+  @override
+  ConsumerState<PasswordRecoveryDialog> createState() =>
+      _PasswordRecoveryDialogState();
+}
+
+class _PasswordRecoveryDialogState
+    extends ConsumerState<PasswordRecoveryDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  bool _isSubmitting = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    final l10n = AppLocalizations.of(context)!;
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(authServiceProvider)
+          .completePasswordRecovery(_newPasswordController.text);
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.passwordResetDone)));
+      }
+    } on AuthException catch (e) {
+      if (mounted) setState(() => _error = authErrorText(l10n, e.code));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(l10n.resetPasswordTitle),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _newPasswordController,
+              obscureText: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              maxLength: kMaxPasswordLength,
+              decoration: InputDecoration(
+                labelText: l10n.newPassword,
+                helperText: l10n.passwordTooWeak,
+                helperMaxLines: 2,
+                counterText: '',
+              ),
+              validator: (value) => _newPasswordError(l10n, value),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _confirmPasswordController,
+              obscureText: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              maxLength: kMaxPasswordLength,
+              decoration: InputDecoration(
+                labelText: l10n.confirmPassword,
+                counterText: '',
+              ),
+              validator: (value) => value != _newPasswordController.text
+                  ? l10n.passwordsDontMatch
+                  : null,
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _isSubmitting ? null : _submit,
+          child: Text(l10n.save),
+        ),
+      ],
+    );
   }
 }

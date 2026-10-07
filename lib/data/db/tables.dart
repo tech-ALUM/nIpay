@@ -44,10 +44,16 @@ class Tags extends Table with SyncColumns {
 }
 
 /// Join N:M transazione↔tag. PK composta, niente riga duplicata.
+/// Togliere un tag è un soft-delete ([deletedAt]): una cancellazione
+/// fisica non si propagherebbe mai agli altri device (SECURITY_AUDIT NIP-15).
 class TransactionTags extends Table {
   TextColumn get transactionId => text().references(Transactions, #id)();
   TextColumn get tagId => text().references(Tags, #id)();
   DateTimeColumn get createdAt => dateTime()();
+
+  /// Ultima modifica sul device (last-write-wins della sync).
+  DateTimeColumn get updatedAt => dateTime().clientDefault(DateTime.now)();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {transactionId, tagId};
@@ -122,16 +128,18 @@ class Categories extends Table with SyncColumns {
   BoolColumn get isDefault => boolean().withDefault(const Constant(false))();
 }
 
-/// Tetto di spesa mensile per categoria (un budget per categoria).
+/// Tetto di spesa mensile per categoria: al massimo un budget **vivo** per
+/// categoria (indice unico parziale). I budget cancellati non occupano la
+/// categoria, così un duplicato nato offline su due device si risolve con
+/// un soft-delete invece di bloccare la sync (SECURITY_AUDIT NIP-04).
+@TableIndex.sql(
+  'CREATE UNIQUE INDEX budgets_live_category '
+  'ON budgets (category_id) WHERE deleted_at IS NULL',
+)
 class Budgets extends Table with SyncColumns {
   TextColumn get walletId => text().nullable().references(Wallets, #id)();
   TextColumn get categoryId => text().references(Categories, #id)();
   IntColumn get limitCents => integer()();
-
-  @override
-  List<Set<Column>> get uniqueKeys => [
-    {categoryId},
-  ];
 }
 
 enum RecurrenceFrequency { daily, weekly, monthly, yearly }
@@ -200,6 +208,10 @@ class ExpenseReportEntries extends Table {
       text().nullable().references(ExpenseReports, #id)();
   DateTimeColumn get updatedAt => dateTime()();
 
+  /// Flag nota spese tolto: soft-delete, così la rimozione si propaga agli
+  /// altri device (SECURITY_AUDIT NIP-15).
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {transactionId};
 }
@@ -222,24 +234,72 @@ class Wallets extends Table with SyncColumns {
   TextColumn get currency => text().withDefault(const Constant('EUR'))();
 }
 
-/// Stato della sync (M-ACC6): una riga per utente loggato su questo device
-/// (in pratica sempre una sola, dato che l'app supporta un solo account
-/// attivo alla volta). Non c'è bisogno di una tabella di tombstone
-/// separata: `deletedAt`, già presente su ogni tabella, si propaga come
-/// una riga normale.
+/// Stato della sync (M-ACC6): una riga per utente che ha sincronizzato su
+/// questo device (in pratica sempre una sola). È anche il **marchio di
+/// proprietà** dei dati locali: finché esiste, i dati appartengono a
+/// quell'account. Non c'è bisogno di una tabella di tombstone separata:
+/// `deletedAt`, già presente su ogni tabella, si propaga come una riga
+/// normale.
 ///
-/// Due watermark separati invece di uno solo, per evitare bug di
-/// clock-skew: [lastPushedAt] è nel dominio dell'orologio LOCALE (i dati
-/// locali hanno `updatedAt` scritto dal client, quindi confrontarlo con
-/// un watermark scritto dallo stesso client è sempre coerente);
-/// [lastPulledAt] è nel dominio dell'orologio SERVER (i dati remoti hanno
-/// `updated_at` assegnato da un trigger Postgres, M-ACC1 — il watermark va
-/// aggiornato al massimo valore server osservato, mai al clock locale).
+/// I watermark veri sono in [SyncCursors] (uno per tabella, nel dominio
+/// dell'orologio del server) e le modifiche da inviare in [SyncOutbox]:
+/// [lastPushedAt]/[lastPulledAt] restano solo informativi (inizio
+/// dell'ultima sync riuscita, orologio locale; massimo `updated_at` del
+/// server visto).
 class SyncStates extends Table {
   TextColumn get userId => text()();
   DateTimeColumn get lastPushedAt => dateTime()();
   DateTimeColumn get lastPulledAt => dateTime()();
 
+  /// Email dell'account proprietario, per spiegare nella schermata di
+  /// blocco di chi sono i dati (null per le righe create prima della v7).
+  TextColumn get userEmail => text().nullable()();
+
+  /// Fine dell'ultima sync completata senza errori (orologio locale).
+  DateTimeColumn get lastSuccessAt => dateTime().nullable()();
+
+  /// Ultimo errore (codice, mai un messaggio del server): null se l'ultima
+  /// sync è andata a buon fine.
+  TextColumn get lastError => text().nullable()();
+
+  /// Righe che l'ultima sync non è riuscita a inviare o a leggere (dati
+  /// rifiutati dal server o malformati): restano in coda e vengono
+  /// ritentate, senza bloccare le altre.
+  IntColumn get pendingIssues => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {userId};
+}
+
+/// Watermark di pull per (utente, tabella), nel dominio dell'orologio del
+/// SERVER (`updated_at` assegnato dal trigger `sync_stamp`). Uno per
+/// tabella: con un unico watermark una modifica a una tabella già scaricata
+/// durante la sync veniva saltata per sempre (SECURITY_AUDIT NIP-01).
+class SyncCursors extends Table {
+  TextColumn get userId => text()();
+  TextColumn get syncTable => text()();
+  DateTimeColumn get lastUpdatedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {userId, syncTable};
+}
+
+/// Coda delle righe modificate localmente e non ancora confermate dal
+/// server (SECURITY_AUDIT NIP-03). La riempiono i trigger SQLite su ogni
+/// INSERT/UPDATE delle tabelle sincronizzate (vedi `app_database.dart`),
+/// quindi nessun percorso di scrittura può dimenticarsene.
+///
+/// Ogni modifica cancella e reinserisce la voce della riga: [seq]
+/// (AUTOINCREMENT, mai riutilizzato) cambia, e la sync conferma solo le
+/// voci con il seq che ha effettivamente inviato. Una modifica fatta mentre
+/// l'invio era in corso resta quindi in coda per la sync successiva.
+class SyncOutbox extends Table {
+  IntColumn get seq => integer().autoIncrement()();
+  TextColumn get syncTable => text()();
+  TextColumn get rowKey => text()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+    {syncTable, rowKey},
+  ];
 }

@@ -1,14 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/currencies.dart';
+import '../../core/image_sanitizer.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
 import '../../data/services/exchange_rate_service.dart';
@@ -30,6 +33,7 @@ Future<String?> _promptNewTag(
           content: TextField(
             key: const Key('newTagField'),
             controller: controller,
+            inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
             autofocus: true,
             onChanged: (_) {
               if (error != null) setState(() => error = null);
@@ -118,7 +122,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   Set<String> _originalTagIds = const {};
   final Map<String, String> _fieldValues = {};
   final Map<String, TextEditingController> _fieldControllers = {};
-  final List<XFile> _pendingImages = [];
+  /// Foto già ripulite dai metadati (EXIF/GPS) al momento della scelta.
+  final List<SanitizedImage> _pendingImages = [];
+  bool _attachmentRejected = false;
   bool _isExpenseReport = false;
   String? _costCenterId;
   bool _reimbursable = true;
@@ -399,13 +405,14 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       await attachDir.create(recursive: true);
       final attachRepo = ref.read(attachmentRepositoryProvider);
       for (final img in _pendingImages) {
-        final ext = img.path.split('.').last;
-        final rel = 'attachments/${const Uuid().v4()}.$ext';
-        await File(img.path).copy('${dir.path}/$rel');
+        // Path, estensione e tipo li decide l'app (dai magic bytes), mai il
+        // nome del file scelto (SECURITY_AUDIT NIP-24).
+        final rel = 'attachments/${const Uuid().v4()}.${img.extension}';
+        await File('${dir.path}/$rel').writeAsBytes(img.bytes, flush: true);
         await attachRepo.add(
           transactionId: txId,
           relativePath: rel,
-          mimeType: img.mimeType ?? 'image/$ext',
+          mimeType: img.mimeType,
         );
       }
     }
@@ -450,7 +457,22 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
         maxWidth: 2000,
         imageQuality: 85,
       );
-      if (img != null) setState(() => _pendingImages.add(img));
+      if (img == null) return;
+      // Via EXIF (posizione GPS, modello del telefono), XMP e commenti
+      // prima di salvare la foto (SECURITY_AUDIT NIP-16).
+      final SanitizedImage clean;
+      try {
+        clean = sanitizeImage(await img.readAsBytes());
+      } on UnsupportedImageException {
+        if (mounted) setState(() => _attachmentRejected = true);
+        return;
+      }
+      if (mounted) {
+        setState(() {
+          _pendingImages.add(clean);
+          _attachmentRejected = false;
+        });
+      }
     } catch (_) {
       // Sorgente non disponibile (es. niente camera su Waydroid): ignora.
     }
@@ -507,6 +529,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           _ => TextField(
             key: ValueKey('customField_${d.id}'),
             controller: _controllerFor(d.id),
+            inputFormatters: [LengthLimitingTextInputFormatter(kMaxCustomValueLength)],
             keyboardType: d.type == CustomFieldType.number
                 ? const TextInputType.numberWithOptions(decimal: true)
                 : TextInputType.text,
@@ -654,6 +677,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
               TextField(
                 key: const Key('descriptionField'),
                 controller: _description,
+                inputFormatters: [LengthLimitingTextInputFormatter(kMaxDescriptionLength)],
                 decoration: InputDecoration(labelText: l10n.description),
               ),
               const SizedBox(height: 12),
@@ -832,6 +856,17 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                     ],
                   ],
                 ),
+                if (_attachmentRejected)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      l10n.attachmentUnsupported,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
               ],
               const SizedBox(height: 16),
               ListTile(

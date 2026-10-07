@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:uuid/uuid.dart';
 
+import '../../core/ids.dart';
 import '../db/app_database.dart';
 import '../db/tables.dart';
 
@@ -27,7 +27,13 @@ class DriftBudgetRepository implements BudgetRepository {
   DriftBudgetRepository(this._db);
 
   final AppDatabase _db;
-  final Uuid _uuid = const Uuid();
+
+  /// Id del budget di una categoria: lo stesso su ogni device, così due
+  /// device che impostano offline il budget della stessa categoria
+  /// producono la stessa riga invece di un duplicato che il server
+  /// rifiuterebbe (SECURITY_AUDIT NIP-04).
+  static String budgetIdFor(String walletId, String categoryId) =>
+      deterministicId('budget:$walletId:$categoryId');
 
   @override
   Future<void> setMonthlyLimit({
@@ -36,33 +42,36 @@ class DriftBudgetRepository implements BudgetRepository {
     required int limitCents,
   }) async {
     final now = DateTime.now();
-    final existing = await (_db.select(
-      _db.budgets,
-    )..where((t) => t.categoryId.equals(categoryId))).getSingleOrNull();
-    if (existing == null) {
-      await _db
-          .into(_db.budgets)
-          .insert(
-            BudgetsCompanion.insert(
-              id: _uuid.v4(),
-              walletId: Value(walletId),
-              categoryId: categoryId,
-              limitCents: limitCents,
-              createdAt: now,
-              updatedAt: now,
-            ),
-          );
-    } else {
-      await (_db.update(
-        _db.budgets,
-      )..where((t) => t.id.equals(existing.id))).write(
-        BudgetsCompanion(
-          limitCents: Value(limitCents),
-          deletedAt: const Value(null),
-          updatedAt: Value(now),
-        ),
+    final live =
+        await (_db.select(_db.budgets)..where(
+              (t) => t.categoryId.equals(categoryId) & t.deletedAt.isNull(),
+            ))
+            .getSingleOrNull();
+    if (live != null) {
+      await (_db.update(_db.budgets)..where((t) => t.id.equals(live.id))).write(
+        BudgetsCompanion(limitCents: Value(limitCents), updatedAt: Value(now)),
       );
+      return;
     }
+    await _db
+        .into(_db.budgets)
+        .insert(
+          BudgetsCompanion.insert(
+            id: budgetIdFor(walletId, categoryId),
+            walletId: Value(walletId),
+            categoryId: categoryId,
+            limitCents: limitCents,
+            createdAt: now,
+            updatedAt: now,
+          ),
+          onConflict: DoUpdate(
+            (_) => BudgetsCompanion(
+              limitCents: Value(limitCents),
+              deletedAt: const Value(null),
+              updatedAt: Value(now),
+            ),
+          ),
+        );
   }
 
   @override
@@ -75,9 +84,11 @@ class DriftBudgetRepository implements BudgetRepository {
     required String categoryId,
     required DateTime month,
   }) async {
-    final budget = await (_db.select(
-      _db.budgets,
-    )..where((t) => t.categoryId.equals(categoryId))).getSingle();
+    final budget =
+        await (_db.select(_db.budgets)..where(
+              (t) => t.categoryId.equals(categoryId) & t.deletedAt.isNull(),
+            ))
+            .getSingle();
 
     final from = DateTime(month.year, month.month);
     final to = DateTime(month.year, month.month + 1);

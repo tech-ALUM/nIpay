@@ -416,7 +416,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get confirmSignOut =>
-      'Uscire dall\'account? I dati restano su questo dispositivo e continuano a funzionare offline.';
+      'Uscire dall\'account? I dati restano su questo dispositivo, ma si potranno riaprire solo accedendo di nuovo con questo account.';
 
   @override
   String get noAccountYet => 'Non hai un account? Registrati';
@@ -473,7 +473,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get deleteAccountConfirmBody =>
-      'Il tuo account verrà eliminato definitivamente tra 30 giorni. Puoi annullare in qualsiasi momento prima di allora effettuando di nuovo l\'accesso. I dati su questo dispositivo non vengono toccati e continuano a funzionare offline.';
+      'Il tuo account e i suoi dati sul cloud verranno eliminati definitivamente tra 30 giorni. Fino ad allora puoi annullare da questa schermata. I dati su questo dispositivo non vengono eliminati.';
 
   @override
   String get deleteAccountRequested =>
@@ -518,4 +518,113 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get syncBlockedForeignData =>
       'Sincronizzazione sospesa: questo dispositivo contiene i dati di un altro account.';
+
+  @override
+  String get currentPassword => 'Password attuale';
+
+  @override
+  String get wrongCurrentPassword => 'La password attuale non è corretta.';
+
+  @override
+  String get confirmWithPassword => 'Inserisci la password per confermare.';
+
+  @override
+  String get passwordTooWeak =>
+      'Usa almeno 12 caratteri, con lettere e numeri.';
+
+  @override
+  String get signOutEverywhere => 'Esci da tutti i dispositivi';
+
+  @override
+  String get signOutEverywhereConfirmBody =>
+      'Verranno chiuse tutte le sessioni di questo account, compresa questa. Usalo se hai perso un dispositivo o te l\'hanno rubato. I dati su questo dispositivo restano qui.';
+
+  @override
+  String get signedOutEverywhere => 'Disconnesso da tutti i dispositivi.';
+
+  @override
+  String get authErrorInvalidCredentials =>
+      'Email o password non validi, oppure email non ancora confermata.';
+
+  @override
+  String get authErrorWeakPassword =>
+      'Questa password non è accettata: scegline una più lunga e meno comune.';
+
+  @override
+  String get authErrorSamePassword =>
+      'La nuova password deve essere diversa da quella attuale.';
+
+  @override
+  String get authErrorRateLimited =>
+      'Troppi tentativi. Attendi qualche minuto e riprova.';
+
+  @override
+  String get authErrorReauthRequired =>
+      'Per sicurezza, inserisci di nuovo la password e riprova.';
+
+  @override
+  String get authErrorNetwork =>
+      'Server non raggiungibile. Controlla la connessione e riprova.';
+
+  @override
+  String get authErrorGeneric => 'Qualcosa è andato storto. Riprova.';
+
+  @override
+  String get resetPasswordTitle => 'Imposta una nuova password';
+
+  @override
+  String get passwordResetDone =>
+      'Password aggiornata. Gli altri dispositivi sono stati disconnessi.';
+
+  @override
+  String get resetPasswordCooldown =>
+      'Attendi un minuto prima di richiedere un\'altra email.';
+
+  @override
+  String lastSyncAt(String date) {
+    return 'Ultima sincronizzazione: $date';
+  }
+
+  @override
+  String get lastSyncNever => 'Non ancora sincronizzato';
+
+  @override
+  String get syncLastFailed =>
+      'L\'ultima sincronizzazione non è riuscita: verrà ritentata automaticamente.';
+
+  @override
+  String syncIssues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count elementi non sono stati sincronizzati e verranno ritentati.',
+      one: '1 elemento non è stato sincronizzato e verrà ritentato.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get lockedDataTitle => 'Dati bloccati';
+
+  @override
+  String lockedDataBody(String email) {
+    return 'Questo dispositivo contiene i dati di $email. Accedi con quell\'account per vederli, oppure rimuovili dal dispositivo.';
+  }
+
+  @override
+  String get lockedDataBodyUnknownOwner =>
+      'Questo dispositivo contiene i dati di un account non connesso. Accedi con quell\'account per vederli, oppure rimuovili dal dispositivo.';
+
+  @override
+  String get lockedDataOtherAccountBody =>
+      'Questo dispositivo contiene i dati di un altro account. Per usare questo account qui, rimuovi quei dati dal dispositivo (apri Account), oppure esci.';
+
+  @override
+  String get startupError =>
+      'Impossibile aprire i tuoi dati. Riavvia l\'app; se il problema continua, contatta l\'assistenza.';
+
+  @override
+  String get attachmentUnsupported =>
+      'Formato immagine non supportato: usa una foto JPEG, PNG o WebP.';
 }

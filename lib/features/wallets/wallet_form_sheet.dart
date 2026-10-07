@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/currencies.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
+import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../data/services/exchange_rate_service.dart';
 import '../../l10n/app_localizations.dart';
@@ -40,6 +42,7 @@ Future<void> _confirmWalletDeletion(
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
+                inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
                 autofocus: true,
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
@@ -162,6 +165,7 @@ class _WalletActionsSheetState extends ConsumerState<_WalletActionsSheet> {
           const SizedBox(height: 16),
           TextField(
             controller: _controller,
+            inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
             onChanged: (_) {
               if (_nameError != null) setState(() => _nameError = null);
             },
@@ -307,6 +311,7 @@ class _WalletFormSheetState extends ConsumerState<_WalletFormSheet> {
           TextField(
             key: const Key('walletNameField'),
             controller: _name,
+            inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
             autofocus: true,
             onChanged: (_) {
               if (_nameError != null) setState(() => _nameError = null);

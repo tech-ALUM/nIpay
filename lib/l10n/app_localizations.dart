@@ -899,7 +899,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmSignOut.
   ///
   /// In en, this message translates to:
-  /// **'Sign out of your account? Your data stays on this device and keeps working offline.'**
+  /// **'Sign out of your account? Your data stays on this device, but it can only be opened again by signing in with this account.'**
   String get confirmSignOut;
 
   /// No description provided for @noAccountYet.
@@ -1001,7 +1001,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteAccountConfirmBody.
   ///
   /// In en, this message translates to:
-  /// **'Your account will be permanently deleted in 30 days. You can cancel any time before then by signing back in. This does not affect the data on this device, which keeps working offline.'**
+  /// **'Your account and its cloud data will be permanently deleted in 30 days. Until then you can cancel from this screen. The data on this device is not deleted.'**
   String get deleteAccountConfirmBody;
 
   /// No description provided for @deleteAccountRequested.
@@ -1075,6 +1075,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sync paused: this device holds data from another account.'**
   String get syncBlockedForeignData;
+
+  /// No description provided for @currentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get currentPassword;
+
+  /// No description provided for @wrongCurrentPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'The current password is not correct.'**
+  String get wrongCurrentPassword;
+
+  /// No description provided for @confirmWithPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password to confirm.'**
+  String get confirmWithPassword;
+
+  /// No description provided for @passwordTooWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 12 characters, with letters and numbers.'**
+  String get passwordTooWeak;
+
+  /// No description provided for @signOutEverywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of all devices'**
+  String get signOutEverywhere;
+
+  /// No description provided for @signOutEverywhereConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every session of this account will be closed, including this one. Use it if a device was lost or stolen. Data on this device stays here.'**
+  String get signOutEverywhereConfirmBody;
+
+  /// No description provided for @signedOutEverywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out of all devices.'**
+  String get signedOutEverywhere;
+
+  /// No description provided for @authErrorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password, or email not confirmed yet.'**
+  String get authErrorInvalidCredentials;
+
+  /// No description provided for @authErrorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'This password isn\'t accepted: choose a longer, less common one.'**
+  String get authErrorWeakPassword;
+
+  /// No description provided for @authErrorSamePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'The new password must be different from the current one.'**
+  String get authErrorSamePassword;
+
+  /// No description provided for @authErrorRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Wait a few minutes and try again.'**
+  String get authErrorRateLimited;
+
+  /// No description provided for @authErrorReauthRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'For security, enter your password again and retry.'**
+  String get authErrorReauthRequired;
+
+  /// No description provided for @authErrorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t reach the server. Check your connection and try again.'**
+  String get authErrorNetwork;
+
+  /// No description provided for @authErrorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get authErrorGeneric;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a new password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @passwordResetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated. Other devices have been signed out.'**
+  String get passwordResetDone;
+
+  /// No description provided for @resetPasswordCooldown.
+  ///
+  /// In en, this message translates to:
+  /// **'Wait a minute before requesting another email.'**
+  String get resetPasswordCooldown;
+
+  /// No description provided for @lastSyncAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Last sync: {date}'**
+  String lastSyncAt(String date);
+
+  /// No description provided for @lastSyncNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Not synced yet'**
+  String get lastSyncNever;
+
+  /// No description provided for @syncLastFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The last sync failed: it will be retried automatically.'**
+  String get syncLastFailed;
+
+  /// No description provided for @syncIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item couldn\'t be synced and will be retried.} other{{count} items couldn\'t be synced and will be retried.}}'**
+  String syncIssues(int count);
+
+  /// No description provided for @lockedDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data locked'**
+  String get lockedDataTitle;
+
+  /// No description provided for @lockedDataBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This device holds the data of {email}. Sign in with that account to see it, or remove it from this device.'**
+  String lockedDataBody(String email);
+
+  /// No description provided for @lockedDataBodyUnknownOwner.
+  ///
+  /// In en, this message translates to:
+  /// **'This device holds the data of an account that is not signed in. Sign in with that account to see it, or remove it from this device.'**
+  String get lockedDataBodyUnknownOwner;
+
+  /// No description provided for @lockedDataOtherAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This device holds the data of a different account. To use this account here, remove that data from the device (open Account), or sign out.'**
+  String get lockedDataOtherAccountBody;
+
+  /// No description provided for @startupError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open your data. Restart the app; if it keeps happening, contact support.'**
+  String get startupError;
+
+  /// No description provided for @attachmentUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This image format isn\'t supported: use a JPEG, PNG or WebP photo.'**
+  String get attachmentUnsupported;
 }
 
 class _AppLocalizationsDelegate

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../db/app_database.dart';
+import 'sync_lock.dart';
 
 /// Rimozione dei dati personali da questo device: usata al logout (se
 /// l'utente lo sceglie) e quando i dati locali appartengono a un altro
@@ -15,14 +16,20 @@ abstract interface class LocalDataService {
 
 class DeviceLocalDataService implements LocalDataService {
   /// [_appDir] restituisce la directory documenti dell'app (base dei path
-  /// relativi degli allegati).
-  DeviceLocalDataService(this._db, this._appDir);
+  /// relativi degli allegati). [lock] è lo stesso della sync: una sync in
+  /// background non può reinserire righe (o il marchio di proprietà
+  /// dell'account) dopo la rimozione (SECURITY_AUDIT NIP-14).
+  DeviceLocalDataService(this._db, this._appDir, {SyncLock? lock})
+    : _lock = lock ?? SyncLock();
 
   final AppDatabase _db;
   final Future<Directory> Function() _appDir;
+  final SyncLock _lock;
 
   @override
-  Future<void> wipe() async {
+  Future<void> wipe() => _lock.run(_wipeLocked);
+
+  Future<void> _wipeLocked() async {
     await _db.transaction(() async {
       // `allTables` è in ordine di dichiarazione (genitori prima dei
       // figli): al contrario si cancellano prima i figli, così nessuna

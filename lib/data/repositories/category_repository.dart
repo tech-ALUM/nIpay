@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/ids.dart';
 import '../db/app_database.dart';
 import '../db/tables.dart';
 
@@ -37,6 +38,9 @@ class DriftCategoryRepository implements CategoryRepository {
 
   final AppDatabase _db;
   final Uuid _uuid = const Uuid();
+
+  /// Più vecchio di qualunque modifica reale.
+  static final _seedTimestamp = DateTime.utc(2000);
 
   static const _defaults = <(String, String, CategoryKind)>[
     ('Spesa', '🛒', CategoryKind.expense),
@@ -147,7 +151,12 @@ class DriftCategoryRepository implements CategoryRepository {
         b.insert(
           _db.categories,
           CategoriesCompanion.insert(
-            id: _uuid.v4(),
+            // Id e data di modifica deterministici: se un device rifà il
+            // seed di un portafoglio arrivato dalla sync (sync interrotta
+            // prima delle categorie), le sue righe coincidono con quelle
+            // già sul server e non vincono mai su una modifica dell'utente
+            // (last-write-wins) — niente categorie duplicate.
+            id: deterministicId('default-category:$walletId:$i'),
             walletId: Value(walletId),
             name: name,
             icon: icon,
@@ -156,8 +165,9 @@ class DriftCategoryRepository implements CategoryRepository {
             sortOrder: Value(i),
             isDefault: const Value(true),
             createdAt: now,
-            updatedAt: now,
+            updatedAt: _seedTimestamp,
           ),
+          mode: InsertMode.insertOrIgnore,
         );
       }
     });
