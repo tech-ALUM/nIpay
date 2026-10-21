@@ -10,6 +10,7 @@ import '../../core/attachment_files.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../data/export/expense_report_pdf.dart';
@@ -71,6 +72,7 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
   }
 
   Future<void> _exportPdf(List<FlaggedExpense> rows) async {
+    final l10n = AppLocalizations.of(context)!;
     final active = ref.read(activeWalletProvider);
     if (active == null || rows.isEmpty) return;
     // .future, non .valueOrNull su ref.read: se nessuno sta osservando
@@ -100,7 +102,10 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
       from: _from,
       to: _to,
       rows: rows,
-      categoriesById: {for (final c in categories) c.id: c},
+      // Nel PDF le categorie di default nella lingua attiva, come in app.
+      categoriesById: {
+        for (final c in categories) c.id: c.copyWith(name: c.displayName(l10n)),
+      },
       costCentersById: {for (final c in costCenters) c.id: c},
       attachmentsByTx: attachmentsByTx,
     );
@@ -108,7 +113,9 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
     // precedente (dati e scontrini) non resta nella cache del device
     // (SECURITY_AUDIT NIP-16). Non si cancella subito dopo la condivisione:
     // l'app di destinazione potrebbe leggerlo ancora.
-    final exports = Directory('${(await getTemporaryDirectory()).path}/nipay_exports');
+    final exports = Directory(
+      '${(await getTemporaryDirectory()).path}/nipay_exports',
+    );
     if (await exports.exists()) await exports.delete(recursive: true);
     await exports.create(recursive: true);
     final out = File(
@@ -158,7 +165,6 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final palette = context.nipay;
     final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final rows =
         ref.watch(_flaggedProvider((_from, _to))).valueOrNull ??
@@ -168,61 +174,102 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.expenseReport)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+      body: CenteredListView(
+        bottom: 40,
         children: [
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.event, size: 16),
-                  label: Text(
-                    '${l10n.fromDate} ${_d(_from)}',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  onPressed: () => _pickDate(true),
+                child: DateField(
+                  label: l10n.fromDate,
+                  value: formatDate(context, _from),
+                  onTap: () => _pickDate(true),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.event, size: 16),
-                  label: Text(
-                    '${l10n.toDate} ${_d(_to.subtract(const Duration(days: 1)))}',
-                    style: const TextStyle(fontSize: 12),
+                child: DateField(
+                  label: l10n.toDate,
+                  value: formatDate(
+                    context,
+                    _to.subtract(const Duration(days: 1)),
                   ),
-                  onPressed: () => _pickDate(false),
+                  onTap: () => _pickDate(false),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                MergeSemantics(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${l10n.flaggedExpenses}: ${rows.length}',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        Text(
+                          formatCents(total, currency: currency),
+                          style: moneyStyle(
+                            size: 18,
+                            weight: FontWeight.w800,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Divider(),
+                if (rows.isEmpty)
+                  EmptyState(
+                    icon: Icons.receipt_long_outlined,
+                    message: l10n.noStatsData,
+                  )
+                else
+                  for (final (i, r) in rows.indexed) ...[
+                    if (i > 0) const Divider(indent: 72),
+                    TransactionTile(transaction: r.transaction),
+                  ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
-                child: Text(
-                  '${l10n.flaggedExpenses}: ${rows.length}',
-                  style: Theme.of(context).textTheme.titleMedium,
+                child: FilledButton.icon(
+                  key: const Key('exportPdfButton'),
+                  icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+                  label: Text(l10n.exportPdf),
+                  onPressed: rows.isEmpty ? null : () => _exportPdf(rows),
                 ),
               ),
-              Text(
-                formatCents(total, currency: currency),
-                style: moneyStyle(
-                  size: 16,
-                  color: Theme.of(context).colorScheme.onSurface,
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: const Key('createReportButton'),
+                  icon: const Icon(Icons.assignment_add, size: 20),
+                  label: Text(l10n.createReport),
+                  onPressed: rows.isEmpty ? null : _createReport,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          if (rows.isEmpty)
+          SectionHeader(l10n.reportArchive),
+          if (reports.isEmpty)
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  l10n.noStatsData,
-                  style: TextStyle(color: palette.muted),
-                ),
+              child: EmptyState(
+                icon: Icons.inventory_2_outlined,
+                message: l10n.noItems,
               ),
             )
           else
@@ -230,52 +277,44 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
               clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
-                  for (final (i, r) in rows.indexed) ...[
+                  for (final (i, r) in reports.indexed) ...[
                     if (i > 0) const Divider(),
-                    TransactionTile(transaction: r.transaction),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: MergeSemantics(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    r.name,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleSmall,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${formatDate(context, r.dateFrom)} – '
+                                    '${formatDate(context, r.dateTo.subtract(const Duration(days: 1)))}',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  _StatusPill(status: r.status),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _statusAction(context, r),
+                        ],
+                      ),
+                    ),
                   ],
                 ],
-              ),
-            ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  key: const Key('exportPdfButton'),
-                  icon: const Icon(Icons.picture_as_pdf_outlined, size: 18),
-                  label: Text(l10n.exportPdf),
-                  onPressed: rows.isEmpty ? null : () => _exportPdf(rows),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton.icon(
-                  key: const Key('createReportButton'),
-                  icon: const Icon(Icons.assignment_add, size: 18),
-                  label: Text(l10n.createReport),
-                  onPressed: rows.isEmpty ? null : _createReport,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.reportArchive,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          for (final r in reports)
-            Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                dense: true,
-                title: Text(r.name, style: const TextStyle(fontSize: 13)),
-                subtitle: Text(
-                  '${_d(r.dateFrom)} - ${_d(r.dateTo.subtract(const Duration(days: 1)))} · ${_statusLabel(l10n, r.status)}',
-                  style: TextStyle(fontSize: 11, color: palette.muted),
-                ),
-                trailing: _statusAction(context, r),
               ),
             ),
         ],
@@ -283,26 +322,21 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
     );
   }
 
-  String _statusLabel(AppLocalizations l10n, ExpenseReportStatus s) =>
-      switch (s) {
-        ExpenseReportStatus.draft => l10n.statusDraft,
-        ExpenseReportStatus.sent => l10n.statusSent,
-        ExpenseReportStatus.reimbursed => l10n.statusReimbursed,
-      };
-
   Widget _statusAction(BuildContext context, ExpenseReport r) {
     final l10n = AppLocalizations.of(context)!;
     final repo = ref.read(expenseReportRepositoryProvider);
     return switch (r.status) {
-      ExpenseReportStatus.draft => TextButton(
-        child: Text(l10n.markSent, style: const TextStyle(fontSize: 11)),
+      ExpenseReportStatus.draft => TextButton.icon(
+        icon: const Icon(Icons.send_outlined, size: 18),
+        label: Text(l10n.markSent),
         onPressed: () async {
           await repo.setStatus(r.id, ExpenseReportStatus.sent);
           ref.invalidate(expenseReportsProvider);
         },
       ),
-      ExpenseReportStatus.sent => TextButton(
-        child: Text(l10n.markReimbursed, style: const TextStyle(fontSize: 11)),
+      ExpenseReportStatus.sent => TextButton.icon(
+        icon: const Icon(Icons.done_all, size: 18),
+        label: Text(l10n.markReimbursed),
         onPressed: () async {
           // Registra l'entrata di rimborso e collegala alla nota.
           final active = ref.read(activeWalletProvider);
@@ -327,11 +361,60 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
           ref.invalidate(expenseReportsProvider);
         },
       ),
-      ExpenseReportStatus.reimbursed => Icon(
-        Icons.check_circle,
-        size: 18,
-        color: context.nipay.income,
+      ExpenseReportStatus.reimbursed => const SizedBox.shrink(),
+    };
+  }
+}
+
+/// Stato della nota (bozza → inviata → rimborsata): colore e icona insieme
+/// al testo, mai il solo colore.
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.status});
+
+  final ExpenseReportStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final palette = context.nipay;
+    final (label, icon, bg, fg) = switch (status) {
+      ExpenseReportStatus.draft => (
+        l10n.statusDraft,
+        Icons.edit_note,
+        palette.surface2,
+        scheme.onSurface,
+      ),
+      ExpenseReportStatus.sent => (
+        l10n.statusSent,
+        Icons.schedule_send_outlined,
+        palette.warning.withValues(alpha: .18),
+        palette.warningStrong,
+      ),
+      ExpenseReportStatus.reimbursed => (
+        l10n.statusReimbursed,
+        Icons.check_circle_outline,
+        scheme.secondaryContainer,
+        scheme.onSecondaryContainer,
       ),
     };
+    return Container(
+      padding: const EdgeInsetsDirectional.fromSTEB(6, 3, 10, 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: fg),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: fg),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -72,6 +72,55 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets(
+    'adding a transaction without wallets shows an error, not the form',
+    (tester) async {
+      await tester.pumpWidget(await _app());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('addTransactionFab')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Create a wallet first to add transactions.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('amountField')), findsNothing);
+
+      // L'azione del messaggio porta dritta alla creazione del portafoglio.
+      await tester.tap(find.widgetWithText(SnackBarAction, 'New wallet'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('walletNameField')), findsOneWidget);
+
+      await _unmount(tester);
+    },
+  );
+
+  testWidgets('the currency picker is searchable', (tester) async {
+    await tester.pumpWidget(await _app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('addWalletButton')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('walletCurrencyDropdown')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('currencySearchField')),
+      'chf',
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('USD \$'), findsNothing);
+    await tester.tap(find.text('CHF Fr'));
+    await tester.pumpAndSettle();
+
+    // Scelta fatta: il riquadro si chiude e il campo mostra la valuta.
+    expect(find.byKey(const Key('currencySearchField')), findsNothing);
+    expect(find.text('CHF Fr'), findsOneWidget);
+
+    await _unmount(tester);
+  });
+
   testWidgets('creating a wallet without a name shows an error, not a crash', (
     tester,
   ) async {
@@ -167,7 +216,7 @@ void main() {
   );
 
   testWidgets(
-    'changing a wallet currency via Save rescales only the initial balance',
+    'changing a wallet currency via Save converts the whole balance',
     (tester) async {
       await tester.pumpWidget(
         await _app(
@@ -181,6 +230,12 @@ void main() {
       await tester.pumpAndSettle();
 
       await _createWallet(tester); // EUR, saldo 1000,00
+      await tester.tap(find.byKey(const Key('addTransactionFab')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('amountField')), '100');
+      await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
+      await tester.tap(find.byKey(const Key('txSaveButton')));
+      await tester.pumpAndSettle(); // saldo 900,00 €
 
       // Il bottone edit sulla card apre il foglio azioni (il long-press,
       // ora, serve solo a trascinare per riordinare).
@@ -191,15 +246,25 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('USD \$').last);
       await tester.pumpAndSettle();
+      // Anteprima del saldo convertito, prima di salvare.
+      expect(
+        find.text('≈ ${formatCents(99000, currency: 'USD')} at the current rate'),
+        findsOneWidget,
+      );
 
       // "Salva" è l'unica conferma: rinomina + cambio valuta insieme.
       await tester.tap(find.byKey(const Key('walletActionsSaveButton')));
       await tester.pumpAndSettle();
 
-      // Saldo riscalato al tasso 1.1: 1000,00 € → 1.100,00 $.
+      // Tutto il saldo convertito al tasso 1.1 (non solo quello iniziale):
+      // 900,00 € → 990,00 $, e la spesa da 100,00 € ora vale 110,00 $.
       expect(
-        find.text(formatCents(110000, currency: 'USD', symbolOnly: true)),
+        find.text(formatCents(99000, currency: 'USD', symbolOnly: true)),
         findsWidgets,
+      );
+      expect(
+        find.text(formatCents(-11000, currency: 'USD', symbolOnly: true)),
+        findsOneWidget,
       );
 
       await _unmount(tester);
@@ -287,6 +352,9 @@ void main() {
       expect(chip.selected, isTrue);
 
       // Deseleziona e salva: il tag deve sparire davvero, non solo dalla UI.
+      // (Il form scorre sotto la barra "Salva" fissa: va portato in vista.)
+      await tester.ensureVisible(find.text('#casa'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('#casa'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
@@ -395,7 +463,8 @@ void main() {
 
     await _createWallet(tester);
 
-    // Crea budget 100€ sulla categoria seed "Spesa" da Altro → Budget.
+    // Crea budget 100€ sulla categoria seed "Spesa" (in inglese "Groceries")
+    // da Altro → Budget.
     await tester.tap(find.text('More'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Budget'));
@@ -404,14 +473,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('budgetCategoryDropdown')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('🛒 Spesa').last);
+    await tester.tap(find.text('🛒 Groceries').last);
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('budgetLimitField')), '100');
     await tester.tap(find.byKey(const Key('budgetSaveButton')));
     await tester.pumpAndSettle();
     // Il manager mostra subito la barra appena creato.
     expect(
-      find.text('🛒 Spesa'),
+      find.text('🛒 Groceries'),
       findsOneWidget,
       reason: 'budget non creato nel manager',
     );
@@ -421,14 +490,14 @@ void main() {
     // La home mostra la barra del budget.
     await tester.tap(find.text('Home'));
     await tester.pumpAndSettle();
-    expect(find.text('🛒 Spesa'), findsOneWidget);
+    expect(find.text('🛒 Groceries'), findsOneWidget);
 
     // Spesa da 90€ nella categoria → avviso 90%.
     await tester.tap(find.byKey(const Key('addTransactionFab')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('amountField')), '90');
-    await tester.ensureVisible(find.text('🛒 Spesa').last);
-    await tester.tap(find.text('🛒 Spesa').last);
+    await tester.ensureVisible(find.text('🛒 Groceries').last);
+    await tester.tap(find.text('🛒 Groceries').last);
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
     await tester.tap(find.byKey(const Key('txSaveButton')));

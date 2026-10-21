@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../l10n/app_localizations.dart';
@@ -51,69 +52,60 @@ class _CostCenterManagerScreenState
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.manageCostCenters)),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
-                    onChanged: (_) {
-                      if (_error != null) setState(() => _error = null);
-                    },
-                    decoration: InputDecoration(
-                      labelText: l10n.newCostCenter,
-                      errorText: _error,
-                      isDense: true,
-                    ),
-                    onSubmitted: (_) => _add(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                IconButton.filled(onPressed: _add, icon: const Icon(Icons.add)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: centers.isEmpty
-                  ? Center(
-                      child: Text(
-                        l10n.noItems,
-                        style: TextStyle(color: context.nipay.muted),
+      body: CenteredListView(
+        bottom: 24,
+        children: [
+          AddItemField(
+            controller: _controller,
+            label: l10n.newCostCenter,
+            error: _error,
+            inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
+            onChanged: (_) {
+              if (_error != null) setState(() => _error = null);
+            },
+            onSubmit: _add,
+          ),
+          const SizedBox(height: 16),
+          if (centers.isEmpty)
+            EmptyState(icon: Icons.work_outline, message: l10n.noItems)
+          else
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  for (final (i, c) in centers.indexed) ...[
+                    if (i > 0) const Divider(indent: 68),
+                    ListTile(
+                      leading: IconBadge(
+                        icon: Icons.work_outline,
+                        color: context.nipay.muted,
+                        size: 36,
                       ),
-                    )
-                  : ListView(
-                      children: [
-                        for (final c in centers)
-                          ListTile(
-                            dense: true,
-                            leading: const Icon(Icons.work_outline, size: 18),
-                            title: Text(
-                              c.name,
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            trailing: IconButton(
-                              icon: Icon(
-                                Icons.delete_outline,
-                                size: 18,
-                                color: Theme.of(context).colorScheme.error,
-                              ),
-                              onPressed: () async {
-                                await ref
-                                    .read(costCenterRepositoryProvider)
-                                    .softDelete(c.id);
-                                ref.invalidate(costCentersProvider);
-                              },
-                            ),
-                          ),
-                      ],
+                      title: Text(c.name),
+                      trailing: IconButton(
+                        tooltip: l10n.delete,
+                        icon: Icon(
+                          Icons.delete_outline,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        onPressed: () async {
+                          final confirmed = await confirmDeletion(
+                            context,
+                            title: l10n.deleteItemTitle(c.name),
+                          );
+                          if (!confirmed) return;
+                          await ref
+                              .read(costCenterRepositoryProvider)
+                              .softDelete(c.id);
+                          ref.invalidate(costCentersProvider);
+                        },
+                      ),
                     ),
+                  ],
+                ],
+              ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }

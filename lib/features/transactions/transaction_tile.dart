@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
+import '../../l10n/app_localizations.dart';
 import 'transaction_detail_sheet.dart';
 
 class TransactionTile extends ConsumerWidget {
@@ -16,6 +18,7 @@ class TransactionTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = context.nipay;
+    final l10n = AppLocalizations.of(context)!;
     final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final categories =
         ref.watch(categoriesProvider).valueOrNull ?? const <Category>[];
@@ -51,38 +54,40 @@ class TransactionTile extends ConsumerWidget {
       ),
     };
 
-    final icon = switch (transaction.type) {
-      TransactionType.transfer => '⇄',
-      _ => category?.icon ?? '📦',
+    final badge = switch (transaction.type) {
+      TransactionType.transfer => IconBadge(
+        icon: Icons.swap_horiz_rounded,
+        color: palette.transfer,
+      ),
+      _ => IconBadge(
+        emoji: category?.icon ?? '📦',
+        color: category == null
+            ? palette.muted
+            : colorFromHex(category.colorHex),
+      ),
     };
+    final date = MaterialLocalizations.of(
+      context,
+    ).formatShortMonthDay(transaction.date);
 
     return ListTile(
-      dense: true,
       onTap: () => showTransactionDetailSheet(context, transaction),
-      leading: Container(
-        width: 38,
-        height: 38,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: amountColor.withValues(alpha: .14),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(icon, style: const TextStyle(fontSize: 17)),
-      ),
+      leading: badge,
       title: Text(
         transaction.description.isEmpty
-            ? (category?.name ?? '—')
+            ? (category?.displayName(l10n) ?? '—')
             : transaction.description,
-        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(
-        '${category?.name ?? ''}${category != null ? ' · ' : ''}'
-        '${transaction.date.day}/${transaction.date.month}',
-        style: TextStyle(fontSize: 11, color: palette.muted),
+        '${category?.displayName(l10n) ?? ''}${category != null ? ' · ' : ''}$date',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
       trailing: Text(
         amountText,
-        style: moneyStyle(size: 13, color: amountColor),
+        style: moneyStyle(size: 15, color: amountColor),
       ),
     );
   }

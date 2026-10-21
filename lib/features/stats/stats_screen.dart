@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../l10n/app_localizations.dart';
 import 'stat_cards.dart';
 
@@ -26,105 +27,105 @@ class StatsScreen extends ConsumerWidget {
     final palette = context.nipay;
     final cards = ref.watch(dashboardCardsProvider).valueOrNull ?? const [];
     final month = ref.watch(statsMonthProvider);
-    final monthLabel = '${_monthNames[month.month - 1]} ${month.year}';
+    final usedTypes = cards.map((c) => c.type).toSet();
 
     return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final padding = centeredPadding(
+            constraints.maxWidth,
+            bottom: kFabClearance,
+          );
+          return ReorderableListView(
+            padding: padding,
+            header: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: Text(
-                    l10n.statsTab,
-                    style: Theme.of(context).textTheme.titleLarge,
+                PageHeader(l10n.statsTab),
+                Center(
+                  child: MonthSwitcher(
+                    month: month,
+                    onChanged: (m) =>
+                        ref.read(statsMonthProvider.notifier).state = m,
                   ),
                 ),
-                IconButton(
-                  onPressed: () => ref.read(statsMonthProvider.notifier).state =
-                      DateTime(month.year, month.month - 1),
-                  icon: const Icon(Icons.chevron_left),
-                ),
-                Text(
-                  monthLabel,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                IconButton(
-                  onPressed: () => ref.read(statsMonthProvider.notifier).state =
-                      DateTime(month.year, month.month + 1),
-                  icon: const Icon(Icons.chevron_right),
-                ),
+                const SizedBox(height: 16),
               ],
             ),
-          ),
-          Expanded(
-            child: ReorderableListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-              onReorderItem: (oldIndex, newIndex) {
-                if (oldIndex >= cards.length) return;
-                ref
-                    .read(dashboardRepositoryProvider)
-                    .moveCard(cards[oldIndex].id, newIndex);
-              },
-              footer: Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: _AddCardButton(
-                  emptyHint: cards.isEmpty ? l10n.emptyDashboard : null,
-                  usedTypes: cards.map((c) => c.type).toSet(),
-                ),
+            onReorderItem: (oldIndex, newIndex) {
+              if (oldIndex >= cards.length) return;
+              ref
+                  .read(dashboardRepositoryProvider)
+                  .moveCard(cards[oldIndex].id, newIndex);
+            },
+            footer: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: _AddCardButton(
+                emptyHint: cards.isEmpty ? l10n.emptyDashboard : null,
+                usedTypes: usedTypes,
               ),
-              children: [
-                for (final card in cards)
-                  Padding(
-                    key: ValueKey(card.id),
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
+            ),
+            children: [
+              for (final card in cards)
+                Padding(
+                  key: ValueKey(card.id),
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 6, 6, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              // La card si trascina con una pressione lunga
+                              // ovunque; la maniglia lo suggerisce.
+                              ExcludeSemantics(
+                                child: Icon(
                                   Icons.drag_indicator,
-                                  size: 16,
+                                  size: 18,
                                   color: palette.muted,
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Semantics(
+                                  header: true,
                                   child: Text(
                                     cardTitle(l10n, card.type),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(fontSize: 14),
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
                                   ),
                                 ),
-                                GestureDetector(
-                                  onTap: () => ref
-                                      .read(dashboardRepositoryProvider)
-                                      .removeCard(card.id),
-                                  child: Icon(
-                                    Icons.close,
-                                    size: 16,
-                                    color: palette.muted,
-                                  ),
+                              ),
+                              IconButton(
+                                tooltip: MaterialLocalizations.of(
+                                  context,
+                                ).deleteButtonTooltip,
+                                icon: Icon(
+                                  Icons.close,
+                                  size: 20,
+                                  color: palette.muted,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            StatCardBody(type: card.type, month: month),
-                          ],
-                        ),
+                                onPressed: () => ref
+                                    .read(dashboardRepositoryProvider)
+                                    .removeCard(card.id),
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 10, top: 4),
+                            child: StatCardBody(type: card.type, month: month),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-              ],
-            ),
-          ),
-        ],
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -146,18 +147,17 @@ class _AddCardButton extends ConsumerWidget {
     // Ogni tipo di card è unico in dashboard: se sono già tutti presenti
     // non c'è altro da aggiungere.
     if (availableTypes.isEmpty) return const SizedBox.shrink();
-    return Column(
-      children: [
-        if (emptyHint != null) ...[
-          Text(
-            emptyHint!,
-            style: TextStyle(color: palette.muted, fontSize: 13),
-          ),
-          const SizedBox(height: 12),
-        ],
-        InkWell(
-          key: const Key('addCardButton'),
+    final button = Semantics(
+      button: true,
+      child: Material(
+        color: Colors.transparent,
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Theme.of(context).colorScheme.outline),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: const Key('addCardButton'),
           onTap: () async {
             final type = await showDialog<String>(
               context: context,
@@ -166,8 +166,18 @@ class _AddCardButton extends ConsumerWidget {
                 children: [
                   for (final t in availableTypes)
                     SimpleDialogOption(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 14,
+                      ),
                       onPressed: () => Navigator.of(dialogContext).pop(t),
-                      child: Text(cardTitle(l10n, t)),
+                      child: Row(
+                        children: [
+                          Icon(_cardIcon(t), color: palette.muted),
+                          const SizedBox(width: 16),
+                          Expanded(child: Text(cardTitle(l10n, t))),
+                        ],
+                      ),
                     ),
                 ],
               ),
@@ -179,44 +189,52 @@ class _AddCardButton extends ConsumerWidget {
                   .addCard(walletId: active.id, type: type);
             }
           },
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: palette.line,
-                width: 2,
-                style: BorderStyle.solid,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '＋ ${l10n.addCard}',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: palette.muted,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 56),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.add,
+                  size: 20,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.addCard,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-      ],
+      ),
+    );
+    if (emptyHint == null) return button;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: Column(
+          children: [
+            EmptyState(
+              icon: Icons.dashboard_customize_outlined,
+              message: emptyHint!,
+              padding: const EdgeInsets.fromLTRB(8, 28, 8, 20),
+            ),
+            button,
+          ],
+        ),
+      ),
     );
   }
 }
 
-const _monthNames = [
-  'gen',
-  'feb',
-  'mar',
-  'apr',
-  'mag',
-  'giu',
-  'lug',
-  'ago',
-  'set',
-  'ott',
-  'nov',
-  'dic',
-];
+IconData _cardIcon(String type) => switch (type) {
+  'categoryDonut' => Icons.donut_large,
+  'trend' => Icons.bar_chart,
+  'cashflow' => Icons.swap_vert,
+  'budget' => Icons.savings_outlined,
+  _ => Icons.dashboard_outlined,
+};

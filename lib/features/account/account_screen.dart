@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../core/validation.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/sync_service.dart';
@@ -51,10 +53,13 @@ class AccountScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.account)),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: user == null
-              ? const _AuthForm()
-              : _SignedInView(email: user.email ?? ''),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          child: MaxWidth(
+            maxWidth: 560,
+            child: user == null
+                ? const _AuthForm()
+                : _SignedInView(email: user.email ?? ''),
+          ),
         ),
       ),
     );
@@ -111,42 +116,92 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final email = widget.email;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(l10n.signedInAs(widget.email)),
-        FutureBuilder<SyncStatus?>(
-          future: _syncStatus,
-          builder: (context, snapshot) {
-            final status = snapshot.data;
-            final muted = Theme.of(context).textTheme.bodySmall;
-            final error = TextStyle(
-              color: Theme.of(context).colorScheme.error,
-              fontSize: muted?.fontSize,
-            );
-            return Padding(
-              key: const Key('syncStatus'),
-              padding: const EdgeInsets.only(top: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    status?.lastSuccessAt == null
-                        ? l10n.lastSyncNever
-                        : l10n.lastSyncAt(
-                            _formatDateTime(status!.lastSuccessAt!),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    ExcludeSemantics(
+                      child: CircleAvatar(
+                        radius: 22,
+                        backgroundColor: scheme.primaryContainer,
+                        child: Text(
+                          email.isEmpty ? '?' : email[0].toUpperCase(),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(color: scheme.onPrimaryContainer),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        l10n.signedInAs(email),
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                FutureBuilder<SyncStatus?>(
+                  future: _syncStatus,
+                  builder: (context, snapshot) {
+                    final status = snapshot.data;
+                    final muted = context.nipay.muted;
+                    return Column(
+                      key: const Key('syncStatus'),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _StatusLine(
+                          icon: status?.lastSuccessAt == null
+                              ? Icons.cloud_off_outlined
+                              : Icons.cloud_done_outlined,
+                          color: muted,
+                          text: status?.lastSuccessAt == null
+                              ? l10n.lastSyncNever
+                              : l10n.lastSyncAt(
+                                  _formatDateTime(status!.lastSuccessAt!),
+                                ),
+                        ),
+                        if (status?.lastError != null)
+                          _StatusLine(
+                            icon: Icons.error_outline,
+                            color: scheme.error,
+                            text: l10n.syncLastFailed,
                           ),
-                    style: muted,
-                  ),
-                  if (status?.lastError != null)
-                    Text(l10n.syncLastFailed, style: error),
-                  if ((status?.pendingIssues ?? 0) > 0)
-                    Text(l10n.syncIssues(status!.pendingIssues), style: error),
-                ],
-              ),
-            );
-          },
+                        if ((status?.pendingIssues ?? 0) > 0)
+                          _StatusLine(
+                            icon: Icons.warning_amber_rounded,
+                            color: scheme.error,
+                            text: l10n.syncIssues(status!.pendingIssues),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 14),
+                OutlinedButton.icon(
+                  onPressed: _isSyncing ? null : _syncNow,
+                  icon: _isSyncing
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.sync),
+                  label: Text(l10n.syncNow),
+                ),
+              ],
+            ),
+          ),
         ),
         FutureBuilder<DateTime?>(
           future: _deletionStatus,
@@ -154,25 +209,15 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
             final requestedAt = snapshot.data;
             if (requestedAt == null) return const SizedBox.shrink();
             final purgeDate = requestedAt.add(const Duration(days: 30));
-            return Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Card(
-                color: Theme.of(context).colorScheme.errorContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l10n.deletionPending(_formatDate(purgeDate))),
-                      const SizedBox(height: 8),
-                      OutlinedButton(
-                        onPressed: _cancelDeletion,
-                        child: Text(l10n.cancelDeletion),
-                      ),
-                    ],
-                  ),
+            return _Banner(
+              icon: Icons.event_busy_outlined,
+              text: l10n.deletionPending(_formatDate(purgeDate)),
+              actions: [
+                OutlinedButton(
+                  onPressed: _cancelDeletion,
+                  child: Text(l10n.cancelDeletion),
                 ),
-              ),
+              ],
             );
           },
         ),
@@ -180,79 +225,56 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
           future: _foreignLocalData,
           builder: (context, snapshot) {
             if (snapshot.data != true) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Card(
-                key: const Key('foreignLocalDataBanner'),
-                color: Theme.of(context).colorScheme.errorContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(l10n.foreignLocalDataBody),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          FilledButton(
-                            onPressed: _isSyncing
-                                ? null
-                                : _removeForeignDataAndSync,
-                            child: Text(l10n.removeLocalDataAndSync),
-                          ),
-                          OutlinedButton(
-                            onPressed: _signOutKeepingData,
-                            child: Text(l10n.signOut),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+            return _Banner(
+              key: const Key('foreignLocalDataBanner'),
+              icon: Icons.lock_outline,
+              text: l10n.foreignLocalDataBody,
+              actions: [
+                FilledButton(
+                  onPressed: _isSyncing ? null : _removeForeignDataAndSync,
+                  child: Text(l10n.removeLocalDataAndSync),
                 ),
-              ),
+                OutlinedButton(
+                  onPressed: _signOutKeepingData,
+                  child: Text(l10n.signOut),
+                ),
+              ],
             );
           },
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         OutlinedButton.icon(
-          onPressed: _isSyncing ? null : _syncNow,
-          icon: _isSyncing
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.sync),
-          label: Text(l10n.syncNow),
-        ),
-        const SizedBox(height: 12),
-        OutlinedButton(
+          icon: const Icon(Icons.password),
           onPressed: () => showDialog<void>(
             context: context,
             builder: (_) => const _ChangePasswordDialog(),
           ),
-          child: Text(l10n.changePassword),
+          label: Text(l10n.changePassword),
         ),
-        const SizedBox(height: 12),
-        OutlinedButton(
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.logout),
           onPressed: () => _confirmSignOut(context, ref),
-          child: Text(l10n.signOut),
+          label: Text(l10n.signOut),
         ),
-        const SizedBox(height: 12),
-        OutlinedButton(
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.devices_other_outlined),
           onPressed: _confirmSignOutEverywhere,
-          child: Text(l10n.signOutEverywhere),
+          label: Text(l10n.signOutEverywhere),
         ),
-        const SizedBox(height: 24),
-        OutlinedButton(
+        // Zona pericolo, staccata dalle azioni ordinarie.
+        const SizedBox(height: 32),
+        const Divider(),
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          icon: const Icon(Icons.delete_forever_outlined),
           style: OutlinedButton.styleFrom(
-            foregroundColor: Theme.of(context).colorScheme.error,
-            side: BorderSide(color: Theme.of(context).colorScheme.error),
+            foregroundColor: scheme.error,
+            side: BorderSide(color: scheme.error),
           ),
           onPressed: _confirmDeleteAccount,
-          child: Text(l10n.deleteAccount),
+          label: Text(l10n.deleteAccount),
         ),
       ],
     );
@@ -297,9 +319,7 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
             child: Text(l10n.cancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogContext).colorScheme.error,
-            ),
+            style: destructiveButtonStyle(dialogContext),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(l10n.removeLocalDataAndSync),
           ),
@@ -539,9 +559,7 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
           child: Text(l10n.cancel),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+          style: destructiveButtonStyle(context),
           onPressed: _isSubmitting ? null : _submit,
           child: Text(l10n.deleteAccount),
         ),
@@ -568,6 +586,7 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
   final _passwordController = TextEditingController();
   bool _isSignUp = false;
   bool _isSubmitting = false;
+  bool _obscurePassword = true;
   DateTime? _lastResetRequest;
 
   @override
@@ -580,71 +599,116 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
     return Form(
       key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            l10n.accountLocalModeDescription,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 20),
-          TextFormField(
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            autocorrect: false,
-            maxLength: 254,
-            decoration: InputDecoration(labelText: l10n.email, counterText: ''),
-            validator: (value) => (value == null || !isValidEmail(value.trim()))
-                ? l10n.invalidEmail
-                : null,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _passwordController,
-            obscureText: true,
-            autocorrect: false,
-            enableSuggestions: false,
-            maxLength: kMaxPasswordLength,
-            decoration: InputDecoration(
-              labelText: l10n.password,
-              helperText: _isSignUp ? l10n.passwordTooWeak : null,
-              helperMaxLines: 2,
-              counterText: '',
+      child: AutofillGroup(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IconBadge(
+                      icon: Icons.cloud_sync_outlined,
+                      color: scheme.primary,
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        l10n.accountLocalModeDescription,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            validator: (value) => _isSignUp
-                ? _newPasswordError(l10n, value)
-                : (value == null || value.length < 8)
-                ? l10n.passwordTooShort
-                : null,
-          ),
-          if (!_isSignUp) ...[
-            const SizedBox(height: 4),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _isSubmitting ? null : _sendPasswordReset,
-                child: Text(l10n.forgotPassword),
+            const SizedBox(height: 20),
+            TextFormField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.email],
+              autocorrect: false,
+              maxLength: 254,
+              decoration: InputDecoration(
+                labelText: l10n.email,
+                prefixIcon: const Icon(Icons.mail_outline),
+                counterText: '',
+              ),
+              validator: (value) =>
+                  (value == null || !isValidEmail(value.trim()))
+                  ? l10n.invalidEmail
+                  : null,
+            ),
+            const SizedBox(height: 14),
+            TextFormField(
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              textInputAction: TextInputAction.done,
+              autofillHints: [
+                _isSignUp ? AutofillHints.newPassword : AutofillHints.password,
+              ],
+              autocorrect: false,
+              enableSuggestions: false,
+              maxLength: kMaxPasswordLength,
+              onFieldSubmitted: (_) => _isSubmitting ? null : _submit(),
+              decoration: InputDecoration(
+                labelText: l10n.password,
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  tooltip: _obscurePassword
+                      ? l10n.showPassword
+                      : l10n.hidePassword,
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
+                helperText: _isSignUp ? l10n.passwordTooWeak : null,
+                helperMaxLines: 2,
+                counterText: '',
+              ),
+              validator: (value) => _isSignUp
+                  ? _newPasswordError(l10n, value)
+                  : (value == null || value.length < 8)
+                  ? l10n.passwordTooShort
+                  : null,
+            ),
+            if (!_isSignUp)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: TextButton(
+                  onPressed: _isSubmitting ? null : _sendPasswordReset,
+                  child: Text(l10n.forgotPassword),
+                ),
+              )
+            else
+              const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            FilledButton(
+              onPressed: _isSubmitting ? null : _submit,
+              child: Text(_isSignUp ? l10n.signUp : l10n.signIn),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: _isSubmitting
+                  ? null
+                  : () => setState(() => _isSignUp = !_isSignUp),
+              child: Text(
+                _isSignUp ? l10n.alreadyHaveAccount : l10n.noAccountYet,
               ),
             ),
           ],
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _isSubmitting ? null : _submit,
-            child: Text(_isSignUp ? l10n.signUp : l10n.signIn),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: _isSubmitting
-                ? null
-                : () => setState(() => _isSignUp = !_isSignUp),
-            child: Text(
-              _isSignUp ? l10n.alreadyHaveAccount : l10n.noAccountYet,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -946,6 +1010,94 @@ class _PasswordRecoveryDialogState
           child: Text(l10n.save),
         ),
       ],
+    );
+  }
+}
+
+/// Riga di stato con icona (sync riuscita, fallita, elementi in sospeso).
+class _StatusLine extends StatelessWidget {
+  const _StatusLine({
+    required this.icon,
+    required this.color,
+    required this.text,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: color),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Avviso che richiede una scelta (cancellazione in corso, dati di un altro
+/// account): sfondo d'errore tenue, icona, testo e azioni.
+class _Banner extends StatelessWidget {
+  const _Banner({
+    super.key,
+    required this.icon,
+    required this.text,
+    required this.actions,
+  });
+
+  final IconData icon;
+  final String text;
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Card(
+        color: scheme.errorContainer,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: scheme.error.withValues(alpha: .4)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(icon, color: scheme.onErrorContainer),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: scheme.onErrorContainer,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(spacing: 8, runSpacing: 8, children: actions),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -6,11 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../core/currencies.dart';
 import '../../core/image_sanitizer.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
@@ -92,9 +92,8 @@ Future<void> showAddTransactionSheet(
   BuildContext context, {
   Transaction? existing,
   ExpenseReportEntry? existingEntry,
-}) => showModalBottomSheet<void>(
-  context: context,
-  isScrollControlled: true,
+}) => showAppSheet<void>(
+  context,
   builder: (_) =>
       _AddTransactionSheet(existing: existing, existingEntry: existingEntry),
 );
@@ -122,6 +121,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   Set<String> _originalTagIds = const {};
   final Map<String, String> _fieldValues = {};
   final Map<String, TextEditingController> _fieldControllers = {};
+
   /// Foto già ripulite dai metadati (EXIF/GPS) al momento della scelta.
   final List<SanitizedImage> _pendingImages = [];
   bool _attachmentRejected = false;
@@ -205,8 +205,11 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
 
   /// Un controller per campo, creato una volta sola (mai dentro build): se
   /// ricreato a ogni rebuild perde la posizione del cursore a ogni tasto.
-  TextEditingController _controllerFor(String fieldId) => _fieldControllers
-      .putIfAbsent(fieldId, () => TextEditingController(text: _fieldValues[fieldId]));
+  TextEditingController _controllerFor(String fieldId) =>
+      _fieldControllers.putIfAbsent(
+        fieldId,
+        () => TextEditingController(text: _fieldValues[fieldId]),
+      );
 
   /// Recupera il tasso [_currency] → valuta del portafoglio attivo, UNA
   /// volta per cambio di valuta (non ad ogni tasto premuto sull'importo).
@@ -431,16 +434,37 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
               (ref.read(categoriesProvider).valueOrNull ?? [])
                   .where((c) => c.id == _categoryId)
                   .firstOrNull
-                  ?.name ??
+                  ?.displayName(l10n) ??
               '';
+          // Giallo con testo ink (≥ 80%) o rosso errore (≥ 100%), sempre
+          // con icona: lo stato non passa dal solo colore.
+          final exceeded = ratio >= 1;
+          final scheme = Theme.of(context).colorScheme;
+          final (bg, fg) = exceeded
+              ? (scheme.error, scheme.onError)
+              : (NipayColors.warn, NipayColors.ink);
           messenger.showSnackBar(
             SnackBar(
-              content: Text(
-                ratio >= 1
-                    ? l10n.budgetExceeded(name)
-                    : l10n.budgetNear(name, (ratio * 100).round()),
+              backgroundColor: bg,
+              content: Row(
+                children: [
+                  Icon(
+                    exceeded
+                        ? Icons.error_outline
+                        : Icons.warning_amber_rounded,
+                    color: fg,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      exceeded
+                          ? l10n.budgetExceeded(name)
+                          : l10n.budgetNear(name, (ratio * 100).round()),
+                      style: TextStyle(color: fg, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
               ),
-              backgroundColor: ratio >= 1 ? NipayColors.over : NipayColors.warn,
             ),
           );
         }
@@ -478,74 +502,66 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     }
   }
 
-  /// Input per ogni campo custom definito, in base al tipo.
-  List<Widget> _buildCustomFields(AppLocalizations l10n) {
-    final all = ref.watch(customFieldDefsProvider).valueOrNull ?? const [];
-    final defs = [
-      for (final d in all)
-        if (!d.expenseReportOnly ||
-            (_isExpenseReport && _type == TransactionType.expense))
-          d,
-    ];
-    if (defs.isEmpty) return const [];
-    return [
-      const SizedBox(height: 16),
-      Text(l10n.customFields, style: Theme.of(context).textTheme.bodySmall),
-      const SizedBox(height: 8),
-      for (final d in defs) ...[
-        switch (d.type) {
-          CustomFieldType.choice => DropdownButtonFormField<String>(
-            initialValue: _fieldValues[d.id],
-            decoration: InputDecoration(labelText: d.name, isDense: true),
-            items: [
-              for (final o in d.options ?? const <String>[])
-                DropdownMenuItem(value: o, child: Text(o)),
-            ],
-            onChanged: (v) => setState(() => _fieldValues[d.id] = v ?? ''),
-          ),
-          CustomFieldType.date => ListTile(
-            contentPadding: EdgeInsets.zero,
-            dense: true,
-            leading: const Icon(Icons.event, size: 18),
-            title: Text(
-              _fieldValues[d.id] ?? d.name,
-              style: const TextStyle(fontSize: 13),
-            ),
-            onTap: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2100),
-              );
-              if (picked != null) {
-                setState(
-                  () => _fieldValues[d.id] =
-                      '${picked.year}-${picked.month.toString().padLeft(2, "0")}-${picked.day.toString().padLeft(2, "0")}',
-                );
-              }
-            },
-          ),
-          _ => TextField(
-            key: ValueKey('customField_${d.id}'),
-            controller: _controllerFor(d.id),
-            inputFormatters: [LengthLimitingTextInputFormatter(kMaxCustomValueLength)],
-            keyboardType: d.type == CustomFieldType.number
-                ? const TextInputType.numberWithOptions(decimal: true)
-                : TextInputType.text,
-            decoration: InputDecoration(labelText: d.name, isDense: true),
-            onChanged: (v) => _fieldValues[d.id] = v,
-          ),
-        },
-        const SizedBox(height: 8),
+  /// Input per un campo custom, in base al tipo.
+  Widget _customFieldInput(CustomFieldDef d) => switch (d.type) {
+    CustomFieldType.choice => DropdownButtonFormField<String>(
+      initialValue: _fieldValues[d.id],
+      isExpanded: true,
+      decoration: InputDecoration(labelText: d.name),
+      items: [
+        for (final o in d.options ?? const <String>[])
+          DropdownMenuItem(value: o, child: Text(o)),
       ],
-    ];
-  }
+      onChanged: (v) => setState(() => _fieldValues[d.id] = v ?? ''),
+    ),
+    CustomFieldType.date => DateField(
+      label: d.name,
+      value: switch (DateTime.tryParse(_fieldValues[d.id] ?? '')) {
+        final date? => formatDate(context, date),
+        null => null,
+      },
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate:
+              DateTime.tryParse(_fieldValues[d.id] ?? '') ?? DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (picked != null) {
+          setState(
+            () => _fieldValues[d.id] =
+                '${picked.year}-${picked.month.toString().padLeft(2, "0")}-${picked.day.toString().padLeft(2, "0")}',
+          );
+        }
+      },
+    ),
+    _ => TextField(
+      key: ValueKey('customField_${d.id}'),
+      controller: _controllerFor(d.id),
+      inputFormatters: [
+        LengthLimitingTextInputFormatter(kMaxCustomValueLength),
+      ],
+      keyboardType: d.type == CustomFieldType.number
+          ? const TextInputType.numberWithOptions(decimal: true)
+          : TextInputType.text,
+      decoration: InputDecoration(labelText: d.name),
+      onChanged: (v) => _fieldValues[d.id] = v,
+    ),
+  };
+
+  List<Widget> _fieldList(Iterable<CustomFieldDef> defs) => [
+    for (final (i, d) in defs.indexed) ...[
+      if (i > 0) kFieldGap,
+      _customFieldInput(d),
+    ],
+  ];
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
+    final scheme = Theme.of(context).colorScheme;
     final wallets = ref.watch(walletsProvider).valueOrNull ?? [];
     final categories = (ref.watch(categoriesProvider).valueOrNull ?? [])
         .where(
@@ -560,345 +576,416 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     final activeCurrency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final effectiveCurrency = _currency ?? activeCurrency;
     final tags = ref.watch(tagsProvider).valueOrNull ?? const <Tag>[];
+    final fieldDefs =
+        ref.watch(customFieldDefsProvider).valueOrNull ?? const [];
+    // I campi "solo nota spese" stanno nel riquadro della nota spese.
+    final generalFields = fieldDefs.where((d) => !d.expenseReportOnly);
+    final reportFields = fieldDefs.where((d) => d.expenseReportOnly);
+    final isExpense = _type == TransactionType.expense;
 
-    // Altezza fissa indipendente dal tipo selezionato: "trasferimento" ha
-    // molti meno campi di "spesa"/"entrata" e altrimenti il popup si
-    // ridimensionerebbe cambiando segmento.
-    final sheetHeight = MediaQuery.sizeOf(context).height * 0.88;
+    // Colore del segmento selezionato: coral per le spese, teal per le
+    // entrate, neutro per i trasferimenti (come gli importi in lista).
+    final (typeBg, typeFg) = switch (_type) {
+      TransactionType.expense => (
+        scheme.tertiaryContainer,
+        scheme.onTertiaryContainer,
+      ),
+      TransactionType.income => (
+        scheme.secondaryContainer,
+        scheme.onSecondaryContainer,
+      ),
+      TransactionType.transfer => (
+        scheme.surfaceContainerHighest,
+        scheme.onSurface,
+      ),
+    };
 
-    return SizedBox(
-      height: sheetHeight,
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          top: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _editing ? l10n.editTransaction : l10n.newTransaction,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              if (!_editing)
-                SizedBox(
-                  width: double.infinity,
-                  child: SegmentedButton<TransactionType>(
-                    showSelectedIcon: false,
-                    segments: [
-                      ButtonSegment(
-                        value: TransactionType.expense,
-                        label: Text(l10n.expense),
-                      ),
-                      ButtonSegment(
-                        value: TransactionType.income,
-                        label: Text(l10n.income),
-                      ),
-                      ButtonSegment(
-                        value: TransactionType.transfer,
-                        label: Text(l10n.transfer),
-                      ),
-                    ],
-                    selected: {_type},
-                    onSelectionChanged: (s) => setState(() => _type = s.first),
-                  ),
+    return SheetScaffold(
+      title: _editing ? l10n.editTransaction : l10n.newTransaction,
+      // Altezza fissa indipendente dal tipo selezionato: "trasferimento" ha
+      // molti meno campi di "spesa"/"entrata" e altrimenti il popup si
+      // ridimensionerebbe cambiando segmento.
+      heightFactor: 0.88,
+      header: _editing
+          ? null
+          : SegmentedButton<TransactionType>(
+              showSelectedIcon: false,
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.resolveWith(
+                  (s) => s.contains(WidgetState.selected) ? typeBg : null,
                 ),
-              const SizedBox(height: 16),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      key: const Key('amountField'),
-                      controller: _amount,
-                      autofocus: true,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: moneyInputFormatters,
-                      style: moneyStyle(size: 28),
-                      onChanged: (_) => setState(() {}),
-                      decoration: InputDecoration(
-                        labelText: l10n.amount,
-                        errorText: _error,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 132,
-                    child: DropdownButtonFormField<String>(
-                      key: const Key('transactionCurrencyDropdown'),
-                      initialValue: effectiveCurrency,
-                      isExpanded: true,
-                      decoration: InputDecoration(labelText: l10n.currency),
-                      items: currencyMenuItems(),
-                      onChanged: (v) {
-                        setState(() => _currency = v);
-                        _maybeFetchRate();
-                      },
-                    ),
-                  ),
-                ],
+                foregroundColor: WidgetStateProperty.resolveWith(
+                  (s) => s.contains(WidgetState.selected) ? typeFg : null,
+                ),
               ),
-              if (effectiveCurrency != activeCurrency) ...[
-                const SizedBox(height: 4),
-                if (_fetchingRate)
-                  const SizedBox(
-                    height: 14,
-                    width: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                else if (_rateError != null)
-                  Text(
-                    _rateError!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 12,
+              segments: [
+                ButtonSegment(
+                  value: TransactionType.expense,
+                  icon: const Icon(Icons.north_east_rounded, size: 18),
+                  label: Text(l10n.expense),
+                ),
+                ButtonSegment(
+                  value: TransactionType.income,
+                  icon: const Icon(Icons.south_west_rounded, size: 18),
+                  label: Text(l10n.income),
+                ),
+                ButtonSegment(
+                  value: TransactionType.transfer,
+                  icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                  label: Text(l10n.transfer),
+                ),
+              ],
+              selected: {_type},
+              onSelectionChanged: (s) => setState(() => _type = s.first),
+            ),
+      actions: [
+        FilledButton(
+          key: const Key('txSaveButton'),
+          onPressed: _save,
+          child: Text(l10n.save),
+        ),
+      ],
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextField(
+                key: const Key('amountField'),
+                controller: _amount,
+                autofocus: true,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: moneyInputFormatters,
+                style: moneyStyle(size: 26),
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  labelText: l10n.amount,
+                  errorText: _error,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 140,
+              child: CurrencyField(
+                key: const Key('transactionCurrencyDropdown'),
+                value: effectiveCurrency,
+                onChanged: (v) {
+                  setState(() => _currency = v);
+                  _maybeFetchRate();
+                },
+              ),
+            ),
+          ],
+        ),
+        if (effectiveCurrency != activeCurrency)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 4),
+            child: _fetchingRate
+                ? const Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   )
-                else if (_rate != null && parseCents(_amount.text) != null)
-                  Text(
-                    l10n.convertedPreview(
+                : _rateError != null
+                ? _InlineMessage(
+                    icon: Icons.error_outline,
+                    text: _rateError!,
+                    color: scheme.error,
+                  )
+                : (_rate != null && parseCents(_amount.text) != null)
+                ? _InlineMessage(
+                    icon: Icons.currency_exchange,
+                    text: l10n.convertedPreview(
                       formatCents(
                         (parseCents(_amount.text)! * _rate!).round(),
                         currency: activeCurrency,
                       ),
                     ),
-                    style: TextStyle(color: palette.muted, fontSize: 12),
+                    color: palette.muted,
+                  )
+                : const SizedBox.shrink(),
+          ),
+        kFieldGap,
+        TextField(
+          key: const Key('descriptionField'),
+          controller: _description,
+          textCapitalization: TextCapitalization.sentences,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(kMaxDescriptionLength),
+          ],
+          decoration: InputDecoration(labelText: l10n.description),
+        ),
+        kFieldGap,
+        DateField(
+          label: l10n.date,
+          value: formatDate(context, _date),
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: _date,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+            );
+            if (picked != null) setState(() => _date = picked);
+          },
+        ),
+        if (_type == TransactionType.transfer && wallets.length > 1) ...[
+          kFieldGap,
+          InputDecorator(
+            decoration: InputDecoration(
+              labelText: l10n.fromWallet,
+              prefixIcon: const Icon(Icons.account_balance_wallet_outlined),
+            ),
+            child: Text(
+              wallets.where((w) => w.id == walletId).firstOrNull?.name ?? '',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          kFieldGap,
+          DropdownButtonFormField<String>(
+            key: const Key('walletToDropdown'),
+            initialValue:
+                _walletToId ??
+                wallets.where((w) => w.id != walletId).firstOrNull?.id,
+            isExpanded: true,
+            decoration: InputDecoration(
+              labelText: l10n.toWallet,
+              prefixIcon: const Icon(Icons.south_rounded),
+            ),
+            items: [
+              for (final w in wallets.where((w) => w.id != walletId))
+                DropdownMenuItem(value: w.id, child: Text(w.name)),
+            ],
+            onChanged: (v) => setState(() => _walletToId = v),
+          ),
+        ],
+        if (_type != TransactionType.transfer) ...[
+          FieldLabel(l10n.category),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final c in categories)
+                ChoiceChip(
+                  label: Text(c.label(l10n)),
+                  selected: _categoryId == c.id,
+                  onSelected: (sel) =>
+                      setState(() => _categoryId = sel ? c.id : null),
+                ),
+            ],
+          ),
+          FieldLabel(l10n.tags),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final t in tags)
+                FilterChip(
+                  label: Text('#${t.name}'),
+                  selected: _selectedTagIds.contains(t.id),
+                  onSelected: (sel) => setState(
+                    () => sel
+                        ? _selectedTagIds.add(t.id)
+                        : _selectedTagIds.remove(t.id),
                   ),
-              ],
-              const SizedBox(height: 12),
-              TextField(
-                key: const Key('descriptionField'),
-                controller: _description,
-                inputFormatters: [LengthLimitingTextInputFormatter(kMaxDescriptionLength)],
-                decoration: InputDecoration(labelText: l10n.description),
+                ),
+              ActionChip(
+                key: const Key('addTagChip'),
+                avatar: const Icon(Icons.add, size: 18),
+                label: Text(l10n.newTag),
+                onPressed: () async {
+                  final name = await _promptNewTag(context, l10n, tags);
+                  if (name == null || name.isEmpty) return;
+                  final active = ref.read(activeWalletProvider);
+                  if (active == null) return;
+                  final id = await ref
+                      .read(tagRepositoryProvider)
+                      .create(name, walletId: active.id);
+                  ref.invalidate(tagsProvider);
+                  setState(() => _selectedTagIds.add(id));
+                },
               ),
-              const SizedBox(height: 12),
-              if (_type == TransactionType.transfer && wallets.length > 1) ...[
-                const SizedBox(height: 12),
-                InputDecorator(
-                  decoration: InputDecoration(labelText: l10n.fromWallet),
-                  child: Text(
-                    wallets.where((w) => w.id == walletId).firstOrNull?.name ??
-                        '',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  key: const Key('walletToDropdown'),
-                  initialValue:
-                      _walletToId ??
-                      wallets.where((w) => w.id != walletId).firstOrNull?.id,
-                  decoration: InputDecoration(labelText: l10n.toWallet),
-                  items: [
-                    for (final w in wallets.where((w) => w.id != walletId))
-                      DropdownMenuItem(value: w.id, child: Text(w.name)),
-                  ],
-                  onChanged: (v) => setState(() => _walletToId = v),
-                ),
-              ],
-              if (_type != TransactionType.transfer) ...[
-                const SizedBox(height: 16),
-                Text(
-                  l10n.category,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final c in categories)
-                      ChoiceChip(
-                        label: Text(
-                          '${c.icon} ${c.name}',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        selected: _categoryId == c.id,
-                        onSelected: (sel) =>
-                            setState(() => _categoryId = sel ? c.id : null),
-                      ),
-                  ],
-                ),
-              ],
-              if (_type != TransactionType.transfer) ...[
-                const SizedBox(height: 16),
-                Text(l10n.tags, style: Theme.of(context).textTheme.bodySmall),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final t in tags)
-                      FilterChip(
-                        label: Text(
-                          '#${t.name}',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        selected: _selectedTagIds.contains(t.id),
-                        onSelected: (sel) => setState(
-                          () => sel
-                              ? _selectedTagIds.add(t.id)
-                              : _selectedTagIds.remove(t.id),
-                        ),
-                      ),
-                    ActionChip(
-                      key: const Key('addTagChip'),
-                      label: const Text('＋', style: TextStyle(fontSize: 12)),
-                      onPressed: () async {
-                        final name = await _promptNewTag(context, l10n, tags);
-                        if (name == null || name.isEmpty) return;
-                        final active = ref.read(activeWalletProvider);
-                        if (active == null) return;
-                        final id = await ref
-                            .read(tagRepositoryProvider)
-                            .create(name, walletId: active.id);
-                        ref.invalidate(tagsProvider);
-                        setState(() => _selectedTagIds.add(id));
-                      },
-                    ),
-                  ],
-                ),
-                ..._buildCustomFields(l10n),
-                if (_type == TransactionType.expense) ...[
-                  const SizedBox(height: 8),
+            ],
+          ),
+          if (generalFields.isNotEmpty) ...[
+            FieldLabel(l10n.customFields),
+            ..._fieldList(generalFields),
+          ],
+          if (isExpense) ...[
+            const SizedBox(height: 20),
+            // Material (non Container colorato): gli switch disegnano
+            // l'effetto al tocco sul Material più vicino.
+            Material(
+              color: _isExpenseReport ? palette.surface2 : Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: palette.line),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                   SwitchListTile(
                     key: const Key('expenseReportSwitch'),
-                    contentPadding: EdgeInsets.zero,
-                    dense: true,
+                    secondary: const Icon(Icons.receipt_long_outlined),
                     title: Text(
-                      '📋 ${l10n.expenseReportFlag}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      l10n.expenseReportFlag,
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
                     value: _isExpenseReport,
                     onChanged: (v) => setState(() => _isExpenseReport = v),
                   ),
-                  if (_isExpenseReport) ...[
-                    DropdownButtonFormField<String?>(
-                      key: const Key('costCenterDropdown'),
-                      initialValue: _costCenterId,
-                      decoration: InputDecoration(
-                        labelText: l10n.costCenter,
-                        isDense: true,
+                  if (_isExpenseReport)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          DropdownButtonFormField<String?>(
+                            key: const Key('costCenterDropdown'),
+                            initialValue: _costCenterId,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              labelText: l10n.costCenter,
+                            ),
+                            items: [
+                              DropdownMenuItem(
+                                value: null,
+                                child: Text(l10n.none),
+                              ),
+                              for (final cc
+                                  in ref
+                                          .watch(costCentersProvider)
+                                          .valueOrNull ??
+                                      const <CostCenter>[])
+                                DropdownMenuItem(
+                                  value: cc.id,
+                                  child: Text(cc.name),
+                                ),
+                            ],
+                            onChanged: (v) => setState(() => _costCenterId = v),
+                          ),
+                          const SizedBox(height: 4),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.reimbursable),
+                            value: _reimbursable,
+                            onChanged: (v) => setState(() => _reimbursable = v),
+                          ),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.eInvoice),
+                            value: _eInvoice,
+                            onChanged: (v) => setState(() => _eInvoice = v),
+                          ),
+                          if (reportFields.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            ..._fieldList(reportFields),
+                            const SizedBox(height: 8),
+                          ],
+                        ],
                       ),
-                      items: [
-                        DropdownMenuItem(value: null, child: Text(l10n.none)),
-                        for (final cc
-                            in ref.watch(costCentersProvider).valueOrNull ??
-                                const <CostCenter>[])
-                          DropdownMenuItem(value: cc.id, child: Text(cc.name)),
-                      ],
-                      onChanged: (v) => setState(() => _costCenterId = v),
                     ),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: Text(
-                        l10n.reimbursable,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      value: _reimbursable,
-                      onChanged: (v) => setState(() => _reimbursable = v),
-                    ),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: Text(
-                        l10n.eInvoice,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                      value: _eInvoice,
-                      onChanged: (v) => setState(() => _eInvoice = v),
-                    ),
-                  ],
                 ],
-                const SizedBox(height: 16),
-                Text(
-                  l10n.receipt,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.photo_camera_outlined, size: 16),
-                      label: Text(
-                        l10n.fromCamera,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      onPressed: () => _pickImage(ImageSource.camera),
-                    ),
-                    const SizedBox(width: 8),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.photo_library_outlined, size: 16),
-                      label: Text(
-                        l10n.fromGallery,
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      onPressed: () => _pickImage(ImageSource.gallery),
-                    ),
-                    if (_pendingImages.isNotEmpty) ...[
-                      const SizedBox(width: 10),
-                      Text(
-                        '📎 ${_pendingImages.length}',
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                    ],
-                  ],
-                ),
-                if (_attachmentRejected)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Text(
-                      l10n.attachmentUnsupported,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ),
-              ],
-              const SizedBox(height: 16),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.event, color: palette.muted),
-                title: Text(
-                  '${_date.day}/${_date.month}/${_date.year}',
-                  style: const TextStyle(fontSize: 14),
-                ),
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: _date,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) setState(() => _date = picked);
-                },
               ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  key: const Key('txSaveButton'),
-                  onPressed: _save,
-                  child: Text(l10n.save),
-                ),
+            ),
+          ],
+          FieldLabel(l10n.receipt),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              OutlinedButton.icon(
+                icon: const Icon(Icons.photo_camera_outlined, size: 20),
+                label: Text(l10n.fromCamera),
+                onPressed: () => _pickImage(ImageSource.camera),
+              ),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.photo_library_outlined, size: 20),
+                label: Text(l10n.fromGallery),
+                onPressed: () => _pickImage(ImageSource.gallery),
               ),
             ],
           ),
-        ),
-      ),
+          if (_pendingImages.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Semantics(
+              label: '${l10n.attachments}: ${_pendingImages.length}',
+              excludeSemantics: true,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final img in _pendingImages)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.memory(
+                        img.bytes,
+                        width: 64,
+                        height: 64,
+                        fit: BoxFit.cover,
+                        cacheWidth: 192,
+                        errorBuilder: (_, _, _) => Container(
+                          width: 64,
+                          height: 64,
+                          color: palette.surface2,
+                          child: Icon(
+                            Icons.image_outlined,
+                            color: palette.muted,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+          if (_attachmentRejected)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: _InlineMessage(
+                icon: Icons.error_outline,
+                text: l10n.attachmentUnsupported,
+                color: scheme.error,
+              ),
+            ),
+        ],
+      ],
     );
   }
+}
+
+/// Riga di stato sotto un campo: icona + testo, così l'errore non è
+/// comunicato dal solo colore.
+class _InlineMessage extends StatelessWidget {
+  const _InlineMessage({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Icon(icon, size: 16, color: color),
+      const SizedBox(width: 6),
+      Expanded(
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: color),
+        ),
+      ),
+    ],
+  );
 }

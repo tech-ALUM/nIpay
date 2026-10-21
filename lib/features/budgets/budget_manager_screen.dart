@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
 import '../../l10n/app_localizations.dart';
@@ -21,24 +22,29 @@ class BudgetManagerScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.budgets)),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showBudgetSheet(context, ref),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: Text(l10n.newBudget),
       ),
       body: budgets.isEmpty
           ? Center(
-              child: Text(
-                l10n.noItems,
-                style: TextStyle(color: context.nipay.muted),
+              child: EmptyState(
+                icon: Icons.savings_outlined,
+                message: l10n.noItems,
               ),
             )
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+          : CenteredListView(
               children: [
                 for (final b in budgets) ...[
                   Card(
                     child: Padding(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        16,
+                        8,
+                        4,
+                        8,
+                      ),
                       child: Row(
                         children: [
                           Expanded(
@@ -49,18 +55,31 @@ class BudgetManagerScreen extends ConsumerWidget {
                                   .firstOrNull,
                             ),
                           ),
+                          const SizedBox(width: 4),
                           IconButton(
-                            icon: const Icon(Icons.edit_outlined, size: 18),
+                            tooltip: l10n.edit,
+                            icon: const Icon(Icons.edit_outlined),
                             onPressed: () =>
                                 _showBudgetSheet(context, ref, existing: b),
                           ),
                           IconButton(
+                            tooltip: l10n.delete,
                             icon: Icon(
                               Icons.delete_outline,
-                              size: 18,
                               color: Theme.of(context).colorScheme.error,
                             ),
                             onPressed: () async {
+                              final category = categories
+                                  .where((c) => c.id == b.categoryId)
+                                  .firstOrNull;
+                              final confirmed = await confirmDeletion(
+                                context,
+                                title: l10n.deleteItemTitle(
+                                  '${l10n.budgets} ${category?.displayName(l10n) ?? ''}'
+                                      .trim(),
+                                ),
+                              );
+                              if (!confirmed) return;
                               await ref
                                   .read(budgetRepositoryProvider)
                                   .softDelete(b.id);
@@ -91,89 +110,88 @@ Future<void> _showBudgetSheet(
         : (existing.limitCents / 100).toStringAsFixed(2).replaceAll('.', ','),
   );
   String? categoryId = existing?.categoryId;
+  String? categoryError;
+  String? amountError;
 
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
+  return showAppSheet<void>(
+    context,
     builder: (sheetContext) => StatefulBuilder(
       builder: (sheetContext, setState) {
         final categories = (ref.read(categoriesProvider).valueOrNull ?? [])
             .where((c) => c.kind != CategoryKind.income)
             .toList();
         final currency = ref.read(activeWalletProvider)?.currency ?? 'EUR';
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.newBudget,
-                style: Theme.of(sheetContext).textTheme.titleLarge,
+        return SheetScaffold(
+          title: existing == null ? l10n.newBudget : l10n.budgets,
+          actions: [
+            FilledButton(
+              key: const Key('budgetSaveButton'),
+              onPressed: () async {
+                final cents = parseCents(amount.text);
+                final validAmount = cents != null && cents > 0;
+                setState(() {
+                  categoryError = categoryId == null
+                      ? l10n.fieldRequired
+                      : null;
+                  amountError = validAmount ? null : l10n.invalidAmount;
+                });
+                if (!validAmount || categoryId == null) return;
+                final active = ref.read(activeWalletProvider);
+                if (active == null) return;
+                await ref
+                    .read(budgetRepositoryProvider)
+                    .setMonthlyLimit(
+                      walletId: active.id,
+                      categoryId: categoryId!,
+                      limitCents: cents,
+                    );
+                ref.invalidate(budgetsProvider);
+                if (sheetContext.mounted) {
+                  Navigator.of(sheetContext).pop();
+                }
+              },
+              child: Text(l10n.save),
+            ),
+          ],
+          children: [
+            DropdownButtonFormField<String>(
+              key: const Key('budgetCategoryDropdown'),
+              initialValue: categoryId,
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: l10n.category,
+                errorText: categoryError,
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                key: const Key('budgetCategoryDropdown'),
-                initialValue: categoryId,
-                decoration: InputDecoration(labelText: l10n.category),
-                items: [
-                  for (final c in categories)
-                    DropdownMenuItem(
-                      value: c.id,
-                      child: Text('${c.icon} ${c.name}'),
-                    ),
-                ],
-                onChanged: existing == null
-                    ? (v) => setState(() => categoryId = v)
-                    : null,
+              items: [
+                for (final c in categories)
+                  DropdownMenuItem(value: c.id, child: Text(c.label(l10n))),
+              ],
+              onChanged: existing == null
+                  ? (v) => setState(() {
+                      categoryId = v;
+                      categoryError = null;
+                    })
+                  : null,
+            ),
+            kFieldGap,
+            TextField(
+              key: const Key('budgetLimitField'),
+              controller: amount,
+              autofocus: existing != null,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
               ),
-              const SizedBox(height: 12),
-              TextField(
-                key: const Key('budgetLimitField'),
-                controller: amount,
-                autofocus: existing != null,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: l10n.monthlyLimit,
-                  suffixText: currency == 'EUR' ? '€' : currency,
-                ),
+              style: moneyStyle(size: 18),
+              onChanged: (_) {
+                if (amountError != null) setState(() => amountError = null);
+              },
+              decoration: InputDecoration(
+                labelText: l10n.monthlyLimit,
+                errorText: amountError,
+                suffixText: currency == 'EUR' ? '€' : currency,
               ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  key: const Key('budgetSaveButton'),
-                  child: Text(l10n.save),
-                  onPressed: () async {
-                    final cents = parseCents(amount.text);
-                    if (cents == null || cents <= 0 || categoryId == null) {
-                      return;
-                    }
-                    final active = ref.read(activeWalletProvider);
-                    if (active == null) return;
-                    await ref
-                        .read(budgetRepositoryProvider)
-                        .setMonthlyLimit(
-                          walletId: active.id,
-                          categoryId: categoryId!,
-                          limitCents: cents,
-                        );
-                    ref.invalidate(budgetsProvider);
-                    if (sheetContext.mounted) {
-                      Navigator.of(sheetContext).pop();
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     ),

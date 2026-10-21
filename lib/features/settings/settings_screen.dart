@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../l10n/app_localizations.dart';
 import '../account/account_screen.dart';
 import '../budgets/budget_manager_screen.dart';
@@ -30,46 +32,45 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final palette = context.nipay;
     final mode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
+    final email = ref.watch(authStateProvider).valueOrNull?.email;
+
+    void open(Widget screen) =>
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
 
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
+      child: CenteredListView(
+        top: 0,
         children: [
-          Text(l10n.settingsTab, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
+          PageHeader(l10n.settingsTab),
           Card(
             clipBehavior: Clip.antiAlias,
-            child: ListTile(
-              leading: const Icon(Icons.account_circle_outlined, size: 20),
-              title: Text(
-                l10n.account,
-                style: const TextStyle(fontSize: 14),
-              ),
-              trailing: const Icon(Icons.chevron_right, size: 18),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AccountScreen()),
-              ),
+            child: _NavTile(
+              icon: Icons.account_circle_outlined,
+              color: palette.income,
+              label: l10n.account,
+              subtitle: email,
+              onTap: () => open(const AccountScreen()),
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            l10n.customization,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 6),
+          SectionHeader(l10n.customization),
           Card(
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
-                for (final (icon, label, screen) in [
+                for (final (i, (icon, label, screen)) in [
                   (
                     Icons.category_outlined,
                     l10n.manageCategories,
                     const CategoryManagerScreen() as Widget,
                   ),
-                  (Icons.tag, l10n.manageTags, const TagManagerScreen()),
+                  (
+                    Icons.sell_outlined,
+                    l10n.manageTags,
+                    const TagManagerScreen(),
+                  ),
                   (
                     Icons.tune,
                     l10n.manageCustomFields,
@@ -90,66 +91,93 @@ class SettingsScreen extends ConsumerWidget {
                     l10n.manageCostCenters,
                     const CostCenterManagerScreen(),
                   ),
-                ])
-                  ListTile(
-                    leading: Icon(icon, size: 20),
-                    title: Text(label, style: const TextStyle(fontSize: 14)),
-                    trailing: const Icon(Icons.chevron_right, size: 18),
-                    onTap: () => Navigator.of(
-                      context,
-                    ).push(MaterialPageRoute(builder: (_) => screen)),
+                ].indexed) ...[
+                  if (i > 0) const Divider(indent: 68),
+                  _NavTile(
+                    icon: icon,
+                    color: palette.muted,
+                    label: label,
+                    onTap: () => open(screen),
                   ),
+                ],
               ],
             ),
           ),
-          const SizedBox(height: 20),
-          Text(l10n.language, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 6),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-              child: DropdownButtonFormField<Locale>(
-                initialValue: locale,
-                isExpanded: true,
-                decoration: const InputDecoration(border: InputBorder.none),
-                items: [
-                  for (final (value, label) in _languages)
-                    DropdownMenuItem(
-                      value: value,
-                      child: Text(label, style: const TextStyle(fontSize: 14)),
-                    ),
-                ],
-                onChanged: (v) => ref.read(localeProvider.notifier).set(v!),
+          SectionHeader(l10n.language),
+          // Il titolo di sezione fa da etichetta visibile; agli screen reader
+          // arriva dalla Semantics.
+          Semantics(
+            label: l10n.language,
+            child: DropdownButtonFormField<Locale>(
+              initialValue: locale,
+              isExpanded: true,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.translate),
               ),
+              items: [
+                for (final (value, label) in _languages)
+                  DropdownMenuItem(value: value, child: Text(label)),
+              ],
+              onChanged: (v) => ref.read(localeProvider.notifier).set(v!),
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            l10n.settingsTheme,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 6),
-          Card(
-            child: RadioGroup<ThemeMode>(
-              groupValue: mode,
-              onChanged: (v) => ref.read(themeModeProvider.notifier).set(v!),
-              child: Column(
-                children: [
-                  for (final (value, label) in [
-                    (ThemeMode.system, l10n.themeSystem),
-                    (ThemeMode.light, l10n.themeLight),
-                    (ThemeMode.dark, l10n.themeDark),
-                  ])
-                    RadioListTile<ThemeMode>(
-                      title: Text(label, style: const TextStyle(fontSize: 14)),
-                      value: value,
-                    ),
-                ],
-              ),
+          SectionHeader(l10n.settingsTheme),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<ThemeMode>(
+              showSelectedIcon: false,
+              segments: [
+                ButtonSegment(
+                  value: ThemeMode.system,
+                  icon: const Icon(Icons.brightness_auto_outlined),
+                  label: Text(l10n.themeSystem),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.light,
+                  icon: const Icon(Icons.light_mode_outlined),
+                  label: Text(l10n.themeLight),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.dark,
+                  icon: const Icon(Icons.dark_mode_outlined),
+                  label: Text(l10n.themeDark),
+                ),
+              ],
+              selected: {mode},
+              onSelectionChanged: (s) =>
+                  ref.read(themeModeProvider.notifier).set(s.first),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+/// Voce di menu che apre una schermata: icona in badge, etichetta, chevron.
+class _NavTile extends StatelessWidget {
+  const _NavTile({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.onTap,
+    this.subtitle,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+    leading: IconBadge(icon: icon, color: color, size: 36),
+    title: Text(label),
+    subtitle: subtitle == null
+        ? null
+        : Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis),
+    trailing: const Icon(Icons.chevron_right),
+    onTap: onTap,
+  );
 }

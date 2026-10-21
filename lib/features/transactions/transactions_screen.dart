@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
 import '../../l10n/app_localizations.dart';
@@ -18,17 +19,22 @@ class TransactionsScreen extends ConsumerStatefulWidget {
 
 class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   DateTime _month = DateTime(DateTime.now().year, DateTime.now().month);
+  final _search = TextEditingController();
   String _query = '';
   Set<String> _categoryIds = {};
   Set<String> _tagIds = {};
 
-  void _shiftMonth(int delta) =>
-      setState(() => _month = DateTime(_month.year, _month.month + delta));
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
+    final loc = MaterialLocalizations.of(context);
     final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     // MVP: filtro client-side sulle ultime transazioni; query dedicata in M6.
     final all =
@@ -67,142 +73,122 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     }
     final days = byDay.keys.toList()..sort((a, b) => b.compareTo(a));
 
-    final monthLabel = '${_monthNames[_month.month - 1]} ${_month.year}';
-
     return SafeArea(
-      child: Column(
+      child: CenteredListView(
+        top: 0,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.transactionsTab,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: l10n.searchTransactions,
-                    prefixIcon: const Icon(Icons.search, size: 20),
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+          PageHeader(l10n.transactionsTab),
+          TextField(
+            controller: _search,
+            textInputAction: TextInputAction.search,
+            decoration: InputDecoration(
+              hintText: l10n.searchTransactions,
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _query.isEmpty
+                  ? null
+                  : IconButton(
+                      tooltip: loc.clearButtonTooltip,
+                      icon: const Icon(Icons.close),
+                      onPressed: () {
+                        _search.clear();
+                        setState(() => _query = '');
+                      },
                     ),
-                  ),
-                  onChanged: (v) => setState(() => _query = v),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _MultiFilterDropdown<String>(
-                        title: l10n.category,
-                        selected: _categoryIds,
-                        nullLabel: l10n.allCategories,
-                        items: [
-                          for (final c
-                              in ref.watch(categoriesProvider).valueOrNull ??
-                                  const <Category>[])
-                            (c.id, '${c.icon} ${c.name}'),
-                        ],
-                        onChanged: (v) => setState(() => _categoryIds = v),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _MultiFilterDropdown<String>(
-                        title: l10n.tags,
-                        selected: _tagIds,
-                        nullLabel: l10n.allTags,
-                        items: [
-                          for (final t
-                              in ref.watch(tagsProvider).valueOrNull ??
-                                  const <Tag>[])
-                            (t.id, '#${t.name}'),
-                        ],
-                        onChanged: (v) => setState(() => _tagIds = v),
-                      ),
-                    ),
+            ),
+            onChanged: (v) => setState(() => _query = v),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _MultiFilterDropdown<String>(
+                  icon: Icons.category_outlined,
+                  title: l10n.category,
+                  selected: _categoryIds,
+                  nullLabel: l10n.allCategories,
+                  items: [
+                    for (final c
+                        in ref.watch(categoriesProvider).valueOrNull ??
+                            const <Category>[])
+                      (c.id, c.label(l10n)),
                   ],
+                  onChanged: (v) => setState(() => _categoryIds = v),
                 ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => _shiftMonth(-1),
-                      icon: const Icon(Icons.chevron_left),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          monthLabel,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => _shiftMonth(1),
-                      icon: const Icon(Icons.chevron_right),
-                    ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MultiFilterDropdown<String>(
+                  icon: Icons.sell_outlined,
+                  title: l10n.tags,
+                  selected: _tagIds,
+                  nullLabel: l10n.allTags,
+                  items: [
+                    for (final t
+                        in ref.watch(tagsProvider).valueOrNull ?? const <Tag>[])
+                      (t.id, '#${t.name}'),
                   ],
+                  onChanged: (v) => setState(() => _tagIds = v),
                 ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Center(
+            child: MonthSwitcher(
+              month: _month,
+              onChanged: (m) => setState(() => _month = m),
             ),
           ),
-          Expanded(
-            child: days.isEmpty
-                ? Center(
-                    child: Text(
-                      l10n.noTransactions,
-                      style: TextStyle(color: palette.muted),
-                    ),
-                  )
-                : ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
+          if (days.isEmpty)
+            EmptyState(
+              icon: Icons.receipt_long_outlined,
+              message: l10n.noTransactions,
+              padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+            )
+          else
+            for (final day in days) ...[
+              MergeSemantics(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 22, 4, 8),
+                  child: Row(
                     children: [
-                      for (final day in days) ...[
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(2, 14, 2, 6),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  '${day.day} ${_monthNames[day.month - 1]}',
-                                  style: Theme.of(context).textTheme.titleMedium
-                                      ?.copyWith(fontSize: 13),
-                                ),
-                              ),
-                              Text(
-                                formatCents(
-                                  _dayNet(byDay[day]!),
-                                  currency: currency,
-                                  signed: true,
-                                ),
-                                style: moneyStyle(
-                                  size: 11,
-                                  weight: FontWeight.w500,
-                                  color: palette.muted,
-                                ),
-                              ),
-                            ],
+                      Expanded(
+                        child: Semantics(
+                          header: true,
+                          child: Text(
+                            loc.formatMediumDate(day),
+                            style: Theme.of(context).textTheme.titleSmall,
                           ),
                         ),
-                        Card(
-                          clipBehavior: Clip.antiAlias,
-                          child: Column(
-                            children: [
-                              for (final (i, t) in byDay[day]!.indexed) ...[
-                                if (i > 0) const Divider(),
-                                TransactionTile(transaction: t),
-                              ],
-                            ],
-                          ),
+                      ),
+                      Text(
+                        formatCents(
+                          _dayNet(byDay[day]!),
+                          currency: currency,
+                          signed: true,
                         ),
-                      ],
+                        style: moneyStyle(
+                          size: 13,
+                          weight: FontWeight.w600,
+                          color: palette.muted,
+                        ),
+                      ),
                     ],
                   ),
-          ),
+                ),
+              ),
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    for (final (i, t) in byDay[day]!.indexed) ...[
+                      if (i > 0) const Divider(indent: 72),
+                      TransactionTile(transaction: t),
+                    ],
+                  ],
+                ),
+              ),
+            ],
         ],
       ),
     );
@@ -211,8 +197,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
 /// Filtro compatto multi-selezione: mostra [nullLabel] quando nulla è
 /// selezionato, altrimenti i nomi scelti; tocca per aprire il selettore.
+/// Quando è attivo cambia sfondo e bordo, così si vede a colpo d'occhio
+/// che la lista è filtrata.
 class _MultiFilterDropdown<T> extends StatelessWidget {
   const _MultiFilterDropdown({
+    required this.icon,
     required this.title,
     required this.selected,
     required this.nullLabel,
@@ -220,6 +209,7 @@ class _MultiFilterDropdown<T> extends StatelessWidget {
     required this.onChanged,
   });
 
+  final IconData icon;
   final String title;
   final Set<T> selected;
   final String nullLabel;
@@ -228,41 +218,62 @@ class _MultiFilterDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = selected.isEmpty
-        ? nullLabel
-        : items
+    final scheme = Theme.of(context).colorScheme;
+    final active = selected.isNotEmpty;
+    final label = active
+        ? items
               .where((e) => selected.contains(e.$1))
               .map((e) => e.$2)
-              .join(', ');
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () async {
-        final result = await showModalBottomSheet<Set<T>>(
-          context: context,
-          isScrollControlled: true,
-          builder: (_) => _MultiSelectSheet<T>(
-            title: title,
-            items: items,
-            selected: selected,
-          ),
-        );
-        if (result != null) onChanged(result);
-      },
-      child: InputDecorator(
-        decoration: InputDecoration(
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 8,
-          ),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              .join(', ')
+        : nullLabel;
+    final fg = active ? scheme.onSecondaryContainer : scheme.onSurface;
+    return Semantics(
+      button: true,
+      label: '$title: $label',
+      excludeSemantics: true,
+      child: Material(
+        color: active ? scheme.secondaryContainer : scheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: active ? scheme.primary : scheme.outline),
         ),
-        child: Text(
-          label,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 12,
-            color: Theme.of(context).colorScheme.onSurface,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () async {
+            final result = await showAppSheet<Set<T>>(
+              context,
+              builder: (_) => _MultiSelectSheet<T>(
+                title: title,
+                items: items,
+                selected: selected,
+              ),
+            );
+            if (result != null) onChanged(result);
+          },
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                children: [
+                  Icon(icon, size: 18, color: fg),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: fg,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.expand_more, size: 20, color: fg),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -291,59 +302,35 @@ class _MultiSelectSheetState<T> extends State<_MultiSelectSheet<T>> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 12, bottom: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.title,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () => setState(() => _selected.clear()),
-                    child: Text(l10n.none),
-                  ),
-                ],
-              ),
-            ),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  for (final (value, label) in widget.items)
-                    CheckboxListTile(
-                      value: _selected.contains(value),
-                      title: Text(label),
-                      onChanged: (checked) => setState(
-                        () => (checked ?? false)
-                            ? _selected.add(value)
-                            : _selected.remove(value),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => Navigator.of(context).pop(_selected),
-                  child: Text(l10n.apply),
-                ),
-              ),
-            ),
-          ],
+    return SheetScaffold(
+      title: widget.title,
+      actions: [
+        OutlinedButton(
+          onPressed: _selected.isEmpty
+              ? null
+              : () => setState(() => _selected.clear()),
+          child: Text(l10n.none),
         ),
-      ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_selected),
+          child: Text(l10n.apply),
+        ),
+      ],
+      children: [
+        if (widget.items.isEmpty)
+          EmptyState(icon: Icons.inbox_outlined, message: l10n.noItems),
+        for (final (value, label) in widget.items)
+          CheckboxListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+            value: _selected.contains(value),
+            title: Text(label),
+            onChanged: (checked) => setState(
+              () => (checked ?? false)
+                  ? _selected.add(value)
+                  : _selected.remove(value),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -356,18 +343,3 @@ int _dayNet(List<Transaction> txs) {
   }
   return net;
 }
-
-const _monthNames = [
-  'gen',
-  'feb',
-  'mar',
-  'apr',
-  'mag',
-  'giu',
-  'lug',
-  'ago',
-  'set',
-  'ott',
-  'nov',
-  'dic',
-];

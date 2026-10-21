@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../data/db/app_database.dart';
 import '../../l10n/app_localizations.dart';
 import '../account/account_screen.dart';
@@ -21,160 +22,234 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final wallets = ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[];
-    final total = ref.watch(totalBalanceProvider).valueOrNull;
-    final monthTotals = ref.watch(monthTotalsProvider).valueOrNull;
     final recent = ref.watch(recentTransactionsProvider).valueOrNull ?? [];
-    final palette = context.nipay;
-    final activeCurrency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final signedInUser = ref.watch(authStateProvider).valueOrNull;
 
+    // Ordine e spaziature pensati perché saldo, portafogli e le prime
+    // transazioni recenti stiano nella prima schermata di un telefono.
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
+      child: CenteredListView(
+        top: 12,
         children: [
           if (signedInUser != null) ...[
-            _SignedInBadge(email: signedInUser.email ?? ''),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: _SignedInBadge(email: signedInUser.email ?? ''),
+            ),
             const SizedBox(height: 12),
           ],
-          Text(
-            '${l10n.totalBalance}${ref.watch(activeWalletProvider) != null ? ' · ${ref.watch(activeWalletProvider)!.name}' : ''}',
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            total == null ? '…' : formatCents(total, currency: activeCurrency),
-            style: moneyStyle(
-              size: 40,
-              weight: FontWeight.w800,
-              color: Theme.of(context).colorScheme.onSurface,
+          const _BalanceHero(),
+          SectionHeader(
+            l10n.wallets,
+            action: TextButton.icon(
+              key: const Key('addWalletButton'),
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              onPressed: () => showWalletFormSheet(context),
+              icon: const Icon(Icons.add, size: 20),
+              label: Text(l10n.newWallet),
             ),
           ),
-          if (monthTotals != null) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                _DeltaChip(
-                  text:
-                      '${formatCents(monthTotals.incomeCents, currency: activeCurrency, signed: true)} · '
-                      '${formatCents(-monthTotals.expenseCents, currency: activeCurrency)} ${l10n.thisMonth}',
-                ),
-              ],
-            ),
-          ],
-          const SizedBox(height: 24),
-          Text(l10n.wallets, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 4),
-          SizedBox(
-            height: 110,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: wallets.isEmpty
-                      ? Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Text(
-                              l10n.noWallets,
-                              style: TextStyle(color: palette.muted),
-                            ),
-                          ),
-                        )
-                      : ReorderableListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          buildDefaultDragHandles: false,
-                          // Di default, durante il trascinamento Flutter
-                          // avvolge l'elemento in un Material bianco pieno
-                          // slot (padding incluso), più largo della card
-                          // arrotondata sotto: qui lo rendiamo trasparente
-                          // così si vede solo la card che si sta spostando.
-                          proxyDecorator: (child, index, animation) =>
-                              Material(color: Colors.transparent, child: child),
-                          itemCount: wallets.length,
-                          onReorderItem: (oldIndex, newIndex) => ref
-                              .read(walletRepositoryProvider)
-                              .move(wallets[oldIndex].id, newIndex),
-                          itemBuilder: (context, i) => Padding(
-                            key: ValueKey(wallets[i].id),
-                            padding: const EdgeInsets.only(right: 12),
-                            child: _WalletCard(wallet: wallets[i], index: i),
-                          ),
-                        ),
-                ),
-                const SizedBox(width: 4),
-                const _AddWalletButton(),
-              ],
-            ),
-          ),
-          ..._buildBudgetSection(context, ref, l10n),
-          const SizedBox(height: 24),
-          Text(
-            l10n.expenseReport,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 10),
-          GestureDetector(
-            key: const Key('expenseReportCard'),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ExpenseReportScreen()),
-            ),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    const Text('📋', style: TextStyle(fontSize: 20)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        l10n.pendingReimbursement,
-                        style: const TextStyle(fontSize: 13),
-                      ),
-                    ),
-                    Text(
-                      formatCents(
-                        ref.watch(pendingReimbursementProvider).valueOrNull ??
-                            0,
-                        currency: activeCurrency,
-                      ),
-                      style: moneyStyle(size: 15, color: palette.income),
-                    ),
-                    const SizedBox(width: 6),
-                    Icon(Icons.chevron_right, size: 18, color: palette.muted),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            l10n.recentTransactions,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 10),
-          if (recent.isEmpty)
+          if (wallets.isEmpty)
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text(
-                  l10n.noTransactions,
-                  style: TextStyle(color: palette.muted),
-                ),
+              child: EmptyState(
+                icon: Icons.account_balance_wallet_outlined,
+                message: l10n.noWallets,
               ),
             )
           else
-            Card(
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-                children: [
-                  for (final (i, tx) in recent.take(10).indexed) ...[
-                    if (i > 0) const Divider(),
-                    TransactionTile(transaction: tx),
-                  ],
-                ],
-              ),
-            ),
+            _WalletStrip(wallets: wallets),
+          const SizedBox(height: 12),
+          const _ExpenseReportCard(),
+          ..._buildBudgetSection(context, ref, l10n),
+          SectionHeader(l10n.recentTransactions),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: recent.isEmpty
+                ? EmptyState(
+                    icon: Icons.receipt_long_outlined,
+                    message: l10n.noTransactions,
+                  )
+                : Column(
+                    children: [
+                      for (final (i, tx) in recent.take(10).indexed) ...[
+                        if (i > 0) const Divider(indent: 72),
+                        TransactionTile(transaction: tx),
+                      ],
+                    ],
+                  ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+/// Banda "ink" con il saldo dello spazio attivo e il riepilogo del mese.
+class _BalanceHero extends ConsumerWidget {
+  const _BalanceHero();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final palette = context.nipay;
+    final active = ref.watch(activeWalletProvider);
+    final currency = active?.currency ?? 'EUR';
+    final total = ref.watch(totalBalanceProvider).valueOrNull;
+    final monthTotals = ref.watch(monthTotalsProvider).valueOrNull;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      decoration: BoxDecoration(
+        color: palette.hero,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          MergeSemantics(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${l10n.totalBalance}${active != null ? ' · ${active.name}' : ''}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelMedium?.copyWith(color: palette.onHeroMuted),
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    total == null
+                        ? '…'
+                        : formatCents(total, currency: currency),
+                    style: moneyStyle(
+                      size: 34,
+                      weight: FontWeight.w800,
+                      color: palette.onHero,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (monthTotals != null) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                _HeroKpi(
+                  icon: Icons.south_west_rounded,
+                  label: l10n.income,
+                  value: formatCents(
+                    monthTotals.incomeCents,
+                    currency: currency,
+                  ),
+                  color: NipayColors.tealLight,
+                ),
+                _HeroKpi(
+                  icon: Icons.north_east_rounded,
+                  label: l10n.expense,
+                  value: formatCents(
+                    monthTotals.expenseCents,
+                    currency: currency,
+                  ),
+                  color: NipayColors.coralLight,
+                ),
+                Text(
+                  l10n.thisMonth,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: palette.onHeroMuted),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Entrate/uscite del mese nella banda saldo: freccia e colore indicano il
+/// verso, l'etichetta completa arriva agli screen reader.
+class _HeroKpi extends StatelessWidget {
+  const _HeroKpi({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: '$label $value',
+    excludeSemantics: true,
+    child: Tooltip(
+      message: label,
+      excludeFromSemantics: true,
+      child: Container(
+        padding: const EdgeInsetsDirectional.fromSTEB(6, 5, 12, 5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .14),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 6),
+            Text(value, style: moneyStyle(size: 14, color: color)),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Card portafogli orizzontali: tap = attiva lo spazio, pressione lunga =
+/// trascina per riordinare, matita = foglio azioni.
+class _WalletStrip extends ConsumerWidget {
+  const _WalletStrip({required this.wallets});
+
+  final List<Wallet> wallets;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // L'altezza cresce col testo ingrandito dalle impostazioni di sistema.
+    final height = MediaQuery.textScalerOf(
+      context,
+    ).scale(122).clamp(122.0, 190.0);
+    return SizedBox(
+      height: height,
+      child: ReorderableListView.builder(
+        scrollDirection: Axis.horizontal,
+        buildDefaultDragHandles: false,
+        // Di default, durante il trascinamento Flutter avvolge l'elemento in
+        // un Material bianco pieno slot (padding incluso), più largo della
+        // card arrotondata sotto: qui lo rendiamo trasparente così si vede
+        // solo la card che si sta spostando.
+        proxyDecorator: (child, index, animation) =>
+            Material(color: Colors.transparent, child: child),
+        itemCount: wallets.length,
+        onReorderItem: (oldIndex, newIndex) => ref
+            .read(walletRepositoryProvider)
+            .move(wallets[oldIndex].id, newIndex),
+        itemBuilder: (context, i) => Padding(
+          key: ValueKey(wallets[i].id),
+          padding: const EdgeInsetsDirectional.only(end: 10),
+          child: _WalletCard(wallet: wallets[i], index: i),
+        ),
       ),
     );
   }
@@ -191,22 +266,25 @@ List<Widget> _buildBudgetSection(
   if (budgets.isEmpty) return const [];
   final categories =
       ref.watch(categoriesProvider).valueOrNull ?? const <Category>[];
+  void openManager() => Navigator.of(
+    context,
+  ).push(MaterialPageRoute(builder: (_) => const BudgetManagerScreen()));
 
   return [
-    const SizedBox(height: 24),
-    Text(l10n.budgets, style: Theme.of(context).textTheme.titleMedium),
-    const SizedBox(height: 10),
-    GestureDetector(
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const BudgetManagerScreen())),
-      child: Card(
+    SectionHeader(
+      l10n.budgets,
+      action: TextButton(onPressed: openManager, child: Text(l10n.edit)),
+    ),
+    Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: openManager,
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           child: Column(
             children: [
               for (final (i, b) in budgets.indexed) ...[
-                if (i > 0) const SizedBox(height: 12),
+                if (i > 0) const SizedBox(height: 16),
                 BudgetProgressBar(
                   budget: b,
                   category: categories
@@ -222,41 +300,53 @@ List<Widget> _buildBudgetSection(
   ];
 }
 
-class _AddWalletButton extends StatelessWidget {
-  const _AddWalletButton();
+class _ExpenseReportCard extends ConsumerWidget {
+  const _ExpenseReportCard();
 
   @override
-  Widget build(BuildContext context) => IconButton(
-    key: const Key('addWalletButton'),
-    onPressed: () => showWalletFormSheet(context),
-    icon: const Icon(Icons.add_circle_outline),
-    color: NipayColors.coral,
-    padding: EdgeInsets.zero,
-    constraints: const BoxConstraints(),
-    visualDensity: VisualDensity.compact,
-  );
-}
-
-class _DeltaChip extends StatelessWidget {
-  const _DeltaChip({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final palette = context.nipay;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: palette.income.withValues(alpha: .12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        text,
-        style: moneyStyle(
-          size: 12,
-          weight: FontWeight.w500,
-          color: palette.income,
+    final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
+    final pending = ref.watch(pendingReimbursementProvider).valueOrNull ?? 0;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: const Key('expenseReportCard'),
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const ExpenseReportScreen())),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
+          child: Row(
+            children: [
+              IconBadge(icon: Icons.receipt_long, color: palette.income),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.expenseReport,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    Text(
+                      l10n.pendingReimbursement,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                formatCents(pending, currency: currency),
+                style: moneyStyle(size: 16, color: palette.income),
+              ),
+              const SizedBox(width: 4),
+              ExcludeSemantics(
+                child: Icon(Icons.chevron_right, color: palette.muted),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -273,32 +363,50 @@ class _SignedInBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(999),
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => const AccountScreen())),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.account_circle_outlined,
-              size: 15,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+    final l10n = AppLocalizations.of(context)!;
+    final palette = context.nipay;
+    return Semantics(
+      button: true,
+      label: l10n.signedInAs(email),
+      excludeSemantics: true,
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        shape: StadiumBorder(side: BorderSide(color: palette.line)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const AccountScreen())),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(6, 6, 12, 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 12,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
+                  child: Text(
+                    email.isEmpty ? '?' : email[0].toUpperCase(),
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 180),
+                  child: Text(
+                    email,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 6),
-            Text(
-              email,
-              style: Theme.of(context).textTheme.bodySmall,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -313,103 +421,136 @@ class _WalletCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final balance = ref.watch(walletBalanceProvider(wallet.id)).valueOrNull;
-    final base = _parseHex(wallet.colorHex);
+    final base = colorFromHex(wallet.colorHex);
+    // Testo ink o bianco in base al colore scelto: leggibile su ogni card.
+    final fg = foregroundOn(base);
+    final lightText = fg == NipayColors.textDark;
     final isActive = ref.watch(activeWalletProvider)?.id == wallet.id;
+    final radius = BorderRadius.circular(20);
 
     // Tenendo premuto si trascina per riordinare (l'intera card diventa la
     // maniglia); un tap semplice attiva il portafoglio; il bottone edit in
     // alto a destra apre il foglio azioni (rinomina/valuta/elimina).
     return ReorderableDelayedDragStartListener(
       index: index,
-      child: GestureDetector(
-        onTap: () => ref.read(activeWalletIdProvider.notifier).set(wallet.id),
+      child: Semantics(
+        selected: isActive,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 50),
-          width: 150,
-          padding: const EdgeInsets.all(14),
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: isActive
-                ? Border.all(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    width: 2.5,
-                  )
-                : null,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                base.withValues(alpha: isActive ? 1 : .55),
-                _darken(base).withValues(alpha: isActive ? 1 : .55),
-              ],
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isActive
+                  ? Theme.of(context).colorScheme.onSurface
+                  : Colors.transparent,
+              width: 2.5,
             ),
           ),
-          child: Stack(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    wallet.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: .9),
-                    ),
-                  ),
-                  const Spacer(),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          balance == null
-                              ? '…'
-                              : formatCents(
-                                  balance,
-                                  currency: wallet.currency,
-                                  symbolOnly: true,
-                                ),
-                          maxLines: 1,
-                          style: moneyStyle(size: 19, color: Colors.white),
-                        ),
-                        if (balance != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 2),
-                            child: Text(
-                              wallet.currency,
-                              style: moneyStyle(
-                                size: 9,
-                                weight: FontWeight.w600,
-                                color: Colors.white.withValues(alpha: .7),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: radius,
+            clipBehavior: Clip.antiAlias,
+            child: Ink(
+              width: 164,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: lightText
+                      ? [base, _shade(base, -.10)]
+                      : [_shade(base, .06), base],
+                ),
+              ),
+              child: InkWell(
+                onTap: () =>
+                    ref.read(activeWalletIdProvider.notifier).set(wallet.id),
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(14, 4, 2, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          if (isActive) ...[
+                            ExcludeSemantics(
+                              child: Icon(
+                                Icons.check_circle,
+                                size: 16,
+                                color: fg,
                               ),
                             ),
+                            const SizedBox(width: 6),
+                          ],
+                          Expanded(
+                            child: Text(
+                              wallet.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: fg,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
                           ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: GestureDetector(
-                  key: const Key('walletEditButton'),
-                  onTap: () => showWalletActionsSheet(context, wallet),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      Icons.edit_outlined,
-                      size: 16,
-                      color: Colors.white.withValues(alpha: .8),
-                    ),
+                          IconButton(
+                            key: const Key('walletEditButton'),
+                            tooltip: l10n.edit,
+                            visualDensity: VisualDensity.compact,
+                            iconSize: 18,
+                            color: fg,
+                            onPressed: () =>
+                                showWalletActionsSheet(context, wallet),
+                            icon: const Icon(Icons.edit_outlined),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              balance == null
+                                  ? '…'
+                                  : formatCents(
+                                      balance,
+                                      currency: wallet.currency,
+                                      symbolOnly: true,
+                                    ),
+                              maxLines: 1,
+                              style: moneyStyle(
+                                size: 20,
+                                weight: FontWeight.w800,
+                                color: fg,
+                              ),
+                            ),
+                            if (balance != null) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                wallet.currency,
+                                style: moneyStyle(
+                                  size: 10,
+                                  weight: FontWeight.w700,
+                                  color: fg.withValues(alpha: .8),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -417,12 +558,8 @@ class _WalletCard extends ConsumerWidget {
   }
 }
 
-Color _parseHex(String hex) {
-  final v = int.tryParse(hex.replaceFirst('#', ''), radix: 16) ?? 0xFF6F61;
-  return Color(0xFF000000 | v);
-}
-
-Color _darken(Color c) {
+/// Schiarisce (amount > 0) o scurisce (amount < 0) un colore in HSL.
+Color _shade(Color c, double amount) {
   final hsl = HSLColor.fromColor(c);
-  return hsl.withLightness((hsl.lightness - .18).clamp(0.0, 1.0)).toColor();
+  return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
 }

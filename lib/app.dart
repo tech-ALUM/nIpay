@@ -6,12 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/providers.dart';
 import 'core/theme/app_theme.dart';
+import 'core/ui/ui.dart';
 import 'features/account/account_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/stats/stats_screen.dart';
 import 'features/transactions/add_transaction_sheet.dart';
 import 'features/transactions/transactions_screen.dart';
+import 'features/wallets/wallet_form_sheet.dart' show requireWallet;
 import 'l10n/app_localizations.dart';
 
 class NipayApp extends ConsumerWidget {
@@ -100,6 +102,7 @@ class RootShell extends ConsumerStatefulWidget {
 class _RootShellState extends ConsumerState<RootShell>
     with WidgetsBindingObserver {
   int _tab = 0;
+  final _bodyKey = GlobalKey();
   Timer? _periodicSyncTimer;
   StreamSubscription<void>? _recoverySubscription;
 
@@ -187,8 +190,11 @@ class _RootShellState extends ConsumerState<RootShell>
       );
     }
 
-    return Scaffold(
-      body: ready.when(
+    final body = KeyedSubtree(
+      // Stessa chiave nei due layout: ruotando il device (barra ↔ rail) le
+      // schermate conservano il loro stato (ricerca, filtri, mese).
+      key: _bodyKey,
+      child: ready.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         // Mai il testo dell'eccezione: può contenere path e dettagli interni
         // (SECURITY_AUDIT NIP-17).
@@ -208,39 +214,91 @@ class _RootShellState extends ConsumerState<RootShell>
           ],
         ),
       ),
-      floatingActionButton: _tab <= 1
-          ? FloatingActionButton(
-              key: const Key('addTransactionFab'),
-              onPressed: () => showAddTransactionSheet(context),
-              child: const Icon(Icons.add, size: 28),
-            )
-          : null,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.home_outlined),
-            selectedIcon: const Icon(Icons.home),
-            label: l10n.homeTab,
+    );
+
+    final fab = _tab <= 1
+        ? FloatingActionButton(
+            key: const Key('addTransactionFab'),
+            tooltip: l10n.newTransaction,
+            onPressed: () {
+              if (requireWallet(context, ref)) showAddTransactionSheet(context);
+            },
+            child: const Icon(Icons.add, size: 28),
+          )
+        : null;
+
+    final destinations = [
+      (Icons.home_outlined, Icons.home_rounded, l10n.homeTab),
+      (Icons.receipt_long_outlined, Icons.receipt_long, l10n.transactionsTab),
+      (Icons.donut_small_outlined, Icons.donut_small, l10n.statsTab),
+      (Icons.settings_outlined, Icons.settings, l10n.settingsTab),
+    ];
+    void select(int i) => setState(() => _tab = i);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Tablet e telefono in orizzontale: navigazione laterale, così lo
+        // spazio verticale resta ai contenuti.
+        if (constraints.maxWidth >= Breakpoints.medium) {
+          return Scaffold(
+            body: Row(
+              children: [
+                SafeArea(
+                  right: false,
+                  child: NavigationRail(
+                    selectedIndex: _tab,
+                    onDestinationSelected: select,
+                    groupAlignment: -0.6,
+                    leading: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      // Spazio riservato anche senza FAB: le voci non saltano
+                      // cambiando tab.
+                      child: SizedBox(height: 56, child: fab),
+                    ),
+                    destinations: [
+                      for (final (icon, selectedIcon, label) in destinations)
+                        NavigationRailDestination(
+                          icon: Icon(icon),
+                          selectedIcon: Icon(selectedIcon),
+                          label: Text(label),
+                        ),
+                    ],
+                  ),
+                ),
+                VerticalDivider(width: 1, color: context.nipay.line),
+                Expanded(
+                  child: MediaQuery.removePadding(
+                    context: context,
+                    removeLeft: true,
+                    child: body,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return Scaffold(
+          body: body,
+          floatingActionButton: fab,
+          bottomNavigationBar: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: context.nipay.line)),
+            ),
+            child: NavigationBar(
+              selectedIndex: _tab,
+              onDestinationSelected: select,
+              destinations: [
+                for (final (icon, selectedIcon, label) in destinations)
+                  NavigationDestination(
+                    icon: Icon(icon),
+                    selectedIcon: Icon(selectedIcon),
+                    label: label,
+                  ),
+              ],
+            ),
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.list_alt_outlined),
-            selectedIcon: const Icon(Icons.list_alt),
-            label: l10n.transactionsTab,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.donut_small_outlined),
-            selectedIcon: const Icon(Icons.donut_small),
-            label: l10n.statsTab,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.settings_outlined),
-            selectedIcon: const Icon(Icons.settings),
-            label: l10n.settingsTab,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -263,38 +321,72 @@ class _LockedLocalData extends ConsumerWidget {
       _ when email != null => l10n.lockedDataBody(email),
       _ => l10n.lockedDataBodyUnknownOwner,
     };
+    final scheme = Theme.of(context).colorScheme;
     return SafeArea(
       child: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            key: const Key('lockedLocalData'),
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.lock_outline, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                l10n.lockedDataTitle,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 12),
-              Text(body, textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const AccountScreen()),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              key: const Key('lockedLocalData'),
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: ExcludeSemantics(
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: scheme.errorContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.lock_outline,
+                        size: 34,
+                        color: scheme.onErrorContainer,
+                      ),
+                    ),
+                  ),
                 ),
-                child: Text(l10n.account),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error,
+                const SizedBox(height: 20),
+                Semantics(
+                  header: true,
+                  child: Text(
+                    l10n.lockedDataTitle,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
                 ),
-                onPressed: () => _confirmRemove(context, ref),
-                child: Text(l10n.signOutRemoveLocalData),
-              ),
-            ],
+                const SizedBox(height: 12),
+                Text(
+                  body,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: context.nipay.muted),
+                ),
+                const SizedBox(height: 28),
+                FilledButton.icon(
+                  icon: const Icon(Icons.login),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AccountScreen()),
+                  ),
+                  label: Text(l10n.account),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.delete_outline),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: scheme.error,
+                    side: BorderSide(color: scheme.error),
+                  ),
+                  onPressed: () => _confirmRemove(context, ref),
+                  label: Text(l10n.signOutRemoveLocalData),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -314,9 +406,7 @@ class _LockedLocalData extends ConsumerWidget {
             child: Text(l10n.cancel),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(dialogContext).colorScheme.error,
-            ),
+            style: destructiveButtonStyle(dialogContext),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(l10n.signOutRemoveLocalData),
           ),

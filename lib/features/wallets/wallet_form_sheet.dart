@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/currencies.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../data/services/exchange_rate_service.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Azioni su un portafoglio esistente: rinomina o elimina (soft-delete).
+/// Azioni su un portafoglio esistente: rinomina, colore, valuta o elimina
+/// (soft-delete).
 Future<void> showWalletActionsSheet(BuildContext context, Wallet wallet) =>
-    showModalBottomSheet<void>(
-      context: context,
+    showAppSheet<void>(
+      context,
       builder: (_) => _WalletActionsSheet(wallet: wallet),
     );
 
@@ -33,6 +35,10 @@ Future<void> _confirmWalletDeletion(
       builder: (dialogContext, setState) {
         final matches = controller.text.trim() == wallet.name;
         return AlertDialog(
+          icon: Icon(
+            Icons.delete_outline,
+            color: Theme.of(dialogContext).colorScheme.error,
+          ),
           title: Text(l10n.deleteWalletTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -42,7 +48,9 @@ Future<void> _confirmWalletDeletion(
               const SizedBox(height: 12),
               TextField(
                 controller: controller,
-                inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(kMaxNameLength),
+                ],
                 autofocus: true,
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
@@ -58,9 +66,7 @@ Future<void> _confirmWalletDeletion(
               child: Text(l10n.cancel),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(dialogContext).colorScheme.error,
-              ),
+              style: destructiveButtonStyle(dialogContext),
               onPressed: matches
                   ? () => Navigator.of(dialogContext).pop(true)
                   : null,
@@ -90,9 +96,15 @@ class _WalletActionsSheet extends ConsumerStatefulWidget {
 class _WalletActionsSheetState extends ConsumerState<_WalletActionsSheet> {
   late final _controller = TextEditingController(text: widget.wallet.name);
   late String _currency = widget.wallet.currency;
+  late String _color = widget.wallet.colorHex;
   String? _nameError;
   String? _currencyError;
   bool _saving = false;
+
+  /// Tasso valuta attuale → [_currency], per l'anteprima del saldo
+  /// convertito; null finché non arriva (o se la valuta non cambia).
+  double? _rate;
+  bool _fetchingRate = false;
 
   @override
   void dispose() {
@@ -100,9 +112,40 @@ class _WalletActionsSheetState extends ConsumerState<_WalletActionsSheet> {
     super.dispose();
   }
 
-  /// "Salva" fa da conferma unica: rinomina e/o cambio valuta insieme (solo
-  /// il saldo iniziale del portafoglio si converte — transazioni, budget e
-  /// regole ricorrenti restano nei loro importi originali).
+  /// Scelta una nuova valuta, recupera subito il tasso: l'anteprima mostra
+  /// il saldo convertito prima di salvare.
+  Future<void> _onCurrencyChanged(String currency) async {
+    final l10n = AppLocalizations.of(context)!;
+    final from = widget.wallet.currency;
+    setState(() {
+      _currency = currency;
+      _currencyError = null;
+      _rate = null;
+      _fetchingRate = currency != from;
+    });
+    if (currency == from) return;
+    try {
+      final rate = await ref
+          .read(exchangeRateServiceProvider)
+          .getRate(from: from, to: currency);
+      // Nel frattempo potrebbe essere stata scelta un'altra valuta.
+      if (!mounted || _currency != currency) return;
+      setState(() {
+        _rate = rate;
+        _fetchingRate = false;
+      });
+    } on ExchangeRateException {
+      if (!mounted || _currency != currency) return;
+      setState(() {
+        _fetchingRate = false;
+        _currencyError = l10n.exchangeRateError;
+      });
+    }
+  }
+
+  /// "Salva" fa da conferma unica: rinomina, colore e/o cambio valuta
+  /// insieme. Col cambio valuta si converte tutto il portafoglio (saldo,
+  /// movimenti, budget, ricorrenti), vedi [WalletRepository.changeCurrency].
   Future<void> _save(Wallet wallet) async {
     final l10n = AppLocalizations.of(context)!;
     final name = _controller.text.trim();
@@ -110,7 +153,8 @@ class _WalletActionsSheetState extends ConsumerState<_WalletActionsSheet> {
     final wallets = ref.read(walletsProvider).valueOrNull ?? const [];
     final duplicate = wallets.any(
       (w) =>
-          w.id != wallet.id && w.name.trim().toLowerCase() == name.toLowerCase(),
+          w.id != wallet.id &&
+          w.name.trim().toLowerCase() == name.toLowerCase(),
     );
     if (duplicate) {
       setState(() => _nameError = l10n.walletNameDuplicate);
@@ -124,6 +168,9 @@ class _WalletActionsSheetState extends ConsumerState<_WalletActionsSheet> {
 
     double? rate;
     if (_currency != wallet.currency) {
+      rate = _rate;
+    }
+    if (_currency != wallet.currency && rate == null) {
       try {
         rate = await ref
             .read(exchangeRateServiceProvider)
@@ -141,6 +188,7 @@ class _WalletActionsSheetState extends ConsumerState<_WalletActionsSheet> {
 
     final repo = ref.read(walletRepositoryProvider);
     if (name != wallet.name) await repo.rename(wallet.id, name);
+    if (_color != wallet.colorHex) await repo.recolor(wallet.id, _color);
     if (rate != null) await repo.changeCurrency(wallet.id, _currency, rate);
     if (!mounted) return;
     Navigator.of(context).pop();
@@ -150,76 +198,118 @@ class _WalletActionsSheetState extends ConsumerState<_WalletActionsSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final wallet = widget.wallet;
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(wallet.name, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _controller,
-            inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
-            onChanged: (_) {
-              if (_nameError != null) setState(() => _nameError = null);
-            },
-            decoration: InputDecoration(
-              labelText: l10n.walletName,
-              errorText: _nameError,
-            ),
+    return SheetScaffold(
+      title: wallet.name,
+      actions: [
+        OutlinedButton.icon(
+          icon: const Icon(Icons.delete_outline, size: 20),
+          label: Text(l10n.delete),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.error,
           ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            key: const Key('walletActionsCurrencyDropdown'),
-            initialValue: _currency,
-            isExpanded: true,
-            decoration: InputDecoration(
-              labelText: l10n.currency,
-              errorText: _currencyError,
-            ),
-            items: currencyMenuItems(),
-            onChanged: (v) => setState(() {
-              _currency = v ?? _currency;
-              _currencyError = null;
-            }),
+          onPressed: () => _confirmWalletDeletion(context, ref, wallet),
+        ),
+        FilledButton(
+          key: const Key('walletActionsSaveButton'),
+          onPressed: _saving ? null : () => _save(wallet),
+          child: _saving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.save),
+        ),
+      ],
+      children: [
+        TextField(
+          controller: _controller,
+          inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
+          textCapitalization: TextCapitalization.sentences,
+          onChanged: (_) {
+            if (_nameError != null) setState(() => _nameError = null);
+          },
+          decoration: InputDecoration(
+            labelText: l10n.walletName,
+            errorText: _nameError,
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.delete_outline, size: 18),
-                  label: Text(l10n.delete),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.error,
+        ),
+        kFieldGap,
+        CurrencyField(
+          key: const Key('walletActionsCurrencyDropdown'),
+          value: _currency,
+          errorText: _currencyError,
+          prefixIcon: Icons.currency_exchange,
+          onChanged: _onCurrencyChanged,
+        ),
+        if (_currency != wallet.currency && _currencyError == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8, left: 4),
+            child: _fetchingRate
+                ? const Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  )
+                : _ConvertedBalancePreview(
+                    wallet: wallet,
+                    currency: _currency,
+                    rate: _rate,
                   ),
-                  onPressed: () => _confirmWalletDeletion(context, ref, wallet),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton(
-                  key: const Key('walletActionsSaveButton'),
-                  onPressed: _saving ? null : () => _save(wallet),
-                  child: _saving
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.save),
-                ),
-              ),
-            ],
           ),
-        ],
-      ),
+        FieldLabel(l10n.color),
+        ColorChoiceRow(
+          // Un colore arrivato da fuori palette (es. da un altro device) resta
+          // selezionabile.
+          colors: [
+            if (!_walletColors.contains(widget.wallet.colorHex))
+              widget.wallet.colorHex,
+            ..._walletColors,
+          ],
+          selected: _color,
+          onSelected: (hex) => setState(() => _color = hex),
+        ),
+      ],
+    );
+  }
+}
+
+/// "≈ 1.100,00 USD al cambio attuale": il saldo del portafoglio come sarà
+/// dopo il cambio valuta.
+class _ConvertedBalancePreview extends ConsumerWidget {
+  const _ConvertedBalancePreview({
+    required this.wallet,
+    required this.currency,
+    required this.rate,
+  });
+
+  final Wallet wallet;
+  final String currency;
+  final double? rate;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final balance = ref.watch(walletBalanceProvider(wallet.id)).valueOrNull;
+    if (rate == null || balance == null) return const SizedBox.shrink();
+    final muted = context.nipay.muted;
+    return Row(
+      children: [
+        Icon(Icons.currency_exchange, size: 16, color: muted),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            AppLocalizations.of(context)!.convertedPreview(
+              formatCents((balance * rate!).round(), currency: currency),
+            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: muted),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -233,12 +323,46 @@ const _walletColors = [
   '#E0A800',
 ];
 
-Future<void> showWalletFormSheet(BuildContext context) =>
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => const _WalletFormSheet(),
+/// Le transazioni (anche ricorrenti) appartengono sempre a un portafoglio:
+/// senza portafogli, al posto del form compare un errore con l'azione per
+/// crearne uno. Torna true se si può procedere.
+bool requireWallet(BuildContext context, WidgetRef ref) {
+  final wallets = ref.read(walletsProvider).valueOrNull;
+  if (wallets == null || wallets.isNotEmpty) return true;
+  final l10n = AppLocalizations.of(context)!;
+  final scheme = Theme.of(context).colorScheme;
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        backgroundColor: scheme.error,
+        content: Row(
+          children: [
+            Icon(Icons.error_outline, color: scheme.onError),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l10n.noWalletForTransaction,
+                style: TextStyle(
+                  color: scheme.onError,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: l10n.newWallet,
+          textColor: scheme.onError,
+          onPressed: () => showWalletFormSheet(context),
+        ),
+      ),
     );
+  return false;
+}
+
+Future<void> showWalletFormSheet(BuildContext context) =>
+    showAppSheet<void>(context, builder: (_) => const _WalletFormSheet());
 
 class _WalletFormSheet extends ConsumerStatefulWidget {
   const _WalletFormSheet();
@@ -295,100 +419,64 @@ class _WalletFormSheetState extends ConsumerState<_WalletFormSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(l10n.newWallet, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 16),
-          TextField(
-            key: const Key('walletNameField'),
-            controller: _name,
-            inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
-            autofocus: true,
-            onChanged: (_) {
-              if (_nameError != null) setState(() => _nameError = null);
-            },
-            decoration: InputDecoration(
-              labelText: l10n.walletName,
-              errorText: _nameError,
-            ),
+    return SheetScaffold(
+      title: l10n.newWallet,
+      actions: [
+        FilledButton(
+          key: const Key('walletSaveButton'),
+          onPressed: _save,
+          child: Text(l10n.save),
+        ),
+      ],
+      children: [
+        TextField(
+          key: const Key('walletNameField'),
+          controller: _name,
+          inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          onChanged: (_) {
+            if (_nameError != null) setState(() => _nameError = null);
+          },
+          decoration: InputDecoration(
+            labelText: l10n.walletName,
+            errorText: _nameError,
           ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: TextField(
-                  key: const Key('walletBalanceField'),
-                  controller: _balance,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  inputFormatters: moneyInputFormatters,
-                  decoration: InputDecoration(labelText: l10n.initialBalance),
+        ),
+        kFieldGap,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextField(
+                key: const Key('walletBalanceField'),
+                controller: _balance,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
                 ),
+                inputFormatters: moneyInputFormatters,
+                style: moneyStyle(size: 18),
+                decoration: InputDecoration(labelText: l10n.initialBalance),
               ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 132,
-                child: DropdownButtonFormField<String>(
-                  key: const Key('walletCurrencyDropdown'),
-                  initialValue: _currency,
-                  isExpanded: true,
-                  decoration: InputDecoration(labelText: l10n.currency),
-                  items: currencyMenuItems(),
-                  onChanged: (v) => setState(() => _currency = v ?? _currency),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              for (final hex in _walletColors)
-                Padding(
-                  padding: const EdgeInsets.only(right: 10),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _color = hex),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(
-                          0xFF000000 | int.parse(hex.substring(1), radix: 16),
-                        ),
-                        border: _color == hex
-                            ? Border.all(
-                                width: 3,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              )
-                            : null,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              key: const Key('walletSaveButton'),
-              onPressed: _save,
-              child: Text(l10n.save),
             ),
-          ),
-        ],
-      ),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 140,
+              child: CurrencyField(
+                key: const Key('walletCurrencyDropdown'),
+                value: _currency,
+                onChanged: (v) => setState(() => _currency = v),
+              ),
+            ),
+          ],
+        ),
+        FieldLabel(l10n.color),
+        ColorChoiceRow(
+          colors: _walletColors,
+          selected: _color,
+          onSelected: (hex) => setState(() => _color = hex),
+        ),
+      ],
     );
   }
 }

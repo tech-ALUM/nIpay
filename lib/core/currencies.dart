@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 /// Le 5 valute più usate al mondo (volume di scambio/riserve), tra quelle
 /// supportate — JPY è la più scambiata dopo USD/EUR ma è esclusa (0 decimali,
 /// vedi sotto), quindi al suo posto entra CNY.
@@ -63,15 +61,3 @@ const kCurrencySymbols = {
 /// dovrebbe succedere per le valute in [kCurrencies]).
 String currencySymbol(String currencyCode) =>
     kCurrencySymbols[currencyCode] ?? currencyCode;
-
-/// Le voci del menu a tendina valuta, con le 5 più comuni in cima separate
-/// da un divisore dalle altre (in ordine alfabetico). Ogni voce mostra il
-/// codice ISO (univoco) affiancato al simbolo, per riconoscerla a colpo
-/// d'occhio senza perdere la precisione del codice.
-List<DropdownMenuItem<String>> currencyMenuItems() => [
-  for (final c in kTopCurrencies)
-    DropdownMenuItem(value: c, child: Text('$c ${currencySymbol(c)}')),
-  const DropdownMenuItem(enabled: false, child: Divider(height: 1)),
-  for (final c in kOtherCurrencies)
-    DropdownMenuItem(value: c, child: Text('$c ${currencySymbol(c)}')),
-];

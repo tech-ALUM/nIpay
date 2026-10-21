@@ -94,6 +94,25 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
     (`lib/core/image_sanitizer.dart`); path solo `attachments/<uuid>.<ext>`
     (`lib/core/attachment_files.dart`).
 
+## UI e design system (restyle 2026-10-07)
+- Token in `lib/core/theme/app_theme.dart`: coral = CTA (FilledButton/FAB,
+  testo ink sopra) e spese; teal = selezioni, focus, link; testo e bordi
+  sempre ≥ WCAG AA (varianti `coralDeep`/`coralLight`/`tealLight`).
+  Colori via `context.nipay` / `colorScheme`, mai esadecimali nei widget.
+- Componenti condivisi in `lib/core/ui/` (`ui.dart`): `PageHeader`,
+  `SectionHeader`, `EmptyState`, `IconBadge`, `MonthSwitcher`, `DateField`,
+  `ColorChoiceRow`, `AddItemField`, `confirmDeletion`, `showAppSheet` +
+  `SheetScaffold` (azioni fisse in fondo), `CenteredListView`/`MaxWidth`.
+- Responsive: sotto 600 dp barra in basso, sopra rail laterale; contenuti
+  max 720 dp. Date con `formatDate`/`MaterialLocalizations` (lingua dell'app).
+- Nomi categoria nella UI sempre via `displayName(l10n)` / `label(l10n)`
+  (`lib/core/ui/category_name.dart`), mai `category.name`: le categorie di
+  default sono salvate col nome italiano del seed e mostrate nella lingua
+  attiva finché l'utente non le rinomina.
+- Valute: `CurrencyField` (riquadro compatto con ricerca), non dropdown.
+- Eliminazioni sempre confermate; errori di form inline sul campo (mai
+  bottoni disattivati senza spiegazione); bottoni solo-icona con tooltip.
+
 ## Regole di progetto
 - Stack: Flutter 3.44.6 + Riverpod 2.6 (v3 confligge con drift_dev) + Drift.
 - La UI non accede mai a Drift direttamente: sempre attraverso i repository

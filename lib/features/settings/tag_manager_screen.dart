@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/ui/ui.dart';
 import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../l10n/app_localizations.dart';
@@ -51,66 +51,44 @@ class _TagManagerScreenState extends ConsumerState<TagManagerScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.manageTags)),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-        child: Column(
-          children: [
-            Row(
+      body: CenteredListView(
+        bottom: 24,
+        children: [
+          AddItemField(
+            controller: _controller,
+            label: l10n.newTag,
+            error: _error,
+            inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
+            onChanged: (_) {
+              if (_error != null) setState(() => _error = null);
+            },
+            onSubmit: _add,
+          ),
+          const SizedBox(height: 16),
+          if (tags.isEmpty)
+            EmptyState(icon: Icons.sell_outlined, message: l10n.noItems)
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    inputFormatters: [LengthLimitingTextInputFormatter(kMaxNameLength)],
-                    onChanged: (_) {
-                      if (_error != null) setState(() => _error = null);
+                for (final t in tags)
+                  InputChip(
+                    label: Text('#${t.name}'),
+                    deleteButtonTooltipMessage: l10n.delete,
+                    onDeleted: () async {
+                      final confirmed = await confirmDeletion(
+                        context,
+                        title: l10n.deleteItemTitle('#${t.name}'),
+                      );
+                      if (!confirmed) return;
+                      await ref.read(tagRepositoryProvider).softDelete(t.id);
+                      ref.invalidate(tagsProvider);
                     },
-                    decoration: InputDecoration(
-                      labelText: l10n.newTag,
-                      errorText: _error,
-                      isDense: true,
-                    ),
-                    onSubmitted: (_) => _add(),
                   ),
-                ),
-                const SizedBox(width: 10),
-                IconButton.filled(onPressed: _add, icon: const Icon(Icons.add)),
               ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: tags.isEmpty
-                  ? Center(
-                      child: Text(
-                        l10n.noItems,
-                        style: TextStyle(color: context.nipay.muted),
-                      ),
-                    )
-                  : ListView(
-                      children: [
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            for (final t in tags)
-                              Chip(
-                                label: Text(
-                                  '#${t.name}',
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                                onDeleted: () async {
-                                  await ref
-                                      .read(tagRepositoryProvider)
-                                      .softDelete(t.id);
-                                  ref.invalidate(tagsProvider);
-                                },
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
