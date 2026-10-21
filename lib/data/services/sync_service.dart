@@ -248,10 +248,13 @@ class _Row {
     throw _InvalidRow(field);
   }
 
+  /// Il server restituisce gli orari in UTC ("...+00:00"); la UI ragiona in
+  /// ora locale (.day/.month), quindi si torna all'ora locale: stesso
+  /// istante, giorno del calendario del device.
   DateTime date(String field) {
     final v = _data[field];
     final parsed = v is String ? DateTime.tryParse(v) : null;
-    if (parsed != null) return parsed;
+    if (parsed != null) return parsed.toLocal();
     throw _InvalidRow(field);
   }
 
@@ -718,8 +721,10 @@ class SupabaseSyncService implements SyncService {
   // Tabelle
   // -------------------------------------------------------------------
 
+  /// Sempre in UTC (suffisso `Z`): le colonne sono timestamptz e una
+  /// stringa senza fuso verrebbe letta nel fuso della sessione Postgres.
   static String _ts(DateTime d) => d.toUtc().toIso8601String();
-  static String? _optTs(DateTime? d) => d?.toIso8601String();
+  static String? _optTs(DateTime? d) => d == null ? null : _ts(d);
 
   Future<List<D>> Function(List<String>) _byId<T extends Table, D>(
     TableInfo<T, D> table,
@@ -961,8 +966,8 @@ class SupabaseSyncService implements SyncService {
           'amount_cents': r.amountCents,
           'description': r.description,
           'frequency': r.frequency.name,
-          'start_at': r.startAt.toIso8601String(),
-          'next_run_at': r.nextRunAt.toIso8601String(),
+          'start_at': _ts(r.startAt),
+          'next_run_at': _ts(r.nextRunAt),
           'end_at': _optTs(r.endAt),
           'paused_at': _optTs(r.pausedAt),
         },
@@ -1027,7 +1032,7 @@ class SupabaseSyncService implements SyncService {
       'wallet_id': t.walletId,
       'type': t.type.name,
       'amount_cents': t.amountCents,
-      'date': t.date.toIso8601String(),
+      'date': _ts(t.date),
       'wallet_to_id': t.walletToId,
       'category_id': t.categoryId,
       'description': t.description,
@@ -1069,8 +1074,8 @@ class SupabaseSyncService implements SyncService {
           'deleted_at': _optTs(r.deletedAt),
           'wallet_id': r.walletId,
           'name': r.name,
-          'date_from': r.dateFrom.toIso8601String(),
-          'date_to': r.dateTo.toIso8601String(),
+          'date_from': _ts(r.dateFrom),
+          'date_to': _ts(r.dateTo),
           'status': r.status.name,
           'reimburse_tx_id': r.reimburseTxId,
         },

@@ -365,6 +365,123 @@ void main() {
     },
   );
 
+  // Le colonne Postgres sono timestamptz: una stringa senza fuso viene
+  // letta nel fuso della sessione (UTC su Supabase), quindi un orario
+  // locale arriverebbe spostato di qualche ora (o di un giorno, per chi è
+  // a ovest di Greenwich).
+  test('every timestamp sent to the server carries its time zone', () async {
+    final sent = <Map<String, dynamic>>[];
+    final spy = _SpyRemote(remote, sent);
+    final localMidnight = DateTime(2026, 10, 21);
+    await _insertWallet(
+      deviceA,
+      id: 'w1',
+      name: 'Conto',
+      updatedAt: DateTime.now(),
+    );
+    await (deviceA.update(deviceA.wallets)..where((t) => t.id.equals('w1')))
+        .write(WalletsCompanion(archivedAt: Value(DateTime.now())));
+    await deviceA
+        .into(deviceA.transactions)
+        .insert(
+          TransactionsCompanion.insert(
+            id: 'tx1',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            deletedAt: Value(DateTime.now()),
+            type: TransactionType.expense,
+            amountCents: 1000,
+            date: localMidnight,
+            walletId: 'w1',
+          ),
+        );
+    await deviceA
+        .into(deviceA.recurringRules)
+        .insert(
+          RecurringRulesCompanion.insert(
+            id: 'rule1',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            walletId: 'w1',
+            type: TransactionType.expense,
+            amountCents: 500,
+            frequency: RecurrenceFrequency.monthly,
+            startAt: localMidnight,
+            nextRunAt: localMidnight,
+            endAt: Value(localMidnight.add(const Duration(days: 365))),
+            pausedAt: Value(DateTime.now()),
+          ),
+        );
+    await deviceA
+        .into(deviceA.expenseReports)
+        .insert(
+          ExpenseReportsCompanion.insert(
+            id: 'rep1',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+            walletId: const Value('w1'),
+            name: 'Ottobre',
+            dateFrom: localMidnight,
+            dateTo: localMidnight,
+            status: ExpenseReportStatus.draft,
+          ),
+        );
+
+    await SupabaseSyncService(
+      spy,
+      deviceA,
+      currentUserId: () => _userId,
+    ).syncNow();
+
+    final isoWithoutZone = RegExp(
+      r'^\d{4}-\d{2}-\d{2}T[\d:.]+$', // nessuna Z, nessun +hh:mm
+    );
+    final offending = [
+      for (final row in sent)
+        for (final MapEntry(:key, :value) in row.entries)
+          if (value is String && isoWithoutZone.hasMatch(value)) '$key=$value',
+    ];
+    expect(offending, isEmpty);
+  });
+
+  test(
+    'a date pulled from the server is the same local day it was entered on',
+    () async {
+      final localMidnight = DateTime(2026, 10, 21);
+      await _insertWallet(
+        deviceA,
+        id: 'w1',
+        name: 'Conto',
+        updatedAt: DateTime.now(),
+      );
+      await deviceA
+          .into(deviceA.transactions)
+          .insert(
+            TransactionsCompanion.insert(
+              id: 'tx1',
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+              type: TransactionType.expense,
+              amountCents: 1000,
+              date: localMidnight,
+              walletId: 'w1',
+            ),
+          );
+      await serviceFor(deviceA).syncNow();
+      await serviceFor(deviceB).syncNow();
+
+      final pulled = await (deviceB.select(
+        deviceB.transactions,
+      )..where((t) => t.id.equals('tx1'))).getSingle();
+      // Stesso istante, e letto come ora locale: la UI raggruppa per
+      // giorno/mese con .year/.month/.day, che su un DateTime UTC
+      // darebbero il giorno di Greenwich.
+      expect(pulled.date.isAtSameMomentAs(localMidnight), isTrue);
+      expect(pulled.date.isUtc, isFalse);
+      expect(pulled.date.day, 21);
+    },
+  );
+
   test(
     'a wallet pushed from device A appears on device B after sync',
     () async {
