@@ -1,0 +1,33 @@
+name: Migration hosted
+
+# Ogni migration di supabase/migrations/ deve essere applicata al progetto
+# Supabase hosted: il 2026-10-21 la sync era bloccata da due settimane
+# perché non lo erano. Il controllo segnala soltanto, non applica nulla.
+#
+# Non gira sulle pull request: chiunque apra una PR può modificare questo
+# file e leggere il secret, e una PR che aggiunge una migration fallirebbe
+# per forza (non è ancora applicata). Gira su main, ogni giorno e a mano.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * *' # 08:00 ora italiana (estate), 07:00 (inverno)
+
+# Permessi minimi del GITHUB_TOKEN (SECURITY_AUDIT NIP-20); le action di
+# terze parti sono fissate per SHA (aggiornate da Dependabot).
+permissions:
+  contents: read
+
+jobs:
+  hosted-migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # psql è già installato sui runner Ubuntu. Il secret si collega col
+      # ruolo in sola lettura ci_migrations_reader (vedi lo script).
+      - name: Confronta repo e progetto hosted
+        env:
+          HOSTED_MIGRATIONS_DB_URL: ${{ secrets.HOSTED_MIGRATIONS_DB_URL }}
+        run: ./scripts/check_hosted_migrations.sh
