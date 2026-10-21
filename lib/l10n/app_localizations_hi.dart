@@ -623,4 +623,61 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get attachmentUnsupported =>
       'This image format isn\'t supported: use a JPEG, PNG or WebP photo.';
+
+  @override
+  String get pause => 'रोकें';
+
+  @override
+  String get resume => 'फिर से शुरू करें';
+
+  @override
+  String deleteItemTitle(String name) {
+    return '\"$name\" हटाएं?';
+  }
+
+  @override
+  String get deleteItemBody => 'यह पूर्ववत नहीं किया जा सकता।';
+
+  @override
+  String get showPassword => 'पासवर्ड दिखाएं';
+
+  @override
+  String get hidePassword => 'पासवर्ड छिपाएं';
+
+  @override
+  String get fieldRequired => 'आवश्यक';
+
+  @override
+  String get noWalletForTransaction =>
+      'लेन-देन जोड़ने के लिए पहले एक वॉलेट बनाएं।';
+
+  @override
+  String get categoryGroceries => 'किराना';
+
+  @override
+  String get categoryRestaurants => 'रेस्टोरेंट';
+
+  @override
+  String get categoryTransport => 'परिवहन';
+
+  @override
+  String get categoryHousing => 'आवास';
+
+  @override
+  String get categoryLeisure => 'मनोरंजन';
+
+  @override
+  String get categoryHealth => 'स्वास्थ्य';
+
+  @override
+  String get categoryShopping => 'खरीदारी';
+
+  @override
+  String get categorySalary => 'वेतन';
+
+  @override
+  String get categoryGifts => 'उपहार';
+
+  @override
+  String get categoryOther => 'अन्य';
 }

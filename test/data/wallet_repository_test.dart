@@ -61,6 +61,24 @@ void main() {
     expect(after.updatedAt.isAfter(before), isTrue);
   });
 
+  test('recolor changes only the color and bumps updatedAt', () async {
+    final id = await repo.create(
+      name: 'Conto',
+      colorHex: '#0E7C86',
+      initialBalanceCents: 1000,
+    );
+    final before = (await repo.getAll()).first;
+
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    await repo.recolor(id, '#7C5CBF');
+
+    final after = (await repo.getAll()).first;
+    expect(after.colorHex, '#7C5CBF');
+    expect(after.name, before.name);
+    expect(after.initialBalanceCents, before.initialBalanceCents);
+    expect(after.updatedAt.isAfter(before.updatedAt), isTrue);
+  });
+
   test('soft delete hides the wallet but keeps the row', () async {
     final id = await repo.create(
       name: 'Contanti',
@@ -134,78 +152,169 @@ void main() {
       expect(wallet.initialBalanceCents, 100000);
     });
 
-    test('rescales only the initial balance, nothing else', () async {
+    test(
+      'converts the whole wallet: balance, transactions, budgets, rules',
+      () async {
+        final txs = DriftTransactionRepository(db);
+        final cats = DriftCategoryRepository(db);
+        final budgets = DriftBudgetRepository(db);
+        final recurring = DriftRecurringRepository(db);
+
+        final a = await repo.create(
+          name: 'A',
+          colorHex: '#0E7C86',
+          initialBalanceCents: 100000, // 1000,00
+          currency: 'EUR',
+        );
+        final b = await repo.create(name: 'B', colorHex: '#FF6F61');
+
+        final cat = await cats.create(
+          walletId: a,
+          name: 'Spesa',
+          icon: '🛒',
+          colorHex: '#FF6F61',
+          kind: CategoryKind.expense,
+        );
+
+        await txs.createExpense(
+          walletId: a,
+          amountCents: 5000,
+          date: DateTime(2026, 1, 1),
+        );
+        await txs.createIncome(
+          walletId: a,
+          amountCents: 20000,
+          date: DateTime(2026, 1, 2),
+        );
+        await txs.createTransfer(
+          fromWalletId: a,
+          toWalletId: b,
+          amountCents: 1000,
+          date: DateTime(2026, 1, 3),
+        );
+        await budgets.setMonthlyLimit(
+          walletId: a,
+          categoryId: cat,
+          limitCents: 40000,
+        );
+        await recurring.create(
+          walletId: a,
+          type: TransactionType.expense,
+          amountCents: 3000,
+          description: 'Affitto',
+          frequency: RecurrenceFrequency.monthly,
+          startAt: DateTime(2026, 2, 1),
+        );
+        final balanceBefore = await txs.balanceOf(a); // 1140,00
+        final balanceOfB = await txs.balanceOf(b);
+
+        await repo.changeCurrency(a, 'USD', 1.1);
+
+        final wallets = {for (final w in await repo.getAll()) w.id: w};
+        expect(wallets[a]!.currency, 'USD');
+        expect(wallets[a]!.initialBalanceCents, 110000);
+        expect(wallets[b]!.currency, 'EUR');
+
+        // Il saldo è lo stesso valore, espresso nella nuova valuta.
+        expect(await txs.balanceOf(a), (balanceBefore * 1.1).round());
+        // L'altro portafoglio non si accorge di nulla.
+        expect(await txs.balanceOf(b), balanceOfB);
+
+        final rows = await db.select(db.transactions).get();
+        expect(
+          rows.singleWhere((t) => t.type == TransactionType.expense).amountCents,
+          5500,
+        );
+        expect(
+          rows.singleWhere((t) => t.type == TransactionType.income).amountCents,
+          22000,
+        );
+        final transfer = rows.singleWhere(
+          (t) => t.type == TransactionType.transfer,
+        );
+        expect(transfer.amountCents, 1100); // addebito in USD su A
+        expect(transfer.amountCentsTo, 1000); // accredito in EUR su B
+
+        final budgetRow = (await db.select(db.budgets).get()).single;
+        expect(budgetRow.limitCents, 44000);
+
+        final ruleRow = (await db.select(db.recurringRules).get()).single;
+        expect(ruleRow.amountCents, 3300);
+      },
+    );
+
+    test('converts incoming transfers on the receiving wallet', () async {
       final txs = DriftTransactionRepository(db);
-      final cats = DriftCategoryRepository(db);
-      final budgets = DriftBudgetRepository(db);
-      final recurring = DriftRecurringRepository(db);
-
-      final a = await repo.create(
-        name: 'A',
-        colorHex: '#0E7C86',
-        initialBalanceCents: 100000, // 1000,00
-        currency: 'EUR',
-      );
-      final b = await repo.create(name: 'B', colorHex: '#FF6F61');
-
-      final cat = await cats.create(
-        walletId: a,
-        name: 'Spesa',
-        icon: '🛒',
+      final a = await repo.create(name: 'A', colorHex: '#0E7C86');
+      final b = await repo.create(
+        name: 'B',
         colorHex: '#FF6F61',
-        kind: CategoryKind.expense,
-      );
-
-      await txs.createExpense(
-        walletId: a,
-        amountCents: 5000,
-        date: DateTime(2026, 1, 1),
+        initialBalanceCents: 10000,
       );
       await txs.createTransfer(
         fromWalletId: a,
         toWalletId: b,
-        amountCents: 1000,
+        amountCents: 2000,
         date: DateTime(2026, 1, 3),
       );
-      await budgets.setMonthlyLimit(
-        walletId: a,
-        categoryId: cat,
-        limitCents: 40000,
+      final balanceOfA = await txs.balanceOf(a);
+
+      await repo.changeCurrency(b, 'USD', 1.1);
+
+      final transfer = (await db.select(db.transactions).get()).single;
+      expect(transfer.amountCents, 2000); // addebito su A invariato (EUR)
+      expect(transfer.amountCentsTo, 2200); // accredito su B, ora in USD
+      expect(await txs.balanceOf(b), 13200);
+      expect(await txs.balanceOf(a), balanceOfA);
+    });
+
+    test('going back to the original currency restores exact transfers', () async {
+      final txs = DriftTransactionRepository(db);
+      final a = await repo.create(name: 'A', colorHex: '#0E7C86');
+      final b = await repo.create(name: 'B', colorHex: '#FF6F61');
+      await txs.createTransfer(
+        fromWalletId: a,
+        toWalletId: b,
+        amountCents: 1234,
+        date: DateTime(2026, 1, 3),
       );
-      await recurring.create(
+
+      await repo.changeCurrency(b, 'USD', 1.0837);
+      await repo.changeCurrency(b, 'EUR', 1 / 1.0837);
+
+      // Stessa valuta di A di nuovo: l'accredito torna quello dell'addebito,
+      // senza arrotondamenti accumulati.
+      final transfer = (await db.select(db.transactions).get()).single;
+      expect(transfer.amountCents, 1234);
+      expect(transfer.amountCentsTo, isNull);
+    });
+
+    test('leaves deleted rows and other wallets untouched', () async {
+      final txs = DriftTransactionRepository(db);
+      final a = await repo.create(name: 'A', colorHex: '#0E7C86');
+      final b = await repo.create(name: 'B', colorHex: '#FF6F61');
+      final deleted = await txs.createExpense(
         walletId: a,
-        type: TransactionType.expense,
-        amountCents: 3000,
-        description: 'Affitto',
-        frequency: RecurrenceFrequency.monthly,
-        startAt: DateTime(2026, 2, 1),
+        amountCents: 1000,
+        date: DateTime(2026, 1, 1),
+      );
+      await txs.softDelete(deleted);
+      await txs.createExpense(
+        walletId: b,
+        amountCents: 700,
+        date: DateTime(2026, 1, 1),
       );
 
       await repo.changeCurrency(a, 'USD', 1.1);
 
-      final wallets = {for (final w in await repo.getAll()) w.id: w};
-      // Solo il saldo iniziale del portafoglio cambia.
-      expect(wallets[a]!.currency, 'USD');
-      expect(wallets[a]!.initialBalanceCents, 110000);
-      expect(wallets[b]!.currency, 'EUR');
-
-      // Transazioni, budget e regole ricorrenti restano intatti.
-      final rows = await db.select(db.transactions).get();
-      final expense = rows.singleWhere(
-        (t) => t.type == TransactionType.expense,
+      final rows = {
+        for (final t in await db.select(db.transactions).get()) t.id: t,
+      };
+      expect(rows[deleted]!.amountCents, 1000);
+      expect(
+        rows.values.singleWhere((t) => t.walletId == b).amountCents,
+        700,
       );
-      expect(expense.amountCents, 5000);
-      final transfer = rows.singleWhere(
-        (t) => t.type == TransactionType.transfer,
-      );
-      expect(transfer.amountCents, 1000);
-      expect(transfer.amountCentsTo, isNull);
-
-      final budgetRow = (await db.select(db.budgets).get()).single;
-      expect(budgetRow.limitCents, 40000);
-
-      final ruleRow = (await db.select(db.recurringRules).get()).single;
-      expect(ruleRow.amountCents, 3000);
     });
   });
 }

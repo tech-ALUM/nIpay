@@ -39,15 +39,19 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
   volte (entry→valuta "Da"→valuta "A", campo `amountCentsTo`). `formatCents`
   richiede `currency:` (default `'EUR'`); tutte le schermate risolvono la
   valuta dal portafoglio attivo (`activeWalletProvider`). Schema Drift **v5**.
-- **Cambio valuta a posteriori (decisione 2026-08-13, semplificata lo stesso
-  giorno)**: un portafoglio può cambiare valuta anche dopo la creazione
+- **Cambio valuta a posteriori (decisione 2026-10-07, sostituisce quella
+  del 2026-08-13 che convertiva solo il saldo iniziale)**: un portafoglio
+  può cambiare valuta anche dopo la creazione
   (`WalletRepository.changeCurrency`, foglio azioni portafoglio in home).
-  Converte **solo il saldo iniziale** del portafoglio, al tasso del momento;
-  transazioni storiche, budget e regole ricorrenti NON vengono toccati —
-  restano nei loro importi originali, semplicemente letti nella nuova
-  valuta (scelta deliberata: niente bulk-update su potenzialmente migliaia
-  di righe). Il bottone "Salva" nel foglio azioni è l'unica conferma: fa
-  rinomina + cambio valuta insieme, senza dialogo separato.
+  Converte al tasso del momento **tutto ciò che è nella sua valuta**, in
+  un'unica transazione del DB: saldo iniziale, spese/entrate, addebiti dei
+  trasferimenti in uscita (l'accredito del destinatario resta invariato,
+  in `amountCentsTo`), accrediti dei trasferimenti in entrata, budget e
+  regole ricorrenti; righe eliminate escluse. Il saldo resta lo stesso
+  valore nella nuova valuta, gli altri portafogli non cambiano. Importi
+  digitati proprio nella nuova valuta tornano esatti (`entryAmountCents`).
+  Il foglio azioni mostra l'anteprima del saldo convertito; "Salva" resta
+  l'unica conferma (rinomina + colore + valuta insieme).
 - **Tassi di cambio: cache giornaliera, non più live-bloccante (decisione
   2026-08-14, sostituisce "blocca se l'API non risponde")**: `getRate` in
   `CachedExchangeRateService` (Frankfurter, `base=EUR`, no chiave) non fa mai

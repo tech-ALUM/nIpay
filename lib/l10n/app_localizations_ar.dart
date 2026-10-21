@@ -622,4 +622,60 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get attachmentUnsupported =>
       'This image format isn\'t supported: use a JPEG, PNG or WebP photo.';
+
+  @override
+  String get pause => 'إيقاف مؤقت';
+
+  @override
+  String get resume => 'استئناف';
+
+  @override
+  String deleteItemTitle(String name) {
+    return 'حذف \"$name\"؟';
+  }
+
+  @override
+  String get deleteItemBody => 'لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get showPassword => 'إظهار كلمة المرور';
+
+  @override
+  String get hidePassword => 'إخفاء كلمة المرور';
+
+  @override
+  String get fieldRequired => 'مطلوب';
+
+  @override
+  String get noWalletForTransaction => 'أنشئ محفظة أولاً لإضافة المعاملات.';
+
+  @override
+  String get categoryGroceries => 'بقالة';
+
+  @override
+  String get categoryRestaurants => 'مطاعم';
+
+  @override
+  String get categoryTransport => 'مواصلات';
+
+  @override
+  String get categoryHousing => 'السكن';
+
+  @override
+  String get categoryLeisure => 'ترفيه';
+
+  @override
+  String get categoryHealth => 'الصحة';
+
+  @override
+  String get categoryShopping => 'تسوق';
+
+  @override
+  String get categorySalary => 'الراتب';
+
+  @override
+  String get categoryGifts => 'هدايا';
+
+  @override
+  String get categoryOther => 'أخرى';
 }

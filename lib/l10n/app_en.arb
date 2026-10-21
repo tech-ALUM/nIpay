@@ -233,5 +233,28 @@
   "lockedDataBodyUnknownOwner": "This device holds the data of an account that is not signed in. Sign in with that account to see it, or remove it from this device.",
   "lockedDataOtherAccountBody": "This device holds the data of a different account. To use this account here, remove that data from the device (open Account), or sign out.",
   "startupError": "Couldn't open your data. Restart the app; if it keeps happening, contact support.",
-  "attachmentUnsupported": "This image format isn't supported: use a JPEG, PNG or WebP photo."
+  "attachmentUnsupported": "This image format isn't supported: use a JPEG, PNG or WebP photo.",
+  "pause": "Pause",
+  "resume": "Resume",
+  "deleteItemTitle": "Delete “{name}”?",
+  "@deleteItemTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "deleteItemBody": "This can't be undone.",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "fieldRequired": "Required",
+  "noWalletForTransaction": "Create a wallet first to add transactions.",
+  "categoryGroceries": "Groceries",
+  "categoryRestaurants": "Restaurants",
+  "categoryTransport": "Transport",
+  "categoryHousing": "Housing",
+  "categoryLeisure": "Leisure",
+  "categoryHealth": "Health",
+  "categoryShopping": "Shopping",
+  "categorySalary": "Salary",
+  "categoryGifts": "Gifts",
+  "categoryOther": "Other"
 }

@@ -627,4 +627,61 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get attachmentUnsupported =>
       'Formato immagine non supportato: usa una foto JPEG, PNG o WebP.';
+
+  @override
+  String get pause => 'Metti in pausa';
+
+  @override
+  String get resume => 'Riprendi';
+
+  @override
+  String deleteItemTitle(String name) {
+    return 'Eliminare “$name”?';
+  }
+
+  @override
+  String get deleteItemBody => 'L\'operazione non è reversibile.';
+
+  @override
+  String get showPassword => 'Mostra password';
+
+  @override
+  String get hidePassword => 'Nascondi password';
+
+  @override
+  String get fieldRequired => 'Obbligatorio';
+
+  @override
+  String get noWalletForTransaction =>
+      'Crea prima un portafoglio per aggiungere transazioni.';
+
+  @override
+  String get categoryGroceries => 'Spesa';
+
+  @override
+  String get categoryRestaurants => 'Ristoranti';
+
+  @override
+  String get categoryTransport => 'Trasporti';
+
+  @override
+  String get categoryHousing => 'Casa';
+
+  @override
+  String get categoryLeisure => 'Svago';
+
+  @override
+  String get categoryHealth => 'Salute';
+
+  @override
+  String get categoryShopping => 'Shopping';
+
+  @override
+  String get categorySalary => 'Stipendio';
+
+  @override
+  String get categoryGifts => 'Regali';
+
+  @override
+  String get categoryOther => 'Altro';
 }

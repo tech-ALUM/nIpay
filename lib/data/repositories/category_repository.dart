@@ -33,6 +33,23 @@ abstract interface class CategoryRepository {
   Future<void> seedDefaults(String walletId);
 }
 
+/// Categorie create in ogni nuovo portafoglio: (nome, icona, tipo). Il nome
+/// salvato è l'italiano; la UI lo mostra nella lingua attiva finché
+/// l'utente non lo rinomina (`lib/core/ui/category_name.dart`, da tenere
+/// allineato a questa lista).
+const kDefaultCategories = <(String, String, CategoryKind)>[
+  ('Spesa', '🛒', CategoryKind.expense),
+  ('Ristoranti', '🍽️', CategoryKind.expense),
+  ('Trasporti', '⛽', CategoryKind.expense),
+  ('Casa', '🏠', CategoryKind.expense),
+  ('Svago', '🎬', CategoryKind.expense),
+  ('Salute', '💊', CategoryKind.expense),
+  ('Shopping', '👕', CategoryKind.expense),
+  ('Stipendio', '💼', CategoryKind.income),
+  ('Regali', '🎁', CategoryKind.both),
+  ('Altro', '📦', CategoryKind.both),
+];
+
 class DriftCategoryRepository implements CategoryRepository {
   DriftCategoryRepository(this._db);
 
@@ -41,19 +58,6 @@ class DriftCategoryRepository implements CategoryRepository {
 
   /// Più vecchio di qualunque modifica reale.
   static final _seedTimestamp = DateTime.utc(2000);
-
-  static const _defaults = <(String, String, CategoryKind)>[
-    ('Spesa', '🛒', CategoryKind.expense),
-    ('Ristoranti', '🍽️', CategoryKind.expense),
-    ('Trasporti', '⛽', CategoryKind.expense),
-    ('Casa', '🏠', CategoryKind.expense),
-    ('Svago', '🎬', CategoryKind.expense),
-    ('Salute', '💊', CategoryKind.expense),
-    ('Shopping', '👕', CategoryKind.expense),
-    ('Stipendio', '💼', CategoryKind.income),
-    ('Regali', '🎁', CategoryKind.both),
-    ('Altro', '📦', CategoryKind.both),
-  ];
 
   @override
   Future<String> create({
@@ -147,7 +151,7 @@ class DriftCategoryRepository implements CategoryRepository {
 
     final now = DateTime.now();
     await _db.batch((b) {
-      for (final (i, (name, icon, kind)) in _defaults.indexed) {
+      for (final (i, (name, icon, kind)) in kDefaultCategories.indexed) {
         b.insert(
           _db.categories,
           CategoriesCompanion.insert(

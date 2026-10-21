@@ -69,7 +69,7 @@ UI (Flutter widgets, tema da design-system)
 
 | Entità | Note |
 |---|---|
-| `Wallet` | nome, icona/colore, saldo iniziale, **valuta** (ISO 4217, scelta alla creazione, modificabile in seguito — converte solo il saldo iniziale al tasso attuale, non lo storico), `archivedAt` |
+| `Wallet` | nome, icona/colore, saldo iniziale, **valuta** (ISO 4217, scelta alla creazione, modificabile in seguito — converte al tasso attuale saldo, movimenti, budget e ricorrenti del portafoglio), `archivedAt` |
 | `Transaction` | tipo (`expense` / `income` / `transfer`), importo (centesimi, int, nella valuta del wallet), data, wallet (e `walletTo` per i transfer), categoria, note; se inserita in valuta diversa: `entryCurrency`/`entryAmountCents` (importo originale) e, per i transfer cross-valuta, `amountCentsTo` (credito convertito nella valuta di destinazione) |
 | `Category` | gerarchica (`parentId`), colore, icona, tipo (spesa/entrata/entrambi), ordinamento |
 | `Tag` + `TransactionTag` | many-to-many |

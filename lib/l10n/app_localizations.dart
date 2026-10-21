@@ -1237,6 +1237,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This image format isn\'t supported: use a JPEG, PNG or WebP photo.'**
   String get attachmentUnsupported;
+
+  /// No description provided for @pause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pause;
+
+  /// No description provided for @resume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resume;
+
+  /// No description provided for @deleteItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String deleteItemTitle(String name);
+
+  /// No description provided for @deleteItemBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This can\'t be undone.'**
+  String get deleteItemBody;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
+  /// No description provided for @fieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get fieldRequired;
+
+  /// No description provided for @noWalletForTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a wallet first to add transactions.'**
+  String get noWalletForTransaction;
+
+  /// No description provided for @categoryGroceries.
+  ///
+  /// In en, this message translates to:
+  /// **'Groceries'**
+  String get categoryGroceries;
+
+  /// No description provided for @categoryRestaurants.
+  ///
+  /// In en, this message translates to:
+  /// **'Restaurants'**
+  String get categoryRestaurants;
+
+  /// No description provided for @categoryTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get categoryTransport;
+
+  /// No description provided for @categoryHousing.
+  ///
+  /// In en, this message translates to:
+  /// **'Housing'**
+  String get categoryHousing;
+
+  /// No description provided for @categoryLeisure.
+  ///
+  /// In en, this message translates to:
+  /// **'Leisure'**
+  String get categoryLeisure;
+
+  /// No description provided for @categoryHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get categoryHealth;
+
+  /// No description provided for @categoryShopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shopping'**
+  String get categoryShopping;
+
+  /// No description provided for @categorySalary.
+  ///
+  /// In en, this message translates to:
+  /// **'Salary'**
+  String get categorySalary;
+
+  /// No description provided for @categoryGifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Gifts'**
+  String get categoryGifts;
+
+  /// No description provided for @categoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryOther;
 }
 
 class _AppLocalizationsDelegate

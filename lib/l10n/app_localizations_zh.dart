@@ -619,4 +619,60 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get attachmentUnsupported =>
       'This image format isn\'t supported: use a JPEG, PNG or WebP photo.';
+
+  @override
+  String get pause => '暂停';
+
+  @override
+  String get resume => '恢复';
+
+  @override
+  String deleteItemTitle(String name) {
+    return '删除“$name”？';
+  }
+
+  @override
+  String get deleteItemBody => '此操作无法撤销。';
+
+  @override
+  String get showPassword => '显示密码';
+
+  @override
+  String get hidePassword => '隐藏密码';
+
+  @override
+  String get fieldRequired => '必填';
+
+  @override
+  String get noWalletForTransaction => '请先创建一个钱包再添加交易。';
+
+  @override
+  String get categoryGroceries => '日用杂货';
+
+  @override
+  String get categoryRestaurants => '餐厅';
+
+  @override
+  String get categoryTransport => '交通';
+
+  @override
+  String get categoryHousing => '住房';
+
+  @override
+  String get categoryLeisure => '休闲娱乐';
+
+  @override
+  String get categoryHealth => '医疗健康';
+
+  @override
+  String get categoryShopping => '购物';
+
+  @override
+  String get categorySalary => '工资';
+
+  @override
+  String get categoryGifts => '礼物';
+
+  @override
+  String get categoryOther => '其他';
 }

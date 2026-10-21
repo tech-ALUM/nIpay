@@ -56,8 +56,10 @@ Waydroid + iPhone) e **2 account di test** (A e B), mai account reali.
 - [ ] Nome vuoto → messaggio d'errore, nessun crash. Nome duplicato → errore. 🤖
 - [ ] Modifica portafoglio: le modifiche si vedono subito in home.
 - [ ] Riordino dei portafogli: l'ordine resta dopo il riavvio. 🤖
-- [ ] **Cambio valuta** del portafoglio: viene riscalato solo il saldo
-      iniziale, nient'altro. 🤖 `wallet_repository_test.dart`
+- [ ] **Cambio valuta** del portafoglio: anteprima del saldo convertito nel
+      foglio; dopo "Salva" saldo, movimenti, budget e ricorrenti sono nella
+      nuova valuta; l'altro portafoglio di un trasferimento non cambia.
+      🤖 `wallet_repository_test.dart`, `app_test.dart`
 - [ ] Elimina portafoglio: conferma richiesta, sparisce dalla lista, il
       totale in home si aggiorna.
 - [ ] Toccare la wallet card cambia il **portafoglio attivo**: transazioni,
