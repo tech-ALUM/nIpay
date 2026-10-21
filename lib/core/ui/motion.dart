@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -23,10 +25,12 @@ abstract final class Motion {
 
 /// Ritardo d'ingresso dell'elemento in posizione [index] di una cascata
 /// (0 = primo). [FadeSlideIn] lo somma alla durata dell'ingresso.
-Duration staggerDelay(int index) {
-  // TODO(human): ritardo della cascata d'ingresso.
-  return Duration.zero;
-}
+///
+/// Passo lineare di 60 ms con un tetto a 360 ms: i primi blocchi entrano in
+/// sequenza, quelli lontani (costruiti dalla ListView solo quando si scorre
+/// fin lì) non restano mai vuoti più di un istante.
+Duration staggerDelay(int index) =>
+    Duration(milliseconds: math.min(index, 6) * 60);
 
 /// Ingresso morbido: dissolvenza + salita di [offset] px, dopo il ritardo
 /// di [staggerDelay]. Parte una volta sola: lo stato resta vivo anche

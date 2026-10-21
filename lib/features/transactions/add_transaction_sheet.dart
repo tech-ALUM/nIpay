@@ -778,7 +778,10 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
               ),
             ),
             const SizedBox(width: 10),
-            Flexible(
+            // Larghezza naturale (allineata al bordo destro), con un tetto
+            // perché col testo ingrandito la descrizione resti usabile.
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 190),
               child: _DatePill(
                 label: l10n.date,
                 value: formatDate(context, _date),

@@ -55,6 +55,46 @@ class MaxWidth extends StatelessWidget {
   );
 }
 
+/// Due elementi affiancati a metà larghezza se lo spazio basta, altrimenti
+/// uno sotto l'altro a tutta larghezza (es. le date "Dal"/"Al": su
+/// telefono, affiancate, troncherebbero la data).
+class AdaptivePair extends StatelessWidget {
+  const AdaptivePair({
+    super.key,
+    required this.first,
+    required this.second,
+    this.minSideBySideWidth = 440,
+    this.gap = 10,
+  });
+
+  final Widget first;
+  final Widget second;
+  final double minSideBySideWidth;
+  final double gap;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) =>
+        constraints.maxWidth >= minSideBySideWidth
+        ? Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: first),
+              SizedBox(width: gap),
+              Expanded(child: second),
+            ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              first,
+              SizedBox(height: gap),
+              second,
+            ],
+          ),
+  );
+}
+
 /// ListView con contenuto centrato e margini responsive.
 class CenteredListView extends StatelessWidget {
   const CenteredListView({

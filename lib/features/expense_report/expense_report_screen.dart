@@ -177,27 +177,17 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
       body: CenteredListView(
         bottom: 40,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: DateField(
-                  label: l10n.fromDate,
-                  value: formatDate(context, _from),
-                  onTap: () => _pickDate(true),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: DateField(
-                  label: l10n.toDate,
-                  value: formatDate(
-                    context,
-                    _to.subtract(const Duration(days: 1)),
-                  ),
-                  onTap: () => _pickDate(false),
-                ),
-              ),
-            ],
+          AdaptivePair(
+            first: DateField(
+              label: l10n.fromDate,
+              value: formatDate(context, _from),
+              onTap: () => _pickDate(true),
+            ),
+            second: DateField(
+              label: l10n.toDate,
+              value: formatDate(context, _to.subtract(const Duration(days: 1))),
+              onTap: () => _pickDate(false),
+            ),
           ),
           const SizedBox(height: 16),
           Card(
@@ -243,26 +233,19 @@ class _ExpenseReportScreenState extends ConsumerState<ExpenseReportScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  key: const Key('exportPdfButton'),
-                  icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
-                  label: Text(l10n.exportPdf),
-                  onPressed: rows.isEmpty ? null : () => _exportPdf(rows),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton.icon(
-                  key: const Key('createReportButton'),
-                  icon: const Icon(Icons.assignment_add, size: 20),
-                  label: Text(l10n.createReport),
-                  onPressed: rows.isEmpty ? null : _createReport,
-                ),
-              ),
-            ],
+          AdaptivePair(
+            first: FilledButton.icon(
+              key: const Key('exportPdfButton'),
+              icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+              label: Text(l10n.exportPdf),
+              onPressed: rows.isEmpty ? null : () => _exportPdf(rows),
+            ),
+            second: OutlinedButton.icon(
+              key: const Key('createReportButton'),
+              icon: const Icon(Icons.assignment_add, size: 20),
+              label: Text(l10n.createReport),
+              onPressed: rows.isEmpty ? null : _createReport,
+            ),
           ),
           SectionHeader(l10n.reportArchive),
           if (reports.isEmpty)

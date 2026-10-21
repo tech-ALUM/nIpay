@@ -12,8 +12,8 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
 
 ## Documenti di riferimento
 - [OVERVIEW.md](OVERVIEW.md) — visione, decisioni, architettura, modello dati.
-- [ACCOUNT_SYNC_PLAN.md](ACCOUNT_SYNC_PLAN.md) — account e sync (M-ACC0–M-ACC9). Le milestone M0–M11 sono chiuse (2026-07-16); i rimandati noti sono in OVERVIEW.md.
-- [TEST_CHECKLIST.md](TEST_CHECKLIST.md) — checklist da passare prima dei commit importanti.
+- [mds/ACCOUNT_SYNC_PLAN.md](mds/ACCOUNT_SYNC_PLAN.md) — account e sync (M-ACC0–M-ACC9). Le milestone M0–M11 sono chiuse (2026-07-16); i rimandati noti sono in OVERVIEW.md.
+- [mds/TEST_CHECKLIST.md](mds/TEST_CHECKLIST.md) — checklist da passare prima dei commit importanti.
 
 ## Modello concettuale (IMPORTANTE, deciso 2026-07-16)
 - **Portafogli = spazi separati**: categorie, tag, campi custom, budget e dashboard
@@ -63,7 +63,7 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
   cache pregressa (mai scaricata con successo, tipicamente al primissimo
   utilizzo offline) — l'unico caso in cui serve ancora un fetch bloccante.
 
-- **Security fix (2026-10-05, vedi SECURITY_FIX_REPORT.md)**:
+- **Security fix (2026-10-05, vedi mds/SECURITY_FIX_REPORT.md)**:
   - **Sync**: coda `SyncOutbox` riempita da trigger SQLite (niente più
     `updatedAt > lastPushedAt`), watermark di pull **per tabella**
     (`SyncCursors`, orologio del server) con paginazione keyset e finestra
@@ -94,11 +94,28 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
     (`lib/core/image_sanitizer.dart`); path solo `attachments/<uuid>.<ext>`
     (`lib/core/attachment_files.dart`).
 
-## UI e design system (restyle 2026-10-07)
+## UI e design system (Ink Aurora, 2026-10-21; base: restyle 2026-10-07)
 - Token in `lib/core/theme/app_theme.dart`: coral = CTA (FilledButton/FAB,
   testo ink sopra) e spese; teal = selezioni, focus, link; testo e bordi
   sempre ≥ WCAG AA (varianti `coralDeep`/`coralLight`/`tealLight`).
   Colori via `context.nipay` / `colorScheme`, mai esadecimali nei widget.
+- **Ink Aurora** (evoluzione di Bold Ink, stessi colori del brand):
+  CTA e FAB col gradiente `ctaGradient` (coral → magenta, dipinto con
+  `Ink` così il ripple resta visibile; `destructiveButtonStyle` lo spegne),
+  banda saldo con `heroGradient` + bagliori, ombre `cardShadow` /
+  `raisedShadow`, tutto in `NipayPalette`. Font: titoli Bricolage
+  Grotesque, testo Plus Jakarta Sans, importi SEMPRE `moneyStyle` (Space
+  Grotesk, cifre tabulari). Plus Jakarta è più largo di Inter: due campi
+  selettore affiancati vanno in `AdaptivePair` (impilati su telefono).
+- Movimento in `lib/core/ui/motion.dart`: `FadeSlideIn` (cascata con
+  `staggerDelay`), `Pressable` (feedback al tocco via `Listener`, fuori
+  dall'arena dei gesti), `AnimatedCount`, `AuroraBackdrop`,
+  `FadeIndexedStack` (tab, stato conservato). Sempre spento con "Riduci
+  movimento" (`reduceMotion`); MAI animazioni infinite (bloccano
+  `pumpAndSettle` nei widget test).
+- Foglio transazione: tipo → importo grande nel colore del tipo →
+  griglia tessere categoria → descrizione + data → scontrino → card
+  Dettagli (tag, campi) → card Nota spese. Sezioni sempre visibili.
 - Componenti condivisi in `lib/core/ui/` (`ui.dart`): `PageHeader`,
   `SectionHeader`, `EmptyState`, `IconBadge`, `MonthSwitcher`, `DateField`,
   `ColorChoiceRow`, `AddItemField`, `confirmDeletion`, `showAppSheet` +
@@ -167,4 +184,5 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
 - Git: remote via alias `github.com-alum`; identità folder-based (albertoboffi-ALUM).
 - Design system: repo `design/` + progetto Claude Design "nIpay"
   (id bd9976c0-fc4b-4478-898e-186d6b354a2b). Direzione scelta: **Bold Ink**
-  dark+light (tema in `lib/core/theme/app_theme.dart`).
+  dark+light, evoluta in **Ink Aurora** il 2026-10-21 (tema in
+  `lib/core/theme/app_theme.dart`, vedi sezione UI sopra).
