@@ -204,7 +204,7 @@ class _RootShellState extends ConsumerState<RootShell>
             child: Text(l10n.startupError, textAlign: TextAlign.center),
           ),
         ),
-        data: (_) => IndexedStack(
+        data: (_) => FadeIndexedStack(
           index: _tab,
           children: const [
             HomeScreen(),
@@ -223,7 +223,7 @@ class _RootShellState extends ConsumerState<RootShell>
             onPressed: () {
               if (requireWallet(context, ref)) showAddTransactionSheet(context);
             },
-            child: const Icon(Icons.add, size: 28),
+            child: const _FabFace(),
           )
         : null;
 
@@ -280,9 +280,21 @@ class _RootShellState extends ConsumerState<RootShell>
         return Scaffold(
           body: body,
           floatingActionButton: fab,
+          // Barra "sospesa": filo sottile più un'ombra morbida verso l'alto.
           bottomNavigationBar: DecoratedBox(
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: context.nipay.line)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(
+                    alpha: Theme.of(context).brightness == Brightness.dark
+                        ? .35
+                        : .06,
+                  ),
+                  blurRadius: 24,
+                  offset: const Offset(0, -6),
+                ),
+              ],
             ),
             child: NavigationBar(
               selectedIndex: _tab,
@@ -301,6 +313,23 @@ class _RootShellState extends ConsumerState<RootShell>
       },
     );
   }
+}
+
+/// Faccia del FAB: gradiente coral → magenta dipinto con Ink sul Material
+/// del bottone (il ripple resta visibile sopra), stessa forma del tema.
+class _FabFace extends StatelessWidget {
+  const _FabFace();
+
+  @override
+  Widget build(BuildContext context) => Ink(
+    width: 56,
+    height: 56,
+    decoration: BoxDecoration(
+      gradient: context.nipay.ctaGradient,
+      borderRadius: BorderRadius.circular(18),
+    ),
+    child: const Icon(Icons.add, size: 28),
+  );
 }
 
 /// Schermata al posto dell'app quando i dati del device sono legati a un

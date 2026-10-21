@@ -6,5 +6,6 @@ export 'category_name.dart';
 export 'currency_field.dart';
 export 'formatters.dart';
 export 'layout.dart';
+export 'motion.dart';
 export 'sheet.dart';
 export 'widgets.dart';

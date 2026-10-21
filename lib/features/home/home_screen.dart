@@ -27,61 +27,90 @@ class HomeScreen extends ConsumerWidget {
 
     // Ordine e spaziature pensati perché saldo, portafogli e le prime
     // transazioni recenti stiano nella prima schermata di un telefono.
-    return SafeArea(
-      child: CenteredListView(
-        top: 12,
-        children: [
-          if (signedInUser != null) ...[
-            Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: _SignedInBadge(email: signedInUser.email ?? ''),
-            ),
-            const SizedBox(height: 12),
-          ],
-          const _BalanceHero(),
-          SectionHeader(
-            l10n.wallets,
-            action: TextButton.icon(
-              key: const Key('addWalletButton'),
-              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-              onPressed: () => showWalletFormSheet(context),
-              icon: const Icon(Icons.add, size: 20),
-              label: Text(l10n.newWallet),
+    final sections = <Widget>[
+      if (signedInUser != null) ...[
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: _SignedInBadge(email: signedInUser.email ?? ''),
+        ),
+        const SizedBox(height: 12),
+      ],
+      const _BalanceHero(),
+      SectionHeader(
+        l10n.wallets,
+        action: TextButton.icon(
+          key: const Key('addWalletButton'),
+          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+          onPressed: () => showWalletFormSheet(context),
+          icon: const Icon(Icons.add, size: 20),
+          label: Text(l10n.newWallet),
+        ),
+      ),
+      if (wallets.isEmpty)
+        _Raised(
+          child: Card(
+            child: EmptyState(
+              icon: Icons.account_balance_wallet_outlined,
+              message: l10n.noWallets,
             ),
           ),
-          if (wallets.isEmpty)
-            Card(
-              child: EmptyState(
-                icon: Icons.account_balance_wallet_outlined,
-                message: l10n.noWallets,
-              ),
-            )
-          else
-            _WalletStrip(wallets: wallets),
-          const SizedBox(height: 12),
-          const _ExpenseReportCard(),
-          ..._buildBudgetSection(context, ref, l10n),
-          SectionHeader(l10n.recentTransactions),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: recent.isEmpty
-                ? EmptyState(
-                    icon: Icons.receipt_long_outlined,
-                    message: l10n.noTransactions,
-                  )
-                : Column(
-                    children: [
-                      for (final (i, tx) in recent.take(10).indexed) ...[
-                        if (i > 0) const Divider(indent: 72),
-                        TransactionTile(transaction: tx),
-                      ],
+        )
+      else
+        _WalletStrip(wallets: wallets),
+      const SizedBox(height: 12),
+      const _ExpenseReportCard(),
+      ..._buildBudgetSection(context, ref, l10n),
+      SectionHeader(l10n.recentTransactions),
+      _Raised(
+        child: Card(
+          clipBehavior: Clip.antiAlias,
+          child: recent.isEmpty
+              ? EmptyState(
+                  icon: Icons.receipt_long_outlined,
+                  message: l10n.noTransactions,
+                )
+              : Column(
+                  children: [
+                    for (final (i, tx) in recent.take(10).indexed) ...[
+                      if (i > 0) const Divider(indent: 72),
+                      TransactionTile(transaction: tx),
                     ],
-                  ),
-          ),
-        ],
+                  ],
+                ),
+        ),
+      ),
+    ];
+
+    return AuroraBackdrop(
+      child: SafeArea(
+        child: CenteredListView(
+          top: 12,
+          children: [
+            // Ingresso a cascata: ogni blocco entra poco dopo il precedente.
+            for (final (i, section) in sections.indexed)
+              FadeSlideIn(index: i, child: section),
+          ],
+        ),
       ),
     );
   }
+}
+
+/// Card in rilievo (ombra del tema) per i blocchi non toccabili per intero;
+/// quelli toccabili usano [Pressable], che aggiunge il feedback al tocco.
+class _Raised extends StatelessWidget {
+  const _Raised({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: context.nipay.cardShadow,
+    ),
+    child: child,
+  );
 }
 
 /// Banda "ink" con il saldo dello spazio attivo e il riepilogo del mese.
@@ -97,83 +126,143 @@ class _BalanceHero extends ConsumerWidget {
     final total = ref.watch(totalBalanceProvider).valueOrNull;
     final monthTotals = ref.watch(monthTotalsProvider).valueOrNull;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-      decoration: BoxDecoration(
-        color: palette.hero,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          MergeSemantics(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${l10n.totalBalance}${active != null ? ' · ${active.name}' : ''}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelMedium?.copyWith(color: palette.onHeroMuted),
-                ),
-                const SizedBox(height: 2),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text(
-                    total == null
-                        ? '…'
-                        : formatCents(total, currency: currency),
-                    style: moneyStyle(
-                      size: 34,
-                      weight: FontWeight.w800,
-                      color: palette.onHero,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    final balanceStyle = moneyStyle(
+      size: 44,
+      weight: FontWeight.w700,
+      color: palette.onHero,
+    );
+
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        MergeSemantics(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${l10n.totalBalance}${active != null ? ' · ${active.name}' : ''}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: palette.onHeroMuted),
+              ),
+              const SizedBox(height: 4),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: total == null
+                    ? Text('…', style: balanceStyle)
+                    // Il saldo scorre fino al valore; agli screen reader
+                    // arriva sempre e solo quello finale.
+                    : AnimatedCount(
+                        value: total,
+                        builder: (context, shown) => Text(
+                          formatCents(shown, currency: currency),
+                          semanticsLabel: formatCents(
+                            total,
+                            currency: currency,
+                          ),
+                          style: balanceStyle,
+                        ),
+                      ),
+              ),
+            ],
           ),
-          if (monthTotals != null) ...[
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                _HeroKpi(
-                  icon: Icons.south_west_rounded,
-                  label: l10n.income,
-                  value: formatCents(
-                    monthTotals.incomeCents,
-                    currency: currency,
-                  ),
-                  color: NipayColors.tealLight,
+        ),
+        if (monthTotals != null) ...[
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _HeroKpi(
+                icon: Icons.south_west_rounded,
+                label: l10n.income,
+                value: formatCents(monthTotals.incomeCents, currency: currency),
+                color: NipayColors.tealLight,
+              ),
+              _HeroKpi(
+                icon: Icons.north_east_rounded,
+                label: l10n.expense,
+                value: formatCents(
+                  monthTotals.expenseCents,
+                  currency: currency,
                 ),
-                _HeroKpi(
-                  icon: Icons.north_east_rounded,
-                  label: l10n.expense,
-                  value: formatCents(
-                    monthTotals.expenseCents,
-                    currency: currency,
-                  ),
-                  color: NipayColors.coralLight,
-                ),
-                Text(
-                  l10n.thisMonth,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelSmall?.copyWith(color: palette.onHeroMuted),
-                ),
-              ],
-            ),
-          ],
+                color: NipayColors.coralLight,
+              ),
+              Text(
+                l10n.thisMonth,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: palette.onHeroMuted),
+              ),
+            ],
+          ),
         ],
+      ],
+    );
+
+    // Mesh scuro con due bagliori del brand dentro la card: la "profondità"
+    // di Ink Aurora. I bagliori sono decorativi (fuori dalla semantica).
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: palette.raisedShadow,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: palette.heroGradient,
+            border: Border.all(color: Colors.white.withValues(alpha: .08)),
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Stack(
+            children: [
+              const PositionedDirectional(
+                top: -70,
+                end: -50,
+                child: _HeroGlow(color: NipayColors.coral, size: 200),
+              ),
+              const PositionedDirectional(
+                bottom: -90,
+                start: -40,
+                child: _HeroGlow(color: NipayColors.cyan, size: 220),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
+                child: content,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
+}
+
+/// Bagliore radiale dentro la banda saldo: decorativo, non tocca i tocchi.
+class _HeroGlow extends StatelessWidget {
+  const _HeroGlow({required this.color, required this.size});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [color.withValues(alpha: .42), color.withValues(alpha: 0)],
+        ),
+      ),
+    ),
+  );
 }
 
 /// Entrate/uscite del mese nella banda saldo: freccia e colore indicano il
@@ -199,17 +288,25 @@ class _HeroKpi extends StatelessWidget {
       message: label,
       excludeFromSemantics: true,
       child: Container(
-        padding: const EdgeInsetsDirectional.fromSTEB(6, 5, 12, 5),
+        padding: const EdgeInsetsDirectional.fromSTEB(5, 5, 12, 5),
         decoration: BoxDecoration(
           color: color.withValues(alpha: .14),
           borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: color.withValues(alpha: .32)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 6),
-            Text(value, style: moneyStyle(size: 14, color: color)),
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: .22),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 14, color: color),
+            ),
+            const SizedBox(width: 7),
+            Text(value, style: moneyStyle(size: 14.5, color: color)),
           ],
         ),
       ),
@@ -275,24 +372,26 @@ List<Widget> _buildBudgetSection(
       l10n.budgets,
       action: TextButton(onPressed: openManager, child: Text(l10n.edit)),
     ),
-    Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: openManager,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              for (final (i, b) in budgets.indexed) ...[
-                if (i > 0) const SizedBox(height: 16),
-                BudgetProgressBar(
-                  budget: b,
-                  category: categories
-                      .where((c) => c.id == b.categoryId)
-                      .firstOrNull,
-                ),
+    Pressable(
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: openManager,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                for (final (i, b) in budgets.indexed) ...[
+                  if (i > 0) const SizedBox(height: 16),
+                  BudgetProgressBar(
+                    budget: b,
+                    category: categories
+                        .where((c) => c.id == b.categoryId)
+                        .firstOrNull,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -309,43 +408,45 @@ class _ExpenseReportCard extends ConsumerWidget {
     final palette = context.nipay;
     final currency = ref.watch(activeWalletProvider)?.currency ?? 'EUR';
     final pending = ref.watch(pendingReimbursementProvider).valueOrNull ?? 0;
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        key: const Key('expenseReportCard'),
-        onTap: () => Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const ExpenseReportScreen())),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
-          child: Row(
-            children: [
-              IconBadge(icon: Icons.receipt_long, color: palette.income),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.expenseReport,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    Text(
-                      l10n.pendingReimbursement,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
+    return Pressable(
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          key: const Key('expenseReportCard'),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const ExpenseReportScreen()),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 10, 14),
+            child: Row(
+              children: [
+                IconBadge(icon: Icons.receipt_long, color: palette.income),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.expenseReport,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      Text(
+                        l10n.pendingReimbursement,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Text(
-                formatCents(pending, currency: currency),
-                style: moneyStyle(size: 16, color: palette.income),
-              ),
-              const SizedBox(width: 4),
-              ExcludeSemantics(
-                child: Icon(Icons.chevron_right, color: palette.muted),
-              ),
-            ],
+                Text(
+                  formatCents(pending, currency: currency),
+                  style: moneyStyle(size: 16, color: palette.income),
+                ),
+                const SizedBox(width: 4),
+                ExcludeSemantics(
+                  child: Icon(Icons.chevron_right, color: palette.muted),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -433,120 +534,134 @@ class _WalletCard extends ConsumerWidget {
     // Tenendo premuto si trascina per riordinare (l'intera card diventa la
     // maniglia); un tap semplice attiva il portafoglio; il bottone edit in
     // alto a destra apre il foglio azioni (rinomina/valuta/elimina).
+    // Ombra tinta del colore del portafoglio; quello attivo ha anche un
+    // anello e un bagliore più intenso, animati al cambio di spazio.
     return ReorderableDelayedDragStartListener(
       index: index,
       child: Semantics(
         selected: isActive,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isActive
-                  ? Theme.of(context).colorScheme.onSurface
-                  : Colors.transparent,
-              width: 2.5,
-            ),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: radius,
-            clipBehavior: Clip.antiAlias,
-            child: Ink(
-              width: 164,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: lightText
-                      ? [base, _shade(base, -.10)]
-                      : [_shade(base, .06), base],
-                ),
+        child: Pressable(
+          borderRadius: BorderRadius.circular(24),
+          shadow: const [],
+          child: AnimatedContainer(
+            duration: Motion.medium,
+            curve: Motion.emphasized,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isActive
+                    ? Theme.of(context).colorScheme.onSurface
+                    : Colors.transparent,
+                width: 2.5,
               ),
-              child: InkWell(
-                onTap: () =>
-                    ref.read(activeWalletIdProvider.notifier).set(wallet.id),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(14, 4, 2, 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          if (isActive) ...[
-                            ExcludeSemantics(
-                              child: Icon(
-                                Icons.check_circle,
-                                size: 16,
-                                color: fg,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          Expanded(
-                            child: Text(
-                              wallet.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(
-                                    color: fg,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                          ),
-                          IconButton(
-                            key: const Key('walletEditButton'),
-                            tooltip: l10n.edit,
-                            visualDensity: VisualDensity.compact,
-                            iconSize: 18,
-                            color: fg,
-                            onPressed: () =>
-                                showWalletActionsSheet(context, wallet),
-                            icon: const Icon(Icons.edit_outlined),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: AlignmentDirectional.centerStart,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
+              boxShadow: [
+                BoxShadow(
+                  color: base.withValues(alpha: isActive ? .55 : .28),
+                  blurRadius: isActive ? 24 : 14,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: radius,
+              clipBehavior: Clip.antiAlias,
+              child: Ink(
+                width: 164,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: lightText
+                        ? [base, _shade(base, -.10)]
+                        : [_shade(base, .06), base],
+                  ),
+                ),
+                child: InkWell(
+                  onTap: () =>
+                      ref.read(activeWalletIdProvider.notifier).set(wallet.id),
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(14, 4, 2, 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              balance == null
-                                  ? '…'
-                                  : formatCents(
-                                      balance,
-                                      currency: wallet.currency,
-                                      symbolOnly: true,
-                                    ),
-                              maxLines: 1,
-                              style: moneyStyle(
-                                size: 20,
-                                weight: FontWeight.w800,
-                                color: fg,
-                              ),
-                            ),
-                            if (balance != null) ...[
-                              const SizedBox(width: 4),
-                              Text(
-                                wallet.currency,
-                                style: moneyStyle(
-                                  size: 10,
-                                  weight: FontWeight.w700,
-                                  color: fg.withValues(alpha: .8),
+                            if (isActive) ...[
+                              ExcludeSemantics(
+                                child: Icon(
+                                  Icons.check_circle,
+                                  size: 16,
+                                  color: fg,
                                 ),
                               ),
+                              const SizedBox(width: 6),
                             ],
+                            Expanded(
+                              child: Text(
+                                wallet.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(
+                                      color: fg,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                            ),
+                            IconButton(
+                              key: const Key('walletEditButton'),
+                              tooltip: l10n.edit,
+                              visualDensity: VisualDensity.compact,
+                              iconSize: 18,
+                              color: fg,
+                              onPressed: () =>
+                                  showWalletActionsSheet(context, wallet),
+                              icon: const Icon(Icons.edit_outlined),
+                            ),
                           ],
                         ),
-                      ),
-                    ],
+                        const Spacer(),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                balance == null
+                                    ? '…'
+                                    : formatCents(
+                                        balance,
+                                        currency: wallet.currency,
+                                        symbolOnly: true,
+                                      ),
+                                maxLines: 1,
+                                style: moneyStyle(
+                                  size: 22,
+                                  weight: FontWeight.w700,
+                                  color: fg,
+                                ),
+                              ),
+                              if (balance != null) ...[
+                                const SizedBox(width: 4),
+                                Text(
+                                  wallet.currency,
+                                  style: moneyStyle(
+                                    size: 10,
+                                    weight: FontWeight.w700,
+                                    color: fg.withValues(alpha: .8),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

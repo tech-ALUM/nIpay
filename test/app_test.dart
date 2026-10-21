@@ -496,8 +496,9 @@ void main() {
     await tester.tap(find.byKey(const Key('addTransactionFab')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('amountField')), '90');
-    await tester.ensureVisible(find.text('🛒 Groceries').last);
-    await tester.tap(find.text('🛒 Groceries').last);
+    // Nel foglio la categoria è una tessera: emoji nel badge, nome sotto.
+    await tester.ensureVisible(find.text('Groceries').last);
+    await tester.tap(find.text('Groceries').last);
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('txSaveButton')));
     await tester.tap(find.byKey(const Key('txSaveButton')));

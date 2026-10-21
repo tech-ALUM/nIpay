@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -582,6 +583,23 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     final generalFields = fieldDefs.where((d) => !d.expenseReportOnly);
     final reportFields = fieldDefs.where((d) => d.expenseReportOnly);
     final isExpense = _type == TransactionType.expense;
+    // Colore che accompagna il tipo nel riquadro importo e nella categoria
+    // scelta: coral per le spese, teal per le entrate, neutro per i
+    // trasferimenti (come gli importi in lista).
+    final typeColor = switch (_type) {
+      TransactionType.expense => palette.expense,
+      TransactionType.income => palette.income,
+      TransactionType.transfer => scheme.onSurface,
+    };
+    Future<void> pickDate() async {
+      final picked = await showDatePicker(
+        context: context,
+        initialDate: _date,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2100),
+      );
+      if (picked != null) setState(() => _date = picked);
+    }
 
     // Colore del segmento selezionato: coral per le spese, teal per le
     // entrate, neutro per i trasferimenti (come gli importi in lista).
@@ -645,95 +663,129 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           child: Text(l10n.save),
         ),
       ],
+      // Ordine: prima ciò che serve sempre (importo, categoria), poi
+      // descrizione e data, lo scontrino e i dettagli raggruppati in card.
       children: [
+        _AmountHero(
+          color: typeColor,
+          children: [
+            TextField(
+              key: const Key('amountField'),
+              controller: _amount,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: moneyInputFormatters,
+              textAlign: TextAlign.center,
+              style: moneyStyle(size: 40, color: typeColor),
+              cursorColor: typeColor,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                labelText: l10n.amount,
+                errorText: _error,
+                filled: false,
+                floatingLabelAlignment: FloatingLabelAlignment.center,
+                floatingLabelStyle: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(
+                      color: _error != null ? scheme.error : typeColor,
+                    ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: palette.line),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: typeColor, width: 2),
+                ),
+                errorBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: scheme.error),
+                ),
+                focusedErrorBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: scheme.error, width: 2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: SizedBox(
+                width: 170,
+                child: CurrencyField(
+                  key: const Key('transactionCurrencyDropdown'),
+                  value: effectiveCurrency,
+                  onChanged: (v) {
+                    setState(() => _currency = v);
+                    _maybeFetchRate();
+                  },
+                ),
+              ),
+            ),
+            if (effectiveCurrency != activeCurrency)
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 4),
+                child: _fetchingRate
+                    ? const Center(
+                        child: SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : _rateError != null
+                    ? _InlineMessage(
+                        icon: Icons.error_outline,
+                        text: _rateError!,
+                        color: scheme.error,
+                      )
+                    : (_rate != null && parseCents(_amount.text) != null)
+                    ? _InlineMessage(
+                        icon: Icons.currency_exchange,
+                        text: l10n.convertedPreview(
+                          formatCents(
+                            (parseCents(_amount.text)! * _rate!).round(),
+                            currency: activeCurrency,
+                          ),
+                        ),
+                        color: palette.muted,
+                      )
+                    : const SizedBox.shrink(),
+              ),
+          ],
+        ),
+        if (_type != TransactionType.transfer) ...[
+          FieldLabel(l10n.category),
+          _CategoryGrid(
+            categories: categories,
+            selectedId: _categoryId,
+            accent: typeColor,
+            // Come la chip di prima: toccare la categoria scelta la toglie.
+            onSelected: (id) =>
+                setState(() => _categoryId = _categoryId == id ? null : id),
+          ),
+        ],
+        const SizedBox(height: 20),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: TextField(
-                key: const Key('amountField'),
-                controller: _amount,
-                autofocus: true,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: moneyInputFormatters,
-                style: moneyStyle(size: 26),
-                onChanged: (_) => setState(() {}),
-                decoration: InputDecoration(
-                  labelText: l10n.amount,
-                  errorText: _error,
-                ),
+                key: const Key('descriptionField'),
+                controller: _description,
+                textCapitalization: TextCapitalization.sentences,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(kMaxDescriptionLength),
+                ],
+                decoration: InputDecoration(labelText: l10n.description),
               ),
             ),
             const SizedBox(width: 10),
-            SizedBox(
-              width: 140,
-              child: CurrencyField(
-                key: const Key('transactionCurrencyDropdown'),
-                value: effectiveCurrency,
-                onChanged: (v) {
-                  setState(() => _currency = v);
-                  _maybeFetchRate();
-                },
+            Flexible(
+              child: _DatePill(
+                label: l10n.date,
+                value: formatDate(context, _date),
+                onTap: pickDate,
               ),
             ),
           ],
-        ),
-        if (effectiveCurrency != activeCurrency)
-          Padding(
-            padding: const EdgeInsets.only(top: 8, left: 4),
-            child: _fetchingRate
-                ? const Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: SizedBox(
-                      height: 16,
-                      width: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : _rateError != null
-                ? _InlineMessage(
-                    icon: Icons.error_outline,
-                    text: _rateError!,
-                    color: scheme.error,
-                  )
-                : (_rate != null && parseCents(_amount.text) != null)
-                ? _InlineMessage(
-                    icon: Icons.currency_exchange,
-                    text: l10n.convertedPreview(
-                      formatCents(
-                        (parseCents(_amount.text)! * _rate!).round(),
-                        currency: activeCurrency,
-                      ),
-                    ),
-                    color: palette.muted,
-                  )
-                : const SizedBox.shrink(),
-          ),
-        kFieldGap,
-        TextField(
-          key: const Key('descriptionField'),
-          controller: _description,
-          textCapitalization: TextCapitalization.sentences,
-          inputFormatters: [
-            LengthLimitingTextInputFormatter(kMaxDescriptionLength),
-          ],
-          decoration: InputDecoration(labelText: l10n.description),
-        ),
-        kFieldGap,
-        DateField(
-          label: l10n.date,
-          value: formatDate(context, _date),
-          onTap: () async {
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: _date,
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-            );
-            if (picked != null) setState(() => _date = picked);
-          },
         ),
         if (_type == TransactionType.transfer && wallets.length > 1) ...[
           kFieldGap,
@@ -766,150 +818,23 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           ),
         ],
         if (_type != TransactionType.transfer) ...[
-          FieldLabel(l10n.category),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final c in categories)
-                ChoiceChip(
-                  label: Text(c.label(l10n)),
-                  selected: _categoryId == c.id,
-                  onSelected: (sel) =>
-                      setState(() => _categoryId = sel ? c.id : null),
-                ),
-            ],
-          ),
-          FieldLabel(l10n.tags),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final t in tags)
-                FilterChip(
-                  label: Text('#${t.name}'),
-                  selected: _selectedTagIds.contains(t.id),
-                  onSelected: (sel) => setState(
-                    () => sel
-                        ? _selectedTagIds.add(t.id)
-                        : _selectedTagIds.remove(t.id),
-                  ),
-                ),
-              ActionChip(
-                key: const Key('addTagChip'),
-                avatar: const Icon(Icons.add, size: 18),
-                label: Text(l10n.newTag),
-                onPressed: () async {
-                  final name = await _promptNewTag(context, l10n, tags);
-                  if (name == null || name.isEmpty) return;
-                  final active = ref.read(activeWalletProvider);
-                  if (active == null) return;
-                  final id = await ref
-                      .read(tagRepositoryProvider)
-                      .create(name, walletId: active.id);
-                  ref.invalidate(tagsProvider);
-                  setState(() => _selectedTagIds.add(id));
-                },
-              ),
-            ],
-          ),
-          if (generalFields.isNotEmpty) ...[
-            FieldLabel(l10n.customFields),
-            ..._fieldList(generalFields),
-          ],
-          if (isExpense) ...[
-            const SizedBox(height: 20),
-            // Material (non Container colorato): gli switch disegnano
-            // l'effetto al tocco sul Material più vicino.
-            Material(
-              color: _isExpenseReport ? palette.surface2 : Colors.transparent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: palette.line),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SwitchListTile(
-                    key: const Key('expenseReportSwitch'),
-                    secondary: const Icon(Icons.receipt_long_outlined),
-                    title: Text(
-                      l10n.expenseReportFlag,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    value: _isExpenseReport,
-                    onChanged: (v) => setState(() => _isExpenseReport = v),
-                  ),
-                  if (_isExpenseReport)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          DropdownButtonFormField<String?>(
-                            key: const Key('costCenterDropdown'),
-                            initialValue: _costCenterId,
-                            isExpanded: true,
-                            decoration: InputDecoration(
-                              labelText: l10n.costCenter,
-                            ),
-                            items: [
-                              DropdownMenuItem(
-                                value: null,
-                                child: Text(l10n.none),
-                              ),
-                              for (final cc
-                                  in ref
-                                          .watch(costCentersProvider)
-                                          .valueOrNull ??
-                                      const <CostCenter>[])
-                                DropdownMenuItem(
-                                  value: cc.id,
-                                  child: Text(cc.name),
-                                ),
-                            ],
-                            onChanged: (v) => setState(() => _costCenterId = v),
-                          ),
-                          const SizedBox(height: 4),
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(l10n.reimbursable),
-                            value: _reimbursable,
-                            onChanged: (v) => setState(() => _reimbursable = v),
-                          ),
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(l10n.eInvoice),
-                            value: _eInvoice,
-                            onChanged: (v) => setState(() => _eInvoice = v),
-                          ),
-                          if (reportFields.isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            ..._fieldList(reportFields),
-                            const SizedBox(height: 8),
-                          ],
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
           FieldLabel(l10n.receipt),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Row(
             children: [
-              OutlinedButton.icon(
-                icon: const Icon(Icons.photo_camera_outlined, size: 20),
-                label: Text(l10n.fromCamera),
-                onPressed: () => _pickImage(ImageSource.camera),
+              Expanded(
+                child: _ReceiptButton(
+                  icon: Icons.photo_camera_outlined,
+                  label: l10n.fromCamera,
+                  onPressed: () => _pickImage(ImageSource.camera),
+                ),
               ),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.photo_library_outlined, size: 20),
-                label: Text(l10n.fromGallery),
-                onPressed: () => _pickImage(ImageSource.gallery),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _ReceiptButton(
+                  icon: Icons.photo_library_outlined,
+                  label: l10n.fromGallery,
+                  onPressed: () => _pickImage(ImageSource.gallery),
+                ),
               ),
             ],
           ),
@@ -955,6 +880,135 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
                 color: scheme.error,
               ),
             ),
+          const SizedBox(height: 20),
+          _DetailsCard(
+            children: [
+              _CardLabel(l10n.tags),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final t in tags)
+                    FilterChip(
+                      label: Text('#${t.name}'),
+                      selected: _selectedTagIds.contains(t.id),
+                      onSelected: (sel) => setState(
+                        () => sel
+                            ? _selectedTagIds.add(t.id)
+                            : _selectedTagIds.remove(t.id),
+                      ),
+                    ),
+                  ActionChip(
+                    key: const Key('addTagChip'),
+                    avatar: const Icon(Icons.add, size: 18),
+                    label: Text(l10n.newTag),
+                    onPressed: () async {
+                      final name = await _promptNewTag(context, l10n, tags);
+                      if (name == null || name.isEmpty) return;
+                      final active = ref.read(activeWalletProvider);
+                      if (active == null) return;
+                      final id = await ref
+                          .read(tagRepositoryProvider)
+                          .create(name, walletId: active.id);
+                      ref.invalidate(tagsProvider);
+                      setState(() => _selectedTagIds.add(id));
+                    },
+                  ),
+                ],
+              ),
+              if (generalFields.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                FieldLabel(l10n.customFields),
+                ..._fieldList(generalFields),
+              ],
+            ],
+          ),
+          if (isExpense) ...[
+            const SizedBox(height: 12),
+            // Material (non Container colorato): gli switch disegnano
+            // l'effetto al tocco sul Material più vicino.
+            Material(
+              color: _isExpenseReport ? palette.surface2 : scheme.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: palette.line),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: AnimatedSize(
+                duration: Motion.medium,
+                curve: Motion.emphasized,
+                alignment: Alignment.topCenter,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SwitchListTile(
+                      key: const Key('expenseReportSwitch'),
+                      secondary: const Icon(Icons.receipt_long_outlined),
+                      title: Text(
+                        l10n.expenseReportFlag,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      value: _isExpenseReport,
+                      onChanged: (v) => setState(() => _isExpenseReport = v),
+                    ),
+                    if (_isExpenseReport)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            DropdownButtonFormField<String?>(
+                              key: const Key('costCenterDropdown'),
+                              initialValue: _costCenterId,
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                labelText: l10n.costCenter,
+                              ),
+                              items: [
+                                DropdownMenuItem(
+                                  value: null,
+                                  child: Text(l10n.none),
+                                ),
+                                for (final cc
+                                    in ref
+                                            .watch(costCentersProvider)
+                                            .valueOrNull ??
+                                        const <CostCenter>[])
+                                  DropdownMenuItem(
+                                    value: cc.id,
+                                    child: Text(cc.name),
+                                  ),
+                              ],
+                              onChanged: (v) =>
+                                  setState(() => _costCenterId = v),
+                            ),
+                            const SizedBox(height: 4),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(l10n.reimbursable),
+                              value: _reimbursable,
+                              onChanged: (v) =>
+                                  setState(() => _reimbursable = v),
+                            ),
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(l10n.eInvoice),
+                              value: _eInvoice,
+                              onChanged: (v) => setState(() => _eInvoice = v),
+                            ),
+                            if (reportFields.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              ..._fieldList(reportFields),
+                              const SizedBox(height: 8),
+                            ],
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ],
     );
@@ -987,5 +1041,299 @@ class _InlineMessage extends StatelessWidget {
         ),
       ),
     ],
+  );
+}
+
+/// Riquadro dell'importo: tinta leggera del colore del tipo, che cambia
+/// con un'animazione passando da spesa a entrata a trasferimento.
+class _AmountHero extends StatelessWidget {
+  const _AmountHero({required this.color, required this.children});
+
+  final Color color;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => AnimatedContainer(
+    duration: Motion.medium,
+    curve: Motion.emphasized,
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: .07),
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(color: color.withValues(alpha: .22)),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    ),
+  );
+}
+
+/// Griglia di tessere categoria: almeno 4 colonne, di più su schermi
+/// larghi. Le tessere hanno la stessa larghezza, le righe vanno a capo.
+class _CategoryGrid extends StatelessWidget {
+  const _CategoryGrid({
+    required this.categories,
+    required this.selectedId,
+    required this.accent,
+    required this.onSelected,
+  });
+
+  final List<Category> categories;
+  final String? selectedId;
+  final Color accent;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      const gap = 8.0;
+      final columns = math.max(4, constraints.maxWidth ~/ 110);
+      final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
+      return Wrap(
+        spacing: gap,
+        runSpacing: gap,
+        children: [
+          for (final c in categories)
+            SizedBox(
+              width: width,
+              child: _CategoryTile(
+                category: c,
+                selected: c.id == selectedId,
+                accent: accent,
+                onTap: () => onSelected(c.id),
+              ),
+            ),
+        ],
+      );
+    },
+  );
+}
+
+/// Tessera di una categoria: emoji su fondo del colore della categoria e
+/// nome sotto. Scelta = bordo e tinta del colore del tipo, più la spunta
+/// (lo stato non è affidato al solo colore).
+class _CategoryTile extends StatelessWidget {
+  const _CategoryTile({
+    required this.category,
+    required this.selected,
+    required this.accent,
+    required this.onTap,
+  });
+
+  final Category category;
+  final bool selected;
+  final Color accent;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final palette = context.nipay;
+    final radius = BorderRadius.circular(16);
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        child: Pressable(
+          borderRadius: radius,
+          shadow: const [],
+          child: AnimatedContainer(
+            duration: Motion.fast,
+            decoration: BoxDecoration(
+              color: selected
+                  ? accent.withValues(alpha: .10)
+                  : Theme.of(context).colorScheme.surface,
+              borderRadius: radius,
+              border: Border.all(
+                color: selected ? accent : palette.line,
+                width: selected ? 2 : 1,
+              ),
+            ),
+            child: Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                borderRadius: radius,
+                onTap: onTap,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 10, 4, 8),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconBadge(
+                            emoji: category.icon,
+                            color: colorFromHex(category.colorHex),
+                          ),
+                          if (selected)
+                            PositionedDirectional(
+                              top: -6,
+                              end: -6,
+                              child: ExcludeSemantics(
+                                child: Icon(
+                                  Icons.check_circle,
+                                  size: 18,
+                                  color: accent,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      // Nomi lunghi ("Restaurants") si rimpiccioliscono un
+                      // po' invece di troncarsi: righe tutte alte uguali.
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          category.displayName(l10n),
+                          maxLines: 1,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.labelMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Data compatta accanto alla descrizione: stessa altezza del campo, tocca
+/// per aprire il calendario. Annunciata come "Data: 21 ott 2026".
+class _DatePill extends StatelessWidget {
+  const _DatePill({
+    required this.label,
+    required this.value,
+    required this.onTap,
+  });
+
+  final String label;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(14);
+    return Semantics(
+      button: true,
+      label: '$label: $value',
+      excludeSemantics: true,
+      onTap: onTap,
+      child: Material(
+        color: scheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: radius,
+          side: BorderSide(color: scheme.outline),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 52),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.event_outlined, size: 20, color: scheme.primary),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottone scontrino: alto, icona sopra l'etichetta, bordo tratteggiato
+/// "da riempire" reso con un contorno leggero.
+class _ReceiptButton extends StatelessWidget {
+  const _ReceiptButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton(
+    style: OutlinedButton.styleFrom(
+      minimumSize: const Size(0, 64),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    ),
+    onPressed: onPressed,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 22),
+        const SizedBox(height: 4),
+        Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+      ],
+    ),
+  );
+}
+
+/// Card che raggruppa i dettagli facoltativi (tag, campi personalizzati).
+class _DetailsCard extends StatelessWidget {
+  const _DetailsCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: context.nipay.line),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    ),
+  );
+}
+
+/// Etichetta del primo gruppo dentro una card (senza lo spazio sopra di
+/// [FieldLabel], che lì farebbe doppio col padding della card).
+class _CardLabel extends StatelessWidget {
+  const _CardLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Semantics(
+      header: true,
+      child: Text(
+        text,
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(color: context.nipay.muted),
+      ),
+    ),
   );
 }

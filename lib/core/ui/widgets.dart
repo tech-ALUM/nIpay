@@ -53,6 +53,18 @@ class SectionHeader extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 32),
       child: Row(
         children: [
+          // Tacca col gradiente del CTA: ritmo visivo tra le sezioni.
+          ExcludeSemantics(
+            child: Container(
+              width: 4,
+              height: 18,
+              margin: const EdgeInsetsDirectional.only(end: 10),
+              decoration: BoxDecoration(
+                gradient: context.nipay.ctaGradient,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
           Expanded(
             child: Semantics(
               header: true,

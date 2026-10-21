@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Tema "Bold Ink" — dal design system nIpay (design/directions/a-bold-ink*.html).
-/// Brand ALUM: coral #FF6F61, teal #0E7C86, ink #15181D; importi in Nunito.
+/// Tema "Ink Aurora" (2026-10-21), evoluzione di "Bold Ink"
+/// (design/directions/a-bold-ink*.html): stessi colori del brand ALUM —
+/// coral #FF6F61, teal #0E7C86, ink #15181D — con gradienti, bagliori e
+/// ombre a strati per dare profondità. Titoli in Bricolage Grotesque, testo
+/// in Plus Jakarta Sans, importi in Space Grotesk.
 ///
 /// Regole d'uso (design/README.md): coral è l'accento primario, deliberato e
 /// non ovunque (FAB, CTA, spese); teal il secondario (entrate, selezioni,
@@ -14,6 +17,13 @@ abstract final class NipayColors {
   static const teal = Color(0xFF0E7C86);
   static const ink = Color(0xFF15181D);
 
+  // Ink Aurora: code dei gradienti del brand e fondali del mesh saldo.
+  static const magenta = Color(0xFFFF3D7F); // coda del CTA: ink sopra 5.3:1
+  static const cyan = Color(0xFF22C3D6);
+  static const auroraIndigo = Color(0xFF241C52);
+  static const auroraInk = Color(0xFF0E1024);
+  static const auroraTeal = Color(0xFF0A2630);
+
   // Varianti tonali per testo/icone: coral e teal puri non reggono il
   // contrasto del testo piccolo su tutti gli sfondi.
   static const coralDeep = Color(0xFFC23B2B); // su chiaro: 4.95:1 su bgLight
@@ -24,9 +34,9 @@ abstract final class NipayColors {
   static const warn = Color(0xFFE0A800);
   static const over = Color(0xFFD64545);
 
-  // Superfici dark.
-  static const bgDark = Color(0xFF101318);
-  static const surfDark = Color(0xFF1A1F27);
+  // Superfici dark: sfondo più profondo delle card, così le card "salgono".
+  static const bgDark = Color(0xFF0B0E14);
+  static const surfDark = Color(0xFF181C26);
   static const surf2Dark = Color(0xFF222834);
   static const fieldDark = Color(0xFF151A21);
   static const lineDark = Color(0xFF2A313D);
@@ -60,6 +70,12 @@ class NipayPalette extends ThemeExtension<NipayPalette> {
     required this.hero,
     required this.onHero,
     required this.onHeroMuted,
+    required this.heroGradient,
+    required this.ctaGradient,
+    required this.glowPrimary,
+    required this.glowSecondary,
+    required this.cardShadow,
+    required this.raisedShadow,
   });
 
   /// Testo/icone delle spese (coral leggibile sullo sfondo del tema).
@@ -94,6 +110,27 @@ class NipayPalette extends ThemeExtension<NipayPalette> {
   final Color onHero;
   final Color onHeroMuted;
 
+  /// Mesh della banda saldo (indigo → ink → teal profondo): scuro in
+  /// entrambi i temi, il testo sopra resta [onHero].
+  final Gradient heroGradient;
+
+  /// CTA e FAB: coral → magenta, testo/icone ink sopra (≥ 5.3:1).
+  final Gradient ctaGradient;
+
+  /// Bagliori decorativi dietro le intestazioni (coral e teal).
+  final Color glowPrimary;
+  final Color glowSecondary;
+
+  /// Ombra a riposo delle card in rilievo e quella sollevata (hover).
+  final List<BoxShadow> cardShadow;
+  final List<BoxShadow> raisedShadow;
+
+  static const _ctaGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [NipayColors.coral, NipayColors.magenta],
+  );
+
   static const dark = NipayPalette(
     expense: NipayColors.coralLight,
     income: NipayColors.tealLight,
@@ -107,6 +144,29 @@ class NipayPalette extends ThemeExtension<NipayPalette> {
     hero: NipayColors.surf2Dark,
     onHero: NipayColors.textDark,
     onHeroMuted: Color(0xFFB9C0CB),
+    heroGradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        NipayColors.auroraIndigo,
+        NipayColors.auroraInk,
+        NipayColors.auroraTeal,
+      ],
+      stops: [0, .55, 1],
+    ),
+    ctaGradient: _ctaGradient,
+    glowPrimary: Color(0x47FF6F61),
+    glowSecondary: Color(0x383FC5CF),
+    cardShadow: [
+      BoxShadow(color: Color(0x59000000), blurRadius: 18, offset: Offset(0, 8)),
+    ],
+    raisedShadow: [
+      BoxShadow(
+        color: Color(0x80000000),
+        blurRadius: 28,
+        offset: Offset(0, 14),
+      ),
+    ],
   );
 
   static const light = NipayPalette(
@@ -122,6 +182,27 @@ class NipayPalette extends ThemeExtension<NipayPalette> {
     hero: NipayColors.ink,
     onHero: NipayColors.textDark,
     onHeroMuted: Color(0xFFB9C0CB),
+    heroGradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFF2B2160), NipayColors.ink, Color(0xFF0C2E38)],
+      stops: [0, .55, 1],
+    ),
+    ctaGradient: _ctaGradient,
+    glowPrimary: Color(0x29FF6F61),
+    glowSecondary: Color(0x240E7C86),
+    cardShadow: [
+      BoxShadow(color: Color(0x141B2240), blurRadius: 16, offset: Offset(0, 6)),
+      BoxShadow(color: Color(0x0D1B2240), blurRadius: 2, offset: Offset(0, 1)),
+    ],
+    raisedShadow: [
+      BoxShadow(
+        color: Color(0x241B2240),
+        blurRadius: 28,
+        offset: Offset(0, 14),
+      ),
+      BoxShadow(color: Color(0x0D1B2240), blurRadius: 2, offset: Offset(0, 1)),
+    ],
   );
 
   @override
@@ -138,6 +219,12 @@ class NipayPalette extends ThemeExtension<NipayPalette> {
     Color? hero,
     Color? onHero,
     Color? onHeroMuted,
+    Gradient? heroGradient,
+    Gradient? ctaGradient,
+    Color? glowPrimary,
+    Color? glowSecondary,
+    List<BoxShadow>? cardShadow,
+    List<BoxShadow>? raisedShadow,
   }) => NipayPalette(
     expense: expense ?? this.expense,
     income: income ?? this.income,
@@ -151,6 +238,12 @@ class NipayPalette extends ThemeExtension<NipayPalette> {
     hero: hero ?? this.hero,
     onHero: onHero ?? this.onHero,
     onHeroMuted: onHeroMuted ?? this.onHeroMuted,
+    heroGradient: heroGradient ?? this.heroGradient,
+    ctaGradient: ctaGradient ?? this.ctaGradient,
+    glowPrimary: glowPrimary ?? this.glowPrimary,
+    glowSecondary: glowSecondary ?? this.glowSecondary,
+    cardShadow: cardShadow ?? this.cardShadow,
+    raisedShadow: raisedShadow ?? this.raisedShadow,
   );
 
   /// Interpolazione vera: il cambio chiaro/scuro anima anche questi colori.
@@ -171,6 +264,12 @@ class NipayPalette extends ThemeExtension<NipayPalette> {
       hero: mix(hero, other.hero),
       onHero: mix(onHero, other.onHero),
       onHeroMuted: mix(onHeroMuted, other.onHeroMuted),
+      heroGradient: Gradient.lerp(heroGradient, other.heroGradient, t)!,
+      ctaGradient: Gradient.lerp(ctaGradient, other.ctaGradient, t)!,
+      glowPrimary: mix(glowPrimary, other.glowPrimary),
+      glowSecondary: mix(glowSecondary, other.glowSecondary),
+      cardShadow: BoxShadow.lerpList(cardShadow, other.cardShadow, t)!,
+      raisedShadow: BoxShadow.lerpList(raisedShadow, other.raisedShadow, t)!,
     );
   }
 }
@@ -187,25 +286,31 @@ extension NipayThemeX on BuildContext {
   }
 }
 
-/// Stile per gli importi: SEMPRE Nunito (cifre tabulari, non monospace).
+/// Stile per gli importi: SEMPRE Space Grotesk (cifre tabulari, non
+/// monospace), il font numerico del brand ALUM.
 TextStyle moneyStyle({
   double size = 14,
   FontWeight weight = FontWeight.w700,
   Color? color,
-}) => GoogleFonts.nunito(
+}) => GoogleFonts.spaceGrotesk(
   fontSize: size,
   fontWeight: weight,
   color: color,
+  letterSpacing: size >= 28 ? -1 : 0,
   fontFeatures: const [FontFeature.tabularFigures()],
 );
 
 /// Stile per i bottoni distruttivi (elimina, rimuovi dati): rosso errore con
 /// testo `onError`, non l'ink del CTA standard (che sul rosso non si legge).
+/// Lo stile del widget si fonde con quello del tema, quindi il gradiente
+/// coral del CTA va spento esplicitamente.
 ButtonStyle destructiveButtonStyle(BuildContext context) {
   final scheme = Theme.of(context).colorScheme;
   return FilledButton.styleFrom(
     backgroundColor: scheme.error,
     foregroundColor: scheme.onError,
+    shadowColor: scheme.error.withValues(alpha: .45),
+    backgroundBuilder: (context, states, child) => child!,
   );
 }
 
@@ -299,26 +404,33 @@ ThemeData _base(Brightness brightness) {
         scrim: Colors.black,
       );
 
-  final base = GoogleFonts.interTextTheme(
+  final base = GoogleFonts.plusJakartaSansTextTheme(
     ThemeData(brightness: brightness).textTheme,
   ).apply(bodyColor: text, displayColor: text);
+  // Titoli grandi e compatti: la spaziatura negativa cresce con la misura.
   TextStyle display(double size, FontWeight weight) =>
-      GoogleFonts.manrope(fontSize: size, fontWeight: weight, color: text);
+      GoogleFonts.bricolageGrotesque(
+        fontSize: size,
+        fontWeight: weight,
+        color: text,
+        letterSpacing: -size * .025,
+        height: 1.1,
+      );
   TextStyle inter(double size, FontWeight weight, [Color? color]) =>
-      GoogleFonts.inter(
+      GoogleFonts.plusJakartaSans(
         fontSize: size,
         fontWeight: weight,
         color: color ?? text,
       );
 
-  // Scala unica: titoli in Manrope, testo in Inter. Niente testo sotto i
-  // 12 px per i contenuti (11 solo per micro-etichette).
+  // Scala unica: titoli in Bricolage Grotesque, testo in Plus Jakarta Sans.
+  // Niente testo sotto i 12 px per i contenuti (11 solo per micro-etichette).
   final textTheme = base.copyWith(
-    displaySmall: display(34, FontWeight.w800),
-    headlineMedium: display(28, FontWeight.w800),
-    headlineSmall: display(24, FontWeight.w800),
-    titleLarge: display(20, FontWeight.w700),
-    titleMedium: display(16, FontWeight.w700),
+    displaySmall: display(40, FontWeight.w800),
+    headlineMedium: display(31, FontWeight.w800),
+    headlineSmall: display(27, FontWeight.w800),
+    titleLarge: display(21, FontWeight.w700),
+    titleMedium: display(17.5, FontWeight.w700),
     titleSmall: inter(14, FontWeight.w600),
     bodyLarge: inter(16, FontWeight.w400),
     bodyMedium: inter(14, FontWeight.w400),
@@ -385,9 +497,9 @@ ThemeData _base(Brightness brightness) {
       focusColor: NipayColors.ink.withValues(alpha: .16),
       hoverColor: NipayColors.ink.withValues(alpha: .08),
       splashColor: NipayColors.ink.withValues(alpha: .16),
-      elevation: 2,
-      focusElevation: 4,
-      hoverElevation: 4,
+      elevation: 4,
+      focusElevation: 8,
+      hoverElevation: 8,
       highlightElevation: 2,
       shape: rounded(18),
       extendedTextStyle: inter(15, FontWeight.w700, NipayColors.ink),
@@ -399,6 +511,33 @@ ThemeData _base(Brightness brightness) {
               ? text.withValues(alpha: .12)
               : NipayColors.coral,
         ),
+        // Gradiente dipinto con Ink sul Material del bottone: ripple e
+        // overlay di hover/focus restano visibili sopra il colore.
+        backgroundBuilder: (context, states, child) =>
+            states.contains(WidgetState.disabled)
+            ? child!
+            : Ink(
+                decoration: BoxDecoration(
+                  gradient: palette.ctaGradient,
+                  borderRadius: BorderRadius.circular(_radiusM),
+                ),
+                child: child,
+              ),
+        // Ombra colorata che si alza al passaggio e si abbassa al tocco.
+        elevation: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.disabled)
+              ? 0
+              : s.contains(WidgetState.pressed)
+              ? 1
+              : s.contains(WidgetState.hovered) ||
+                    s.contains(WidgetState.focused)
+              ? 8
+              : 3,
+        ),
+        shadowColor: WidgetStatePropertyAll(
+          NipayColors.coral.withValues(alpha: dark ? .55 : .45),
+        ),
+        animationDuration: const Duration(milliseconds: 160),
         foregroundColor: WidgetStateProperty.resolveWith(
           (s) => s.contains(WidgetState.disabled)
               ? text.withValues(alpha: .38)
