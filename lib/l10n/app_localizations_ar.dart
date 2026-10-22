@@ -390,101 +390,102 @@ class AppLocalizationsAr extends AppLocalizations {
   String get themeDark => 'داكن';
 
   @override
-  String get account => 'Account';
+  String get account => 'الحساب';
 
   @override
   String get accountLocalModeDescription =>
-      'You\'re not signed in: your data stays on this device only. Sign in to sync it across devices.';
+      'أنت غير مسجّل الدخول: تبقى بياناتك على هذا الجهاز فقط. سجّل الدخول لمزامنتها بين أجهزتك.';
 
   @override
-  String get signIn => 'Sign in';
+  String get signIn => 'تسجيل الدخول';
 
   @override
-  String get signUp => 'Sign up';
+  String get signUp => 'إنشاء حساب';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'تسجيل الخروج';
 
   @override
-  String get email => 'Email';
+  String get email => 'البريد الإلكتروني';
 
   @override
-  String get password => 'Password';
+  String get password => 'كلمة المرور';
 
   @override
   String get confirmSignOut =>
-      'Sign out of your account? Your data stays on this device, but it can only be opened again by signing in with this account.';
+      'هل تريد تسجيل الخروج من حسابك؟ تبقى بياناتك على هذا الجهاز، لكن لا يمكن فتحها مجددًا إلا بتسجيل الدخول بهذا الحساب.';
 
   @override
-  String get noAccountYet => 'Don\'t have an account? Sign up';
+  String get noAccountYet => 'ليس لديك حساب؟ أنشئ حسابًا';
 
   @override
-  String get alreadyHaveAccount => 'Already have an account? Sign in';
+  String get alreadyHaveAccount => 'لديك حساب بالفعل؟ سجّل الدخول';
 
   @override
-  String get forgotPassword => 'Forgot password?';
+  String get forgotPassword => 'نسيت كلمة المرور؟';
 
   @override
   String get resetPasswordSent =>
-      'Password reset email sent — check your inbox.';
+      'تم إرسال رسالة إعادة تعيين كلمة المرور — تحقّق من بريدك.';
 
   @override
   String signedInAs(String email) {
-    return 'Signed in as $email';
+    return 'تم تسجيل الدخول باسم $email';
   }
 
   @override
-  String get invalidEmail => 'Enter a valid email address';
+  String get invalidEmail => 'أدخل عنوان بريد إلكتروني صالحًا';
 
   @override
-  String get passwordTooShort => 'Password must be at least 8 characters';
+  String get passwordTooShort =>
+      'يجب أن تتكوّن كلمة المرور من 8 أحرف على الأقل';
 
   @override
-  String get changePassword => 'Change password';
+  String get changePassword => 'تغيير كلمة المرور';
 
   @override
-  String get newPassword => 'New password';
+  String get newPassword => 'كلمة المرور الجديدة';
 
   @override
-  String get confirmPassword => 'Confirm password';
+  String get confirmPassword => 'تأكيد كلمة المرور';
 
   @override
-  String get passwordsDontMatch => 'Passwords don\'t match';
+  String get passwordsDontMatch => 'كلمتا المرور غير متطابقتين';
 
   @override
   String get passwordChanged =>
-      'Password changed. Other devices have been signed out.';
+      'تم تغيير كلمة المرور. تم تسجيل الخروج من الأجهزة الأخرى.';
 
   @override
-  String get syncNow => 'Sync now';
+  String get syncNow => 'مزامنة الآن';
 
   @override
-  String get syncComplete => 'Sync complete';
+  String get syncComplete => 'اكتملت المزامنة';
 
   @override
-  String get syncFailed => 'Sync failed. Check your connection and try again.';
+  String get syncFailed => 'فشلت المزامنة. تحقّق من اتصالك وحاول مرة أخرى.';
 
   @override
-  String get deleteAccount => 'Delete account';
+  String get deleteAccount => 'حذف الحساب';
 
   @override
   String get deleteAccountConfirmBody =>
-      'Your account and its cloud data will be permanently deleted in 30 days. Until then you can cancel from this screen. The data on this device is not deleted.';
+      'سيتم حذف حسابك وبياناته السحابية نهائيًا بعد 30 يومًا. ويمكنك الإلغاء من هذه الشاشة حتى ذلك الحين. لا تُحذف البيانات الموجودة على هذا الجهاز.';
 
   @override
   String get deleteAccountRequested =>
-      'Account deletion requested. You have 30 days to cancel.';
+      'تم طلب حذف الحساب. لديك 30 يومًا للإلغاء.';
 
   @override
   String deletionPending(String date) {
-    return 'Account scheduled for deletion on $date.';
+    return 'الحساب مجدول للحذف في $date.';
   }
 
   @override
-  String get cancelDeletion => 'Cancel deletion';
+  String get cancelDeletion => 'إلغاء الحذف';
 
   @override
-  String get deletionCanceled => 'Account deletion canceled.';
+  String get deletionCanceled => 'تم إلغاء حذف الحساب.';
 
   @override
   String get signOutRemoveLocalData => 'إزالة البيانات من هذا الجهاز';
@@ -516,112 +517,110 @@ class AppLocalizationsAr extends AppLocalizations {
       'المزامنة متوقفة مؤقتًا: يحتوي هذا الجهاز على بيانات حساب آخر.';
 
   @override
-  String get currentPassword => 'Current password';
+  String get currentPassword => 'كلمة المرور الحالية';
 
   @override
-  String get wrongCurrentPassword => 'The current password is not correct.';
+  String get wrongCurrentPassword => 'كلمة المرور الحالية غير صحيحة.';
 
   @override
-  String get confirmWithPassword => 'Enter your password to confirm.';
+  String get confirmWithPassword => 'أدخل كلمة المرور للتأكيد.';
 
   @override
   String get passwordTooWeak =>
-      'Use at least 12 characters, with letters and numbers.';
+      'استخدم 12 حرفًا على الأقل، تتضمّن أحرفًا وأرقامًا.';
 
   @override
-  String get signOutEverywhere => 'Sign out of all devices';
+  String get signOutEverywhere => 'تسجيل الخروج من جميع الأجهزة';
 
   @override
   String get signOutEverywhereConfirmBody =>
-      'Every session of this account will be closed, including this one. Use it if a device was lost or stolen. Data on this device stays here.';
+      'سيتم إغلاق جميع جلسات هذا الحساب، بما فيها هذه الجلسة. استخدم ذلك إذا فقدت جهازًا أو سُرق منك. تبقى البيانات الموجودة على هذا الجهاز هنا.';
 
   @override
-  String get signedOutEverywhere => 'Signed out of all devices.';
+  String get signedOutEverywhere => 'تم تسجيل الخروج من جميع الأجهزة.';
 
   @override
   String get authErrorInvalidCredentials =>
-      'Invalid email or password, or email not confirmed yet.';
+      'البريد الإلكتروني أو كلمة المرور غير صحيحين، أو لم يتم تأكيد البريد الإلكتروني بعد.';
 
   @override
   String get authErrorWeakPassword =>
-      'This password isn\'t accepted: choose a longer, less common one.';
+      'لا تُقبل كلمة المرور هذه: اختر كلمة أطول وأقل شيوعًا.';
 
   @override
   String get authErrorSamePassword =>
-      'The new password must be different from the current one.';
+      'يجب أن تختلف كلمة المرور الجديدة عن الحالية.';
 
   @override
   String get authErrorRateLimited =>
-      'Too many attempts. Wait a few minutes and try again.';
+      'محاولات كثيرة جدًا. انتظر بضع دقائق ثم حاول مرة أخرى.';
 
   @override
   String get authErrorReauthRequired =>
-      'For security, enter your password again and retry.';
+      'لدواعٍ أمنية، أدخل كلمة المرور مرة أخرى وأعد المحاولة.';
 
   @override
   String get authErrorNetwork =>
-      'Can\'t reach the server. Check your connection and try again.';
+      'تعذّر الوصول إلى الخادم. تحقّق من اتصالك وحاول مرة أخرى.';
 
   @override
-  String get authErrorGeneric => 'Something went wrong. Please try again.';
+  String get authErrorGeneric => 'حدث خطأ ما. حاول مرة أخرى.';
 
   @override
-  String get resetPasswordTitle => 'Set a new password';
+  String get resetPasswordTitle => 'تعيين كلمة مرور جديدة';
 
   @override
   String get passwordResetDone =>
-      'Password updated. Other devices have been signed out.';
+      'تم تحديث كلمة المرور. تم تسجيل الخروج من الأجهزة الأخرى.';
 
   @override
-  String get resetPasswordCooldown =>
-      'Wait a minute before requesting another email.';
+  String get resetPasswordCooldown => 'انتظر دقيقة قبل طلب رسالة أخرى.';
 
   @override
   String lastSyncAt(String date) {
-    return 'Last sync: $date';
+    return 'آخر مزامنة: $date';
   }
 
   @override
-  String get lastSyncNever => 'Not synced yet';
+  String get lastSyncNever => 'لم تتم المزامنة بعد';
 
   @override
-  String get syncLastFailed =>
-      'The last sync failed: it will be retried automatically.';
+  String get syncLastFailed => 'فشلت آخر مزامنة: ستتم إعادة المحاولة تلقائيًا.';
 
   @override
   String syncIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items couldn\'t be synced and will be retried.',
-      one: '1 item couldn\'t be synced and will be retried.',
+      other: 'تعذّرت مزامنة $count من العناصر وستتم إعادة المحاولة.',
+      one: 'تعذّرت مزامنة عنصر واحد وستتم إعادة المحاولة.',
     );
     return '$_temp0';
   }
 
   @override
-  String get lockedDataTitle => 'Data locked';
+  String get lockedDataTitle => 'البيانات مقفلة';
 
   @override
   String lockedDataBody(String email) {
-    return 'This device holds the data of $email. Sign in with that account to see it, or remove it from this device.';
+    return 'يحتوي هذا الجهاز على بيانات $email. سجّل الدخول بذلك الحساب لعرضها، أو احذفها من هذا الجهاز.';
   }
 
   @override
   String get lockedDataBodyUnknownOwner =>
-      'This device holds the data of an account that is not signed in. Sign in with that account to see it, or remove it from this device.';
+      'يحتوي هذا الجهاز على بيانات حساب غير مسجّل الدخول. سجّل الدخول بذلك الحساب لعرضها، أو احذفها من هذا الجهاز.';
 
   @override
   String get lockedDataOtherAccountBody =>
-      'This device holds the data of a different account. To use this account here, remove that data from the device (open Account), or sign out.';
+      'يحتوي هذا الجهاز على بيانات حساب آخر. لاستخدام هذا الحساب هنا، احذف تلك البيانات من الجهاز (افتح الحساب)، أو سجّل الخروج.';
 
   @override
   String get startupError =>
-      'Couldn\'t open your data. Restart the app; if it keeps happening, contact support.';
+      'تعذّر فتح بياناتك. أعد تشغيل التطبيق؛ وإذا تكرّر ذلك، فتواصل مع الدعم.';
 
   @override
   String get attachmentUnsupported =>
-      'This image format isn\'t supported: use a JPEG, PNG or WebP photo.';
+      'صيغة الصورة هذه غير مدعومة: استخدم صورة بصيغة JPEG أو PNG أو WebP.';
 
   @override
   String get pause => 'إيقاف مؤقت';

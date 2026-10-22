@@ -389,101 +389,97 @@ class AppLocalizationsZh extends AppLocalizations {
   String get themeDark => '深色';
 
   @override
-  String get account => 'Account';
+  String get account => '账户';
 
   @override
   String get accountLocalModeDescription =>
-      'You\'re not signed in: your data stays on this device only. Sign in to sync it across devices.';
+      '你尚未登录：你的数据只保存在这台设备上。登录后即可在多台设备间同步。';
 
   @override
-  String get signIn => 'Sign in';
+  String get signIn => '登录';
 
   @override
-  String get signUp => 'Sign up';
+  String get signUp => '注册';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => '退出登录';
 
   @override
-  String get email => 'Email';
+  String get email => '电子邮箱';
 
   @override
-  String get password => 'Password';
+  String get password => '密码';
 
   @override
-  String get confirmSignOut =>
-      'Sign out of your account? Your data stays on this device, but it can only be opened again by signing in with this account.';
+  String get confirmSignOut => '要退出你的账户吗？数据会保留在这台设备上，但只能用这个账户重新登录后才能再次打开。';
 
   @override
-  String get noAccountYet => 'Don\'t have an account? Sign up';
+  String get noAccountYet => '还没有账户？注册';
 
   @override
-  String get alreadyHaveAccount => 'Already have an account? Sign in';
+  String get alreadyHaveAccount => '已有账户？登录';
 
   @override
-  String get forgotPassword => 'Forgot password?';
+  String get forgotPassword => '忘记密码？';
 
   @override
-  String get resetPasswordSent =>
-      'Password reset email sent — check your inbox.';
+  String get resetPasswordSent => '重置密码的邮件已发送，请查收邮箱。';
 
   @override
   String signedInAs(String email) {
-    return 'Signed in as $email';
+    return '已登录：$email';
   }
 
   @override
-  String get invalidEmail => 'Enter a valid email address';
+  String get invalidEmail => '请输入有效的电子邮箱地址';
 
   @override
-  String get passwordTooShort => 'Password must be at least 8 characters';
+  String get passwordTooShort => '密码至少需要 8 个字符';
 
   @override
-  String get changePassword => 'Change password';
+  String get changePassword => '修改密码';
 
   @override
-  String get newPassword => 'New password';
+  String get newPassword => '新密码';
 
   @override
-  String get confirmPassword => 'Confirm password';
+  String get confirmPassword => '确认密码';
 
   @override
-  String get passwordsDontMatch => 'Passwords don\'t match';
+  String get passwordsDontMatch => '两次输入的密码不一致';
 
   @override
-  String get passwordChanged =>
-      'Password changed. Other devices have been signed out.';
+  String get passwordChanged => '密码已修改。其他设备已退出登录。';
 
   @override
-  String get syncNow => 'Sync now';
+  String get syncNow => '立即同步';
 
   @override
-  String get syncComplete => 'Sync complete';
+  String get syncComplete => '同步完成';
 
   @override
-  String get syncFailed => 'Sync failed. Check your connection and try again.';
+  String get syncFailed => '同步失败。请检查网络连接后重试。';
 
   @override
-  String get deleteAccount => 'Delete account';
+  String get deleteAccount => '删除账户';
 
   @override
   String get deleteAccountConfirmBody =>
-      'Your account and its cloud data will be permanently deleted in 30 days. Until then you can cancel from this screen. The data on this device is not deleted.';
+      '你的账户及其云端数据将在 30 天后永久删除。在此之前，你可以在此页面取消。这台设备上的数据不会被删除。';
 
   @override
-  String get deleteAccountRequested =>
-      'Account deletion requested. You have 30 days to cancel.';
+  String get deleteAccountRequested => '已申请删除账户。你有 30 天时间可以取消。';
 
   @override
   String deletionPending(String date) {
-    return 'Account scheduled for deletion on $date.';
+    return '账户将于 $date 删除。';
   }
 
   @override
-  String get cancelDeletion => 'Cancel deletion';
+  String get cancelDeletion => '取消删除';
 
   @override
-  String get deletionCanceled => 'Account deletion canceled.';
+  String get deletionCanceled => '已取消删除账户。';
 
   @override
   String get signOutRemoveLocalData => '从此设备移除数据';
@@ -513,112 +509,100 @@ class AppLocalizationsZh extends AppLocalizations {
   String get syncBlockedForeignData => '同步已暂停：此设备上有另一个账户的数据。';
 
   @override
-  String get currentPassword => 'Current password';
+  String get currentPassword => '当前密码';
 
   @override
-  String get wrongCurrentPassword => 'The current password is not correct.';
+  String get wrongCurrentPassword => '当前密码不正确。';
 
   @override
-  String get confirmWithPassword => 'Enter your password to confirm.';
+  String get confirmWithPassword => '请输入密码以确认。';
 
   @override
-  String get passwordTooWeak =>
-      'Use at least 12 characters, with letters and numbers.';
+  String get passwordTooWeak => '请至少使用 12 个字符，并包含字母和数字。';
 
   @override
-  String get signOutEverywhere => 'Sign out of all devices';
+  String get signOutEverywhere => '在所有设备上退出登录';
 
   @override
   String get signOutEverywhereConfirmBody =>
-      'Every session of this account will be closed, including this one. Use it if a device was lost or stolen. Data on this device stays here.';
+      '这个账户的所有会话都将被关闭，包括当前会话。如果设备丢失或被盗，请使用此功能。这台设备上的数据会保留。';
 
   @override
-  String get signedOutEverywhere => 'Signed out of all devices.';
+  String get signedOutEverywhere => '已在所有设备上退出登录。';
 
   @override
-  String get authErrorInvalidCredentials =>
-      'Invalid email or password, or email not confirmed yet.';
+  String get authErrorInvalidCredentials => '电子邮箱或密码无效，或者邮箱尚未验证。';
 
   @override
-  String get authErrorWeakPassword =>
-      'This password isn\'t accepted: choose a longer, less common one.';
+  String get authErrorWeakPassword => '此密码不被接受：请选择更长、更不常见的密码。';
 
   @override
-  String get authErrorSamePassword =>
-      'The new password must be different from the current one.';
+  String get authErrorSamePassword => '新密码必须与当前密码不同。';
 
   @override
-  String get authErrorRateLimited =>
-      'Too many attempts. Wait a few minutes and try again.';
+  String get authErrorRateLimited => '尝试次数过多。请等待几分钟后重试。';
 
   @override
-  String get authErrorReauthRequired =>
-      'For security, enter your password again and retry.';
+  String get authErrorReauthRequired => '为了安全，请重新输入密码后重试。';
 
   @override
-  String get authErrorNetwork =>
-      'Can\'t reach the server. Check your connection and try again.';
+  String get authErrorNetwork => '无法连接服务器。请检查网络连接后重试。';
 
   @override
-  String get authErrorGeneric => 'Something went wrong. Please try again.';
+  String get authErrorGeneric => '出了点问题，请重试。';
 
   @override
-  String get resetPasswordTitle => 'Set a new password';
+  String get resetPasswordTitle => '设置新密码';
 
   @override
-  String get passwordResetDone =>
-      'Password updated. Other devices have been signed out.';
+  String get passwordResetDone => '密码已更新。其他设备已退出登录。';
 
   @override
-  String get resetPasswordCooldown =>
-      'Wait a minute before requesting another email.';
+  String get resetPasswordCooldown => '请等待一分钟后再请求新的邮件。';
 
   @override
   String lastSyncAt(String date) {
-    return 'Last sync: $date';
+    return '上次同步：$date';
   }
 
   @override
-  String get lastSyncNever => 'Not synced yet';
+  String get lastSyncNever => '尚未同步';
 
   @override
-  String get syncLastFailed =>
-      'The last sync failed: it will be retried automatically.';
+  String get syncLastFailed => '上次同步失败：将自动重试。';
 
   @override
   String syncIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items couldn\'t be synced and will be retried.',
-      one: '1 item couldn\'t be synced and will be retried.',
+      other: '有 $count 项未能同步，将自动重试。',
+      one: '有 1 项未能同步，将自动重试。',
     );
     return '$_temp0';
   }
 
   @override
-  String get lockedDataTitle => 'Data locked';
+  String get lockedDataTitle => '数据已锁定';
 
   @override
   String lockedDataBody(String email) {
-    return 'This device holds the data of $email. Sign in with that account to see it, or remove it from this device.';
+    return '这台设备上保存着 $email 的数据。请用该账户登录查看，或将其从这台设备上移除。';
   }
 
   @override
   String get lockedDataBodyUnknownOwner =>
-      'This device holds the data of an account that is not signed in. Sign in with that account to see it, or remove it from this device.';
+      '这台设备上保存着一个未登录账户的数据。请用该账户登录查看，或将其从这台设备上移除。';
 
   @override
   String get lockedDataOtherAccountBody =>
-      'This device holds the data of a different account. To use this account here, remove that data from the device (open Account), or sign out.';
+      '这台设备上保存着另一个账户的数据。要在这里使用当前账户，请从设备上移除这些数据（打开“账户”），或者退出登录。';
 
   @override
-  String get startupError =>
-      'Couldn\'t open your data. Restart the app; if it keeps happening, contact support.';
+  String get startupError => '无法打开你的数据。请重启应用；如果问题持续出现，请联系支持团队。';
 
   @override
-  String get attachmentUnsupported =>
-      'This image format isn\'t supported: use a JPEG, PNG or WebP photo.';
+  String get attachmentUnsupported => '不支持此图片格式：请使用 JPEG、PNG 或 WebP 照片。';
 
   @override
   String get pause => '暂停';

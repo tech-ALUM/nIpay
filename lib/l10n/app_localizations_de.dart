@@ -398,97 +398,99 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get accountLocalModeDescription =>
-      'You\'re not signed in: your data stays on this device only. Sign in to sync it across devices.';
+      'Du bist nicht angemeldet: Deine Daten bleiben nur auf diesem Gerät. Melde dich an, um sie zwischen Geräten zu synchronisieren.';
 
   @override
-  String get signIn => 'Sign in';
+  String get signIn => 'Anmelden';
 
   @override
-  String get signUp => 'Sign up';
+  String get signUp => 'Registrieren';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'Abmelden';
 
   @override
-  String get email => 'Email';
+  String get email => 'E-Mail';
 
   @override
-  String get password => 'Password';
+  String get password => 'Passwort';
 
   @override
   String get confirmSignOut =>
-      'Sign out of your account? Your data stays on this device, but it can only be opened again by signing in with this account.';
+      'Vom Account abmelden? Deine Daten bleiben auf diesem Gerät, lassen sich aber nur wieder öffnen, wenn du dich mit diesem Account anmeldest.';
 
   @override
-  String get noAccountYet => 'Don\'t have an account? Sign up';
+  String get noAccountYet => 'Noch keinen Account? Registrieren';
 
   @override
-  String get alreadyHaveAccount => 'Already have an account? Sign in';
+  String get alreadyHaveAccount => 'Schon einen Account? Anmelden';
 
   @override
-  String get forgotPassword => 'Forgot password?';
+  String get forgotPassword => 'Passwort vergessen?';
 
   @override
   String get resetPasswordSent =>
-      'Password reset email sent — check your inbox.';
+      'E-Mail zum Zurücksetzen des Passworts gesendet — sieh in deinem Posteingang nach.';
 
   @override
   String signedInAs(String email) {
-    return 'Signed in as $email';
+    return 'Angemeldet als $email';
   }
 
   @override
-  String get invalidEmail => 'Enter a valid email address';
+  String get invalidEmail => 'Gib eine gültige E-Mail-Adresse ein';
 
   @override
-  String get passwordTooShort => 'Password must be at least 8 characters';
+  String get passwordTooShort =>
+      'Das Passwort muss mindestens 8 Zeichen lang sein';
 
   @override
-  String get changePassword => 'Change password';
+  String get changePassword => 'Passwort ändern';
 
   @override
-  String get newPassword => 'New password';
+  String get newPassword => 'Neues Passwort';
 
   @override
-  String get confirmPassword => 'Confirm password';
+  String get confirmPassword => 'Passwort bestätigen';
 
   @override
-  String get passwordsDontMatch => 'Passwords don\'t match';
+  String get passwordsDontMatch => 'Die Passwörter stimmen nicht überein';
 
   @override
   String get passwordChanged =>
-      'Password changed. Other devices have been signed out.';
+      'Passwort geändert. Andere Geräte wurden abgemeldet.';
 
   @override
-  String get syncNow => 'Sync now';
+  String get syncNow => 'Jetzt synchronisieren';
 
   @override
-  String get syncComplete => 'Sync complete';
+  String get syncComplete => 'Synchronisierung abgeschlossen';
 
   @override
-  String get syncFailed => 'Sync failed. Check your connection and try again.';
+  String get syncFailed =>
+      'Synchronisierung fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.';
 
   @override
-  String get deleteAccount => 'Delete account';
+  String get deleteAccount => 'Account löschen';
 
   @override
   String get deleteAccountConfirmBody =>
-      'Your account and its cloud data will be permanently deleted in 30 days. Until then you can cancel from this screen. The data on this device is not deleted.';
+      'Dein Account und seine Cloud-Daten werden in 30 Tagen endgültig gelöscht. Bis dahin kannst du das auf diesem Bildschirm abbrechen. Die Daten auf diesem Gerät werden nicht gelöscht.';
 
   @override
   String get deleteAccountRequested =>
-      'Account deletion requested. You have 30 days to cancel.';
+      'Löschung des Accounts beantragt. Du hast 30 Tage Zeit, sie abzubrechen.';
 
   @override
   String deletionPending(String date) {
-    return 'Account scheduled for deletion on $date.';
+    return 'Der Account wird am $date gelöscht.';
   }
 
   @override
-  String get cancelDeletion => 'Cancel deletion';
+  String get cancelDeletion => 'Löschung abbrechen';
 
   @override
-  String get deletionCanceled => 'Account deletion canceled.';
+  String get deletionCanceled => 'Löschung des Accounts abgebrochen.';
 
   @override
   String get signOutRemoveLocalData => 'Daten von diesem Gerät entfernen';
@@ -520,112 +522,115 @@ class AppLocalizationsDe extends AppLocalizations {
       'Synchronisierung pausiert: Auf diesem Gerät befinden sich Daten eines anderen Kontos.';
 
   @override
-  String get currentPassword => 'Current password';
+  String get currentPassword => 'Aktuelles Passwort';
 
   @override
-  String get wrongCurrentPassword => 'The current password is not correct.';
+  String get wrongCurrentPassword => 'Das aktuelle Passwort ist nicht korrekt.';
 
   @override
-  String get confirmWithPassword => 'Enter your password to confirm.';
+  String get confirmWithPassword => 'Gib zur Bestätigung dein Passwort ein.';
 
   @override
   String get passwordTooWeak =>
-      'Use at least 12 characters, with letters and numbers.';
+      'Verwende mindestens 12 Zeichen mit Buchstaben und Zahlen.';
 
   @override
-  String get signOutEverywhere => 'Sign out of all devices';
+  String get signOutEverywhere => 'Von allen Geräten abmelden';
 
   @override
   String get signOutEverywhereConfirmBody =>
-      'Every session of this account will be closed, including this one. Use it if a device was lost or stolen. Data on this device stays here.';
+      'Alle Sitzungen dieses Accounts werden beendet, auch diese. Nutze das, wenn ein Gerät verloren gegangen ist oder gestohlen wurde. Die Daten auf diesem Gerät bleiben hier.';
 
   @override
-  String get signedOutEverywhere => 'Signed out of all devices.';
+  String get signedOutEverywhere => 'Von allen Geräten abgemeldet.';
 
   @override
   String get authErrorInvalidCredentials =>
-      'Invalid email or password, or email not confirmed yet.';
+      'E-Mail oder Passwort ungültig, oder die E-Mail wurde noch nicht bestätigt.';
 
   @override
   String get authErrorWeakPassword =>
-      'This password isn\'t accepted: choose a longer, less common one.';
+      'Dieses Passwort wird nicht akzeptiert: Wähle ein längeres, weniger verbreitetes.';
 
   @override
   String get authErrorSamePassword =>
-      'The new password must be different from the current one.';
+      'Das neue Passwort muss sich vom aktuellen unterscheiden.';
 
   @override
   String get authErrorRateLimited =>
-      'Too many attempts. Wait a few minutes and try again.';
+      'Zu viele Versuche. Warte ein paar Minuten und versuche es erneut.';
 
   @override
   String get authErrorReauthRequired =>
-      'For security, enter your password again and retry.';
+      'Gib aus Sicherheitsgründen dein Passwort erneut ein und versuche es noch einmal.';
 
   @override
   String get authErrorNetwork =>
-      'Can\'t reach the server. Check your connection and try again.';
+      'Der Server ist nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.';
 
   @override
-  String get authErrorGeneric => 'Something went wrong. Please try again.';
+  String get authErrorGeneric =>
+      'Etwas ist schiefgelaufen. Bitte versuche es erneut.';
 
   @override
-  String get resetPasswordTitle => 'Set a new password';
+  String get resetPasswordTitle => 'Neues Passwort festlegen';
 
   @override
   String get passwordResetDone =>
-      'Password updated. Other devices have been signed out.';
+      'Passwort aktualisiert. Andere Geräte wurden abgemeldet.';
 
   @override
   String get resetPasswordCooldown =>
-      'Wait a minute before requesting another email.';
+      'Warte eine Minute, bevor du eine weitere E-Mail anforderst.';
 
   @override
   String lastSyncAt(String date) {
-    return 'Last sync: $date';
+    return 'Letzte Synchronisierung: $date';
   }
 
   @override
-  String get lastSyncNever => 'Not synced yet';
+  String get lastSyncNever => 'Noch nicht synchronisiert';
 
   @override
   String get syncLastFailed =>
-      'The last sync failed: it will be retried automatically.';
+      'Die letzte Synchronisierung ist fehlgeschlagen: Sie wird automatisch wiederholt.';
 
   @override
   String syncIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items couldn\'t be synced and will be retried.',
-      one: '1 item couldn\'t be synced and will be retried.',
+      other:
+          '$count Elemente konnten nicht synchronisiert werden und werden erneut versucht.',
+      one:
+          '1 Element konnte nicht synchronisiert werden und wird erneut versucht.',
     );
     return '$_temp0';
   }
 
   @override
-  String get lockedDataTitle => 'Data locked';
+  String get lockedDataTitle => 'Daten gesperrt';
 
   @override
   String lockedDataBody(String email) {
-    return 'This device holds the data of $email. Sign in with that account to see it, or remove it from this device.';
+    return 'Dieses Gerät enthält die Daten von $email. Melde dich mit diesem Account an, um sie zu sehen, oder entferne sie von diesem Gerät.';
   }
 
   @override
   String get lockedDataBodyUnknownOwner =>
-      'This device holds the data of an account that is not signed in. Sign in with that account to see it, or remove it from this device.';
+      'Dieses Gerät enthält die Daten eines nicht angemeldeten Accounts. Melde dich mit diesem Account an, um sie zu sehen, oder entferne sie von diesem Gerät.';
 
   @override
   String get lockedDataOtherAccountBody =>
-      'This device holds the data of a different account. To use this account here, remove that data from the device (open Account), or sign out.';
+      'Dieses Gerät enthält die Daten eines anderen Accounts. Um diesen Account hier zu nutzen, entferne diese Daten vom Gerät (öffne Account) oder melde dich ab.';
 
   @override
   String get startupError =>
-      'Couldn\'t open your data. Restart the app; if it keeps happening, contact support.';
+      'Deine Daten konnten nicht geöffnet werden. Starte die App neu; wenn das wieder passiert, wende dich an den Support.';
 
   @override
   String get attachmentUnsupported =>
-      'This image format isn\'t supported: use a JPEG, PNG or WebP photo.';
+      'Dieses Bildformat wird nicht unterstützt: Verwende ein JPEG-, PNG- oder WebP-Foto.';
 
   @override
   String get pause => 'Pausieren';

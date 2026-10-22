@@ -391,101 +391,102 @@ class AppLocalizationsHi extends AppLocalizations {
   String get themeDark => 'डार्क';
 
   @override
-  String get account => 'Account';
+  String get account => 'खाता';
 
   @override
   String get accountLocalModeDescription =>
-      'You\'re not signed in: your data stays on this device only. Sign in to sync it across devices.';
+      'आपने साइन इन नहीं किया है: आपका डेटा केवल इसी डिवाइस पर रहता है। इसे सभी डिवाइस पर सिंक करने के लिए साइन इन करें।';
 
   @override
-  String get signIn => 'Sign in';
+  String get signIn => 'साइन इन करें';
 
   @override
-  String get signUp => 'Sign up';
+  String get signUp => 'साइन अप करें';
 
   @override
-  String get signOut => 'Sign out';
+  String get signOut => 'साइन आउट करें';
 
   @override
-  String get email => 'Email';
+  String get email => 'ईमेल';
 
   @override
-  String get password => 'Password';
+  String get password => 'पासवर्ड';
 
   @override
   String get confirmSignOut =>
-      'Sign out of your account? Your data stays on this device, but it can only be opened again by signing in with this account.';
+      'क्या आप अपने खाते से साइन आउट करना चाहते हैं? आपका डेटा इसी डिवाइस पर रहेगा, लेकिन इसे फिर से केवल इसी खाते से साइन इन करके खोला जा सकेगा।';
 
   @override
-  String get noAccountYet => 'Don\'t have an account? Sign up';
+  String get noAccountYet => 'खाता नहीं है? साइन अप करें';
 
   @override
-  String get alreadyHaveAccount => 'Already have an account? Sign in';
+  String get alreadyHaveAccount => 'पहले से खाता है? साइन इन करें';
 
   @override
-  String get forgotPassword => 'Forgot password?';
+  String get forgotPassword => 'पासवर्ड भूल गए?';
 
   @override
   String get resetPasswordSent =>
-      'Password reset email sent — check your inbox.';
+      'पासवर्ड रीसेट ईमेल भेज दिया गया है — अपना इनबॉक्स देखें।';
 
   @override
   String signedInAs(String email) {
-    return 'Signed in as $email';
+    return '$email के रूप में साइन इन किया गया';
   }
 
   @override
-  String get invalidEmail => 'Enter a valid email address';
+  String get invalidEmail => 'एक मान्य ईमेल पता दर्ज करें';
 
   @override
-  String get passwordTooShort => 'Password must be at least 8 characters';
+  String get passwordTooShort => 'पासवर्ड में कम से कम 8 अक्षर होने चाहिए';
 
   @override
-  String get changePassword => 'Change password';
+  String get changePassword => 'पासवर्ड बदलें';
 
   @override
-  String get newPassword => 'New password';
+  String get newPassword => 'नया पासवर्ड';
 
   @override
-  String get confirmPassword => 'Confirm password';
+  String get confirmPassword => 'पासवर्ड की पुष्टि करें';
 
   @override
-  String get passwordsDontMatch => 'Passwords don\'t match';
+  String get passwordsDontMatch => 'पासवर्ड मेल नहीं खाते';
 
   @override
   String get passwordChanged =>
-      'Password changed. Other devices have been signed out.';
+      'पासवर्ड बदल दिया गया। अन्य डिवाइस से साइन आउट कर दिया गया है।';
 
   @override
-  String get syncNow => 'Sync now';
+  String get syncNow => 'अभी सिंक करें';
 
   @override
-  String get syncComplete => 'Sync complete';
+  String get syncComplete => 'सिंक पूरा हुआ';
 
   @override
-  String get syncFailed => 'Sync failed. Check your connection and try again.';
+  String get syncFailed =>
+      'सिंक विफल रहा। अपना कनेक्शन जांचें और फिर से कोशिश करें।';
 
   @override
-  String get deleteAccount => 'Delete account';
+  String get deleteAccount => 'खाता हटाएं';
 
   @override
   String get deleteAccountConfirmBody =>
-      'Your account and its cloud data will be permanently deleted in 30 days. Until then you can cancel from this screen. The data on this device is not deleted.';
+      'आपका खाता और उसका क्लाउड डेटा 30 दिनों में स्थायी रूप से हटा दिया जाएगा। तब तक आप इसी स्क्रीन से रद्द कर सकते हैं। इस डिवाइस का डेटा नहीं हटाया जाता।';
 
   @override
   String get deleteAccountRequested =>
-      'Account deletion requested. You have 30 days to cancel.';
+      'खाता हटाने का अनुरोध किया गया। रद्द करने के लिए आपके पास 30 दिन हैं।';
 
   @override
   String deletionPending(String date) {
-    return 'Account scheduled for deletion on $date.';
+    return 'खाता $date को हटाया जाना निर्धारित है।';
   }
 
   @override
-  String get cancelDeletion => 'Cancel deletion';
+  String get cancelDeletion => 'हटाना रद्द करें';
 
   @override
-  String get deletionCanceled => 'Account deletion canceled.';
+  String get deletionCanceled => 'खाता हटाना रद्द कर दिया गया।';
 
   @override
   String get signOutRemoveLocalData => 'इस डिवाइस से डेटा हटाएँ';
@@ -517,112 +518,113 @@ class AppLocalizationsHi extends AppLocalizations {
       'सिंक रुका हुआ है: इस डिवाइस पर किसी दूसरे खाते का डेटा है।';
 
   @override
-  String get currentPassword => 'Current password';
+  String get currentPassword => 'वर्तमान पासवर्ड';
 
   @override
-  String get wrongCurrentPassword => 'The current password is not correct.';
+  String get wrongCurrentPassword => 'वर्तमान पासवर्ड सही नहीं है।';
 
   @override
-  String get confirmWithPassword => 'Enter your password to confirm.';
+  String get confirmWithPassword =>
+      'पुष्टि करने के लिए अपना पासवर्ड दर्ज करें।';
 
   @override
   String get passwordTooWeak =>
-      'Use at least 12 characters, with letters and numbers.';
+      'कम से कम 12 अक्षरों का उपयोग करें, जिनमें अक्षर और अंक दोनों हों।';
 
   @override
-  String get signOutEverywhere => 'Sign out of all devices';
+  String get signOutEverywhere => 'सभी डिवाइस से साइन आउट करें';
 
   @override
   String get signOutEverywhereConfirmBody =>
-      'Every session of this account will be closed, including this one. Use it if a device was lost or stolen. Data on this device stays here.';
+      'इस खाते के सभी सत्र बंद कर दिए जाएंगे, इसमें यह सत्र भी शामिल है। अगर कोई डिवाइस खो गया है या चोरी हो गया है, तो इसका उपयोग करें। इस डिवाइस का डेटा यहीं रहेगा।';
 
   @override
-  String get signedOutEverywhere => 'Signed out of all devices.';
+  String get signedOutEverywhere => 'सभी डिवाइस से साइन आउट कर दिया गया।';
 
   @override
   String get authErrorInvalidCredentials =>
-      'Invalid email or password, or email not confirmed yet.';
+      'ईमेल या पासवर्ड अमान्य है, या ईमेल की अभी पुष्टि नहीं हुई है।';
 
   @override
   String get authErrorWeakPassword =>
-      'This password isn\'t accepted: choose a longer, less common one.';
+      'यह पासवर्ड स्वीकार नहीं किया गया: कोई लंबा और कम आम पासवर्ड चुनें।';
 
   @override
   String get authErrorSamePassword =>
-      'The new password must be different from the current one.';
+      'नया पासवर्ड वर्तमान पासवर्ड से अलग होना चाहिए।';
 
   @override
   String get authErrorRateLimited =>
-      'Too many attempts. Wait a few minutes and try again.';
+      'बहुत अधिक प्रयास। कुछ मिनट रुकें और फिर से कोशिश करें।';
 
   @override
   String get authErrorReauthRequired =>
-      'For security, enter your password again and retry.';
+      'सुरक्षा के लिए, अपना पासवर्ड फिर से दर्ज करें और दोबारा कोशिश करें।';
 
   @override
   String get authErrorNetwork =>
-      'Can\'t reach the server. Check your connection and try again.';
+      'सर्वर तक नहीं पहुंचा जा सका। अपना कनेक्शन जांचें और फिर से कोशिश करें।';
 
   @override
-  String get authErrorGeneric => 'Something went wrong. Please try again.';
+  String get authErrorGeneric => 'कुछ गलत हो गया। कृपया फिर से कोशिश करें।';
 
   @override
-  String get resetPasswordTitle => 'Set a new password';
+  String get resetPasswordTitle => 'नया पासवर्ड सेट करें';
 
   @override
   String get passwordResetDone =>
-      'Password updated. Other devices have been signed out.';
+      'पासवर्ड अपडेट हो गया। अन्य डिवाइस से साइन आउट कर दिया गया है।';
 
   @override
   String get resetPasswordCooldown =>
-      'Wait a minute before requesting another email.';
+      'दूसरा ईमेल मांगने से पहले एक मिनट रुकें।';
 
   @override
   String lastSyncAt(String date) {
-    return 'Last sync: $date';
+    return 'पिछला सिंक: $date';
   }
 
   @override
-  String get lastSyncNever => 'Not synced yet';
+  String get lastSyncNever => 'अभी तक सिंक नहीं हुआ';
 
   @override
   String get syncLastFailed =>
-      'The last sync failed: it will be retried automatically.';
+      'पिछला सिंक विफल रहा: इसे अपने आप फिर से आज़माया जाएगा।';
 
   @override
   String syncIssues(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count items couldn\'t be synced and will be retried.',
-      one: '1 item couldn\'t be synced and will be retried.',
+      other: '$count आइटम सिंक नहीं हो सके और उन्हें फिर से आज़माया जाएगा।',
+      one: '1 आइटम सिंक नहीं हो सका और उसे फिर से आज़माया जाएगा।',
     );
     return '$_temp0';
   }
 
   @override
-  String get lockedDataTitle => 'Data locked';
+  String get lockedDataTitle => 'डेटा लॉक है';
 
   @override
   String lockedDataBody(String email) {
-    return 'This device holds the data of $email. Sign in with that account to see it, or remove it from this device.';
+    return 'इस डिवाइस में $email का डेटा है। इसे देखने के लिए उस खाते से साइन इन करें, या इसे इस डिवाइस से हटा दें।';
   }
 
   @override
   String get lockedDataBodyUnknownOwner =>
-      'This device holds the data of an account that is not signed in. Sign in with that account to see it, or remove it from this device.';
+      'इस डिवाइस में ऐसे खाते का डेटा है जिससे साइन इन नहीं किया गया है। इसे देखने के लिए उस खाते से साइन इन करें, या इसे इस डिवाइस से हटा दें।';
 
   @override
   String get lockedDataOtherAccountBody =>
-      'This device holds the data of a different account. To use this account here, remove that data from the device (open Account), or sign out.';
+      'इस डिवाइस में किसी दूसरे खाते का डेटा है। इस खाते का यहां उपयोग करने के लिए, उस डेटा को डिवाइस से हटाएं (खाता खोलें), या साइन आउट करें।';
 
   @override
   String get startupError =>
-      'Couldn\'t open your data. Restart the app; if it keeps happening, contact support.';
+      'आपका डेटा नहीं खोला जा सका। ऐप को फिर से शुरू करें; अगर यह बार-बार हो, तो सहायता से संपर्क करें।';
 
   @override
   String get attachmentUnsupported =>
-      'This image format isn\'t supported: use a JPEG, PNG or WebP photo.';
+      'यह इमेज फ़ॉर्मेट समर्थित नहीं है: JPEG, PNG या WebP फ़ोटो का उपयोग करें।';
 
   @override
   String get pause => 'रोकें';
