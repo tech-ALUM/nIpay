@@ -88,7 +88,7 @@ Future<Uint8List> buildExpenseReportPdf({
         ),
         pw.Divider(color: _coral, thickness: 2),
         pw.SizedBox(height: 8),
-        pw.Table.fromTextArray(
+        pw.TableHelper.fromTextArray(
           headerDecoration: const pw.BoxDecoration(color: PdfColors.grey200),
           headerStyle: pw.TextStyle(
             fontSize: 8.5,

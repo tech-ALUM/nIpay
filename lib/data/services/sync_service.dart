@@ -370,14 +370,13 @@ class SupabaseSyncService implements SyncService {
   SupabaseSyncService(
     this._remote,
     this._db, {
-    required String? Function() currentUserId,
+    required this._currentUserId,
     String? Function()? currentUserEmail,
     SyncLock? lock,
     this.pageSize = 500,
     this.pushBatchSize = 200,
     this.pullOverlap = const Duration(minutes: 2),
-  }) : _currentUserId = currentUserId,
-       _currentUserEmail = currentUserEmail ?? _noEmail,
+  }) : _currentUserEmail = currentUserEmail ?? _noEmail,
        _lock = lock ?? SyncLock();
 
   final SyncRemote _remote;

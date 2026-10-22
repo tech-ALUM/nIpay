@@ -30,9 +30,8 @@ abstract interface class ExchangeRateService {
 /// L'aggiornamento del giorno, se dovuto, parte in background senza
 /// bloccare la conversione in corso.
 class CachedExchangeRateService implements ExchangeRateService {
-  CachedExchangeRateService({required SharedPreferences prefs, http.Client? client})
-    : _prefs = prefs,
-      _client = client ?? http.Client();
+  CachedExchangeRateService({required this._prefs, http.Client? client})
+    : _client = client ?? http.Client();
 
   static const _ratesKey = 'exchangeRates.ratesJson';
   static const _dateKey = 'exchangeRates.fetchedOn';
