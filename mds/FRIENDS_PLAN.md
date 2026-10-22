@@ -68,9 +68,10 @@ francese, hindi, cinese (`lib/l10n/app_*.arb`, template `app_en.arb`).
   `EdgeInsetsDirectional` / `AlignmentDirectional` come nel resto dell'app.
 - [ ] Testo del permesso fotocamera aggiornato (scontrini **e** QR) nelle
   `InfoPlist.strings` iOS di ogni lingua e nella stringa Android.
-- [ ] **Controllo automatico**: aggiungere `untranslated-messages-file`
-  a `l10n.yaml` e far fallire la CI se il file non è vuoto, così una
-  lingua non resta indietro in silenzio.
+- [x] **Controllo automatico (2026-10-22)**: `untranslated-messages-file`
+  in `l10n.yaml` (scrive `build/untranslated_messages.json`) e passo
+  "Check translations" in `.github/workflows/ci.yml`, che fallisce se il
+  file non è `{}`: una lingua non resta indietro in silenzio.
 - [x] **Debito esistente chiuso (2026-10-22)** (non legato ad Amici):
   `ar`, `de`, `es`, `fr`, `hi` e `zh` avevano 150 stringhe contro le 206
   di `en`/`it` (le 56 di account e sync M-ACC comparivano in inglese).

@@ -1,3 +1,7 @@
 arb-dir: lib/l10n
 template-arb-file: app_en.arb
 output-localization-file: app_localizations.dart
+# Elenco delle stringhe del template non tradotte, per lingua ("{}" se
+# sono tutte tradotte). La CI fallisce se non è vuoto: nessuna lingua
+# deve ripiegare sull'inglese.
+untranslated-messages-file: build/untranslated_messages.json

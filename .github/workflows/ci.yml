@@ -28,6 +28,22 @@ jobs:
       - name: Generate l10n
         run: flutter gen-l10n
 
+      # Ogni stringa deve esistere in tutte le lingue (vedi l10n.yaml):
+      # gen-l10n scrive "{}" quando non manca niente.
+      - name: Check translations
+        run: |
+          report=build/untranslated_messages.json
+          if [ ! -f "$report" ]; then
+            echo "::error::$report non generato: controlla l10n.yaml"
+            exit 1
+          fi
+          if [ "$(tr -d '[:space:]' < "$report")" != "{}" ]; then
+            echo "::error::Stringhe non tradotte (lingua → chiavi):"
+            cat "$report"
+            exit 1
+          fi
+          echo "Tutte le lingue sono complete."
+
       - name: Analyze
         run: flutter analyze
 
