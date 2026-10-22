@@ -740,4 +740,152 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get retry => 'Erneut versuchen';
+
+  @override
+  String get friendsTab => 'Freunde';
+
+  @override
+  String get friendsSignInPrompt =>
+      'Melde dich an, um Freunde hinzuzufügen, zu chatten und Ausgaben zu teilen.';
+
+  @override
+  String get myQrCode => 'Mein QR-Code';
+
+  @override
+  String get addFriend => 'Freund hinzufügen';
+
+  @override
+  String get friendRequests => 'Anfragen';
+
+  @override
+  String get friendsSection => 'Deine Freunde';
+
+  @override
+  String get noFriendsYet =>
+      'Noch keine Freunde. Lass einen Freund deinen QR-Code scannen oder scanne seinen.';
+
+  @override
+  String get incomingRequestSubtitle => 'Möchte mit dir befreundet sein';
+
+  @override
+  String get acceptRequest => 'Annehmen';
+
+  @override
+  String get declineRequest => 'Ablehnen';
+
+  @override
+  String get outgoingPending => 'Wartet auf Antwort';
+
+  @override
+  String get outgoingDeclined => 'Anfrage nicht angenommen';
+
+  @override
+  String get cancelRequest => 'Anfrage zurückziehen';
+
+  @override
+  String get removeFriend => 'Freund entfernen';
+
+  @override
+  String removeFriendBody(String name) {
+    return '$name ist dann nicht mehr dein Freund. Ihr könnt euch später wieder hinzufügen.';
+  }
+
+  @override
+  String get blockUser => 'Blockieren';
+
+  @override
+  String blockUserBody(String name) {
+    return '$name kann dir dann keine Anfragen mehr senden und dich nicht mehr über deinen Code finden, und eure Freundschaft endet. Er oder sie wird nicht benachrichtigt.';
+  }
+
+  @override
+  String get blockedSection => 'Blockiert';
+
+  @override
+  String get unblockUser => 'Freigeben';
+
+  @override
+  String get unnamedUser => 'Nutzer ohne Namen';
+
+  @override
+  String get myQrHelp =>
+      'Lass einen Freund diesen Code scannen: Seine Freundschaftsanfrage kommt dann bei dir an.';
+
+  @override
+  String get shareFriendCode => 'Teilen';
+
+  @override
+  String shareFriendCodeText(String link, String code) {
+    return 'Füge mich bei nIpay hinzu: $link (Code $code)';
+  }
+
+  @override
+  String get scanQrHint =>
+      'Richte die Kamera auf den nIpay-QR-Code eines Freundes.';
+
+  @override
+  String get cameraUnavailable =>
+      'Kamera nicht verfügbar. Erlaube den Zugriff in den Einstellungen oder gib den Code von Hand ein.';
+
+  @override
+  String get enterCodeManually => 'Oder gib den Code ein';
+
+  @override
+  String get findFriend => 'Suchen';
+
+  @override
+  String get invalidFriendCode => 'Das ist kein gültiger Freundescode.';
+
+  @override
+  String get notANipayQr => 'Dieser QR-Code ist kein nIpay-Freundescode.';
+
+  @override
+  String get friendCodeNoMatch => 'Niemand mit diesem Code gefunden.';
+
+  @override
+  String sendFriendRequestTitle(String name) {
+    return 'Freundschaftsanfrage an $name senden?';
+  }
+
+  @override
+  String get sendRequest => 'Anfrage senden';
+
+  @override
+  String friendRequestSent(String name) {
+    return 'Anfrage an $name gesendet';
+  }
+
+  @override
+  String nowFriends(String name) {
+    return 'Du und $name seid jetzt Freunde';
+  }
+
+  @override
+  String get friendsErrorNotAvailable => 'Diese Person ist nicht verfügbar.';
+
+  @override
+  String get friendsErrorCooldown =>
+      'Diese Person hat deine Anfrage kürzlich abgelehnt. Versuche es in ein paar Tagen erneut.';
+
+  @override
+  String get friendsErrorTooManyPending =>
+      'Du hast zu viele offene Anfragen. Ziehe einige zurück oder warte auf Antworten.';
+
+  @override
+  String get friendsErrorNotFound => 'Diese Anfrage ist nicht mehr verfügbar.';
+
+  @override
+  String get friendsLoadFailed =>
+      'Deine Freunde konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.';
+
+  @override
+  String friendRequestsBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Freundschaftsanfragen',
+      one: '1 Freundschaftsanfrage',
+    );
+    return '$_temp0';
+  }
 }

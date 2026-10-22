@@ -23,6 +23,7 @@ import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/wallet_repository.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/exchange_rate_service.dart';
+import '../data/services/friends_service.dart';
 import '../data/services/local_data_service.dart';
 import '../data/services/profile_service.dart';
 import '../data/services/sync_lock.dart';
@@ -392,6 +393,46 @@ final authStateProvider = StreamProvider<User?>((ref) {
 final profileServiceProvider = Provider<ProfileService>(
   (ref) => SupabaseProfileService(Supabase.instance.client),
 );
+
+/// Profilo dell'utente loggato (nome e codice amico), null se non loggato.
+final myProfileProvider = FutureProvider<MyProfile?>((ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return null;
+  return ref.watch(profileServiceProvider).getMyProfile();
+});
+
+/// Amicizie e blocchi (M-SOC2). Le liste sono vuote senza login: in
+/// modalità solo-locale non si contatta mai il server.
+final friendsServiceProvider = Provider<FriendsService>(
+  (ref) => SupabaseFriendsService(Supabase.instance.client),
+);
+
+final friendsListProvider = FutureProvider<List<Friend>>((ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return const [];
+  return ref.watch(friendsServiceProvider).listFriends();
+});
+
+/// Richieste in arrivo e in uscita; quelle in arrivo danno il badge della
+/// tab Amici.
+final friendRequestsProvider = FutureProvider<List<FriendRequest>>((ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return const [];
+  return ref.watch(friendsServiceProvider).listRequests();
+});
+
+final blockedUsersProvider = FutureProvider<List<BlockedUser>>((ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return const [];
+  return ref.watch(friendsServiceProvider).listBlocked();
+});
+
+/// Dopo ogni azione su amici, richieste o blocchi.
+void refreshFriends(WidgetRef ref) {
+  ref.invalidate(friendsListProvider);
+  ref.invalidate(friendRequestsProvider);
+  ref.invalidate(blockedUsersProvider);
+}
 
 /// Lock condiviso da sync, logout e rimozione dei dati locali.
 final syncLockProvider = Provider<SyncLock>((ref) => SyncLock());

@@ -728,4 +728,150 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get retry => 'إعادة المحاولة';
+
+  @override
+  String get friendsTab => 'الأصدقاء';
+
+  @override
+  String get friendsSignInPrompt =>
+      'سجّل الدخول لإضافة أصدقاء والدردشة وتقسيم المصاريف.';
+
+  @override
+  String get myQrCode => 'رمز QR الخاص بي';
+
+  @override
+  String get addFriend => 'إضافة صديق';
+
+  @override
+  String get friendRequests => 'الطلبات';
+
+  @override
+  String get friendsSection => 'أصدقاؤك';
+
+  @override
+  String get noFriendsYet =>
+      'لا يوجد أصدقاء بعد. دع صديقًا يمسح رمز QR الخاص بك، أو امسح رمزه.';
+
+  @override
+  String get incomingRequestSubtitle => 'يريد أن يكون صديقك';
+
+  @override
+  String get acceptRequest => 'قبول';
+
+  @override
+  String get declineRequest => 'رفض';
+
+  @override
+  String get outgoingPending => 'بانتظار الرد';
+
+  @override
+  String get outgoingDeclined => 'لم يُقبل الطلب';
+
+  @override
+  String get cancelRequest => 'إلغاء الطلب';
+
+  @override
+  String get removeFriend => 'إزالة الصديق';
+
+  @override
+  String removeFriendBody(String name) {
+    return 'لن يكون $name بين أصدقائك بعد الآن. يمكنكما إضافة بعضكما مجددًا لاحقًا.';
+  }
+
+  @override
+  String get blockUser => 'حظر';
+
+  @override
+  String blockUserBody(String name) {
+    return 'لن يتمكن $name من إرسال طلبات إليك أو العثور عليك برمزك، وستنتهي صداقتكما. ولن يتلقى أي إشعار.';
+  }
+
+  @override
+  String get blockedSection => 'المحظورون';
+
+  @override
+  String get unblockUser => 'إلغاء الحظر';
+
+  @override
+  String get unnamedUser => 'مستخدم بلا اسم';
+
+  @override
+  String get myQrHelp => 'اطلب من صديق مسح هذا الرمز: سيصلك طلب صداقته.';
+
+  @override
+  String get shareFriendCode => 'مشاركة';
+
+  @override
+  String shareFriendCodeText(String link, String code) {
+    return 'أضفني على nIpay: $link (الرمز $code)';
+  }
+
+  @override
+  String get scanQrHint => 'وجّه الكاميرا نحو رمز QR الخاص بصديقك في nIpay.';
+
+  @override
+  String get cameraUnavailable =>
+      'الكاميرا غير متاحة. اسمح بالوصول من الإعدادات، أو أدخل الرمز يدويًا.';
+
+  @override
+  String get enterCodeManually => 'أو أدخل الرمز';
+
+  @override
+  String get findFriend => 'بحث';
+
+  @override
+  String get invalidFriendCode => 'هذا ليس رمز صداقة صالحًا.';
+
+  @override
+  String get notANipayQr => 'رمز QR هذا ليس رمز صداقة في nIpay.';
+
+  @override
+  String get friendCodeNoMatch => 'لم يُعثر على أحد بهذا الرمز.';
+
+  @override
+  String sendFriendRequestTitle(String name) {
+    return 'هل تريد إرسال طلب صداقة إلى $name؟';
+  }
+
+  @override
+  String get sendRequest => 'إرسال الطلب';
+
+  @override
+  String friendRequestSent(String name) {
+    return 'تم إرسال الطلب إلى $name';
+  }
+
+  @override
+  String nowFriends(String name) {
+    return 'أنت و$name صديقان الآن';
+  }
+
+  @override
+  String get friendsErrorNotAvailable => 'هذا الشخص غير متاح.';
+
+  @override
+  String get friendsErrorCooldown =>
+      'رفض هذا الشخص طلبك مؤخرًا. حاول مرة أخرى بعد بضعة أيام.';
+
+  @override
+  String get friendsErrorTooManyPending =>
+      'لديك طلبات كثيرة بانتظار الرد. ألغِ بعضها أو انتظر الردود.';
+
+  @override
+  String get friendsErrorNotFound => 'هذا الطلب لم يعد متاحًا.';
+
+  @override
+  String get friendsLoadFailed =>
+      'تعذّر تحميل أصدقائك. تحقّق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String friendRequestsBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count من طلبات الصداقة',
+      one: 'طلب صداقة واحد',
+    );
+    return '$_temp0';
+  }
 }

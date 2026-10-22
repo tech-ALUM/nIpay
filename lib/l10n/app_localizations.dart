@@ -1441,6 +1441,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retry;
+
+  /// No description provided for @friendsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Friends'**
+  String get friendsTab;
+
+  /// No description provided for @friendsSignInPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to add friends, chat and split expenses.'**
+  String get friendsSignInPrompt;
+
+  /// No description provided for @myQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'My QR code'**
+  String get myQrCode;
+
+  /// No description provided for @addFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Add friend'**
+  String get addFriend;
+
+  /// No description provided for @friendRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests'**
+  String get friendRequests;
+
+  /// No description provided for @friendsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Your friends'**
+  String get friendsSection;
+
+  /// No description provided for @noFriendsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No friends yet. Let a friend scan your QR code, or scan theirs.'**
+  String get noFriendsYet;
+
+  /// No description provided for @incomingRequestSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wants to be your friend'**
+  String get incomingRequestSubtitle;
+
+  /// No description provided for @acceptRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get acceptRequest;
+
+  /// No description provided for @declineRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get declineRequest;
+
+  /// No description provided for @outgoingPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for a reply'**
+  String get outgoingPending;
+
+  /// No description provided for @outgoingDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Request not accepted'**
+  String get outgoingDeclined;
+
+  /// No description provided for @cancelRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel request'**
+  String get cancelRequest;
+
+  /// No description provided for @removeFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove friend'**
+  String get removeFriend;
+
+  /// No description provided for @removeFriendBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will no longer be among your friends. You can add each other again later.'**
+  String removeFriendBody(String name);
+
+  /// No description provided for @blockUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get blockUser;
+
+  /// No description provided for @blockUserBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} won\'t be able to send you requests or find you with your code, and your friendship ends. They won\'t be notified.'**
+  String blockUserBody(String name);
+
+  /// No description provided for @blockedSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked'**
+  String get blockedSection;
+
+  /// No description provided for @unblockUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get unblockUser;
+
+  /// No description provided for @unnamedUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Unnamed user'**
+  String get unnamedUser;
+
+  /// No description provided for @myQrHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a friend to scan this code: their friend request will reach you.'**
+  String get myQrHelp;
+
+  /// No description provided for @shareFriendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareFriendCode;
+
+  /// No description provided for @shareFriendCodeText.
+  ///
+  /// In en, this message translates to:
+  /// **'Add me on nIpay: {link} (code {code})'**
+  String shareFriendCodeText(String link, String code);
+
+  /// No description provided for @scanQrHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Point the camera at a friend\'s nIpay QR code.'**
+  String get scanQrHint;
+
+  /// No description provided for @cameraUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera not available. Allow access in Settings, or enter the code by hand.'**
+  String get cameraUnavailable;
+
+  /// No description provided for @enterCodeManually.
+  ///
+  /// In en, this message translates to:
+  /// **'Or enter the code'**
+  String get enterCodeManually;
+
+  /// No description provided for @findFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Find'**
+  String get findFriend;
+
+  /// No description provided for @invalidFriendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'This isn\'t a valid friend code.'**
+  String get invalidFriendCode;
+
+  /// No description provided for @notANipayQr.
+  ///
+  /// In en, this message translates to:
+  /// **'This QR code isn\'t an nIpay friend code.'**
+  String get notANipayQr;
+
+  /// No description provided for @friendCodeNoMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No one found with this code.'**
+  String get friendCodeNoMatch;
+
+  /// No description provided for @sendFriendRequestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a friend request to {name}?'**
+  String sendFriendRequestTitle(String name);
+
+  /// No description provided for @sendRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send request'**
+  String get sendRequest;
+
+  /// No description provided for @friendRequestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Request sent to {name}'**
+  String friendRequestSent(String name);
+
+  /// No description provided for @nowFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'You and {name} are now friends'**
+  String nowFriends(String name);
+
+  /// No description provided for @friendsErrorNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This person isn\'t available.'**
+  String get friendsErrorNotAvailable;
+
+  /// No description provided for @friendsErrorCooldown.
+  ///
+  /// In en, this message translates to:
+  /// **'This person declined your request recently. Try again in a few days.'**
+  String get friendsErrorCooldown;
+
+  /// No description provided for @friendsErrorTooManyPending.
+  ///
+  /// In en, this message translates to:
+  /// **'You have too many requests waiting. Cancel some or wait for replies.'**
+  String get friendsErrorTooManyPending;
+
+  /// No description provided for @friendsErrorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This request is no longer available.'**
+  String get friendsErrorNotFound;
+
+  /// No description provided for @friendsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your friends. Check your connection and try again.'**
+  String get friendsLoadFailed;
+
+  /// No description provided for @friendRequestsBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 friend request} other{{count} friend requests}}'**
+  String friendRequestsBadge(int count);
 }
 
 class _AppLocalizationsDelegate

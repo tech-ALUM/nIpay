@@ -272,5 +272,81 @@
   "regenerateFriendCodeBody": "Your current code stops working: anyone who has it can no longer send you requests. The friends you already have stay.",
   "friendCodeRegenerated": "New friend code ready",
   "profileLoadFailed": "Couldn't load your profile. Check your connection and try again.",
-  "retry": "Retry"
+  "retry": "Retry",
+  "friendsTab": "Friends",
+  "friendsSignInPrompt": "Sign in to add friends, chat and split expenses.",
+  "myQrCode": "My QR code",
+  "addFriend": "Add friend",
+  "friendRequests": "Requests",
+  "friendsSection": "Your friends",
+  "noFriendsYet": "No friends yet. Let a friend scan your QR code, or scan theirs.",
+  "incomingRequestSubtitle": "Wants to be your friend",
+  "acceptRequest": "Accept",
+  "declineRequest": "Decline",
+  "outgoingPending": "Waiting for a reply",
+  "outgoingDeclined": "Request not accepted",
+  "cancelRequest": "Cancel request",
+  "removeFriend": "Remove friend",
+  "removeFriendBody": "{name} will no longer be among your friends. You can add each other again later.",
+  "@removeFriendBody": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "blockUser": "Block",
+  "blockUserBody": "{name} won't be able to send you requests or find you with your code, and your friendship ends. They won't be notified.",
+  "@blockUserBody": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "blockedSection": "Blocked",
+  "unblockUser": "Unblock",
+  "unnamedUser": "Unnamed user",
+  "myQrHelp": "Ask a friend to scan this code: their friend request will reach you.",
+  "shareFriendCode": "Share",
+  "shareFriendCodeText": "Add me on nIpay: {link} (code {code})",
+  "@shareFriendCodeText": {
+    "placeholders": {
+      "link": {"type": "String"},
+      "code": {"type": "String"}
+    }
+  },
+  "scanQrHint": "Point the camera at a friend's nIpay QR code.",
+  "cameraUnavailable": "Camera not available. Allow access in Settings, or enter the code by hand.",
+  "enterCodeManually": "Or enter the code",
+  "findFriend": "Find",
+  "invalidFriendCode": "This isn't a valid friend code.",
+  "notANipayQr": "This QR code isn't an nIpay friend code.",
+  "friendCodeNoMatch": "No one found with this code.",
+  "sendFriendRequestTitle": "Send a friend request to {name}?",
+  "@sendFriendRequestTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "sendRequest": "Send request",
+  "friendRequestSent": "Request sent to {name}",
+  "@friendRequestSent": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "nowFriends": "You and {name} are now friends",
+  "@nowFriends": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "friendsErrorNotAvailable": "This person isn't available.",
+  "friendsErrorCooldown": "This person declined your request recently. Try again in a few days.",
+  "friendsErrorTooManyPending": "You have too many requests waiting. Cancel some or wait for replies.",
+  "friendsErrorNotFound": "This request is no longer available.",
+  "friendsLoadFailed": "Couldn't load your friends. Check your connection and try again.",
+  "friendRequestsBadge": "{count, plural, =1{1 friend request} other{{count} friend requests}}",
+  "@friendRequestsBadge": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  }
 }

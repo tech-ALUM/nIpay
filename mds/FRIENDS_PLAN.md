@@ -148,7 +148,7 @@ amicizia reale.
   `friend_profiles` (`security_invoker = true`) e il filtro sui blocchi
   in `resolve_friend_code`; il prompt "Come ti chiami?" alla prima
   apertura della tab Amici (il dialog esiste già); il QR del codice.
-- **Da fare con ok esplicito**: applicare la migration all'hosted.
+- Migration applicata all'hosted il 2026-10-22.
 
 **Fatto quando**: nome e codice gestiti ✓, stringhe nelle 8 lingue ✓,
 test pgTAP verdi ✓, nessuna via per leggere email o codici altrui ✓.
@@ -156,6 +156,48 @@ test pgTAP verdi ✓, nessuna via per leggere email o codici altrui ✓.
 ---
 
 ## M-SOC2 — Richieste di amicizia, QR, blocchi
+
+**Stato (2026-10-22)**: database fatto e testato in locale — migration
+[`20261022010000_friendships.sql`](../supabase/migrations/20261022010000_friendships.sql)
+e 56 test pgTAP in `supabase/tests/friendships_test.sql` (flusso
+richiesta/accettazione/rifiuto con attesa di 7 giorni, richieste
+incrociate, annulla, rimuovi, blocca/sblocca invisibile al bloccato,
+limiti 20 in attesa e 30 invii/giorno, anonimo bloccato). **Cambiato
+rispetto al piano**: niente vista `friend_profiles`: le letture sono RPC
+SECURITY DEFINER (`list_friends`, `list_friend_requests`,
+`list_blocked`) che restituiscono solo id e nome — una vista
+`security_invoker` avrebbe richiesto di aprire `profiles` agli amici con
+tutte le colonne.
+
+**App fatta (2026-10-22)**: `FriendsService`
+(`lib/data/services/friends_service.dart`, errori tradotti con
+`friendsErrorOf`), tab **Amici** (5ª voce, badge con le richieste in
+arrivo; senza account solo l'invito ad accedere) con richieste in
+arrivo/uscita, amici (rimuovi/blocca con conferma) e bloccati (sblocca),
+prompt "Come ti chiami?" alla prima apertura, schermata **Il mio QR**
+(`qr_flutter`, link `com.alum.nipay://friend/<codice>`, copia e
+condividi) e **Aggiungi amico** (`mobile_scanner` + codice a mano, stesso
+percorso: codice → chi è → conferma → richiesta). 40 stringhe nelle 8
+lingue; permesso fotocamera aggiornato (scontrini e QR). Test: parsing del
+QR (rifiuta QR di altre app), mappatura errori, 11 widget test del
+flusso; build iOS ok.
+
+Fatto anche (2026-10-22): migration M-SOC1 e M-SOC2 applicate all'hosted
+con `supabase db push` (13 versioni allineate al repo, codice amico
+assegnato ai profili esistenti); verifica a schermo su simulatore iPhone 17
+(tab da non loggato e loggato, tema chiaro/scuro, arabo RTL, Il mio QR con
+il QR vero); gli stati di errore del server mostrano "Impossibile
+caricare" + Riprova invece di un'eccezione; "Come ti chiami?" compare solo
+con la tab Amici visibile.
+
+Ancora aperto in M-SOC2:
+- Aprire l'app dal link del QR letto con la fotocamera di sistema (oggi
+  il QR si scansiona da dentro l'app; serve un gestore dei deep link
+  `friend/` accanto a quello dell'auth).
+- Testo del permesso fotocamera solo in italiano: localizzarlo richiede
+  `InfoPlist.strings` per lingua nel progetto Xcode.
+- Prova end-to-end con due account veri (richiesta, accettazione,
+  blocco).
 
 ### Da M-SOC1
 

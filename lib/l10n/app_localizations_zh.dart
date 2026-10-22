@@ -707,4 +707,144 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get retry => '重试';
+
+  @override
+  String get friendsTab => '好友';
+
+  @override
+  String get friendsSignInPrompt => '登录后即可添加好友、聊天和分摊费用。';
+
+  @override
+  String get myQrCode => '我的二维码';
+
+  @override
+  String get addFriend => '添加好友';
+
+  @override
+  String get friendRequests => '好友请求';
+
+  @override
+  String get friendsSection => '你的好友';
+
+  @override
+  String get noFriendsYet => '还没有好友。让好友扫描你的二维码，或者扫描对方的。';
+
+  @override
+  String get incomingRequestSubtitle => '想加你为好友';
+
+  @override
+  String get acceptRequest => '接受';
+
+  @override
+  String get declineRequest => '拒绝';
+
+  @override
+  String get outgoingPending => '等待对方回复';
+
+  @override
+  String get outgoingDeclined => '请求未被接受';
+
+  @override
+  String get cancelRequest => '取消请求';
+
+  @override
+  String get removeFriend => '删除好友';
+
+  @override
+  String removeFriendBody(String name) {
+    return '$name 将不再是你的好友。之后你们可以再次互相添加。';
+  }
+
+  @override
+  String get blockUser => '屏蔽';
+
+  @override
+  String blockUserBody(String name) {
+    return '$name 将无法再向你发送请求，也无法通过你的好友码找到你，你们的好友关系也会结束。对方不会收到任何通知。';
+  }
+
+  @override
+  String get blockedSection => '已屏蔽';
+
+  @override
+  String get unblockUser => '解除屏蔽';
+
+  @override
+  String get unnamedUser => '未命名用户';
+
+  @override
+  String get myQrHelp => '让好友扫描这个二维码，你就会收到对方的好友请求。';
+
+  @override
+  String get shareFriendCode => '分享';
+
+  @override
+  String shareFriendCodeText(String link, String code) {
+    return '在 nIpay 上加我为好友：$link（好友码 $code）';
+  }
+
+  @override
+  String get scanQrHint => '将相机对准好友的 nIpay 二维码。';
+
+  @override
+  String get cameraUnavailable => '相机不可用。请在“设置”中允许访问，或手动输入好友码。';
+
+  @override
+  String get enterCodeManually => '或输入好友码';
+
+  @override
+  String get findFriend => '查找';
+
+  @override
+  String get invalidFriendCode => '这不是有效的好友码。';
+
+  @override
+  String get notANipayQr => '这个二维码不是 nIpay 好友码。';
+
+  @override
+  String get friendCodeNoMatch => '没有找到使用此好友码的用户。';
+
+  @override
+  String sendFriendRequestTitle(String name) {
+    return '要向 $name 发送好友请求吗？';
+  }
+
+  @override
+  String get sendRequest => '发送请求';
+
+  @override
+  String friendRequestSent(String name) {
+    return '已向 $name 发送请求';
+  }
+
+  @override
+  String nowFriends(String name) {
+    return '你和 $name 已成为好友';
+  }
+
+  @override
+  String get friendsErrorNotAvailable => '此用户不可用。';
+
+  @override
+  String get friendsErrorCooldown => '对方最近拒绝了你的请求。请过几天再试。';
+
+  @override
+  String get friendsErrorTooManyPending => '你有太多待处理的请求。请取消一些或等待对方回复。';
+
+  @override
+  String get friendsErrorNotFound => '此请求已失效。';
+
+  @override
+  String get friendsLoadFailed => '无法加载好友列表。请检查网络连接后重试。';
+
+  @override
+  String friendRequestsBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 个好友请求',
+      one: '1 个好友请求',
+    );
+    return '$_temp0';
+  }
 }

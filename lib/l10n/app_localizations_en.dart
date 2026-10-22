@@ -731,4 +731,151 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get friendsTab => 'Friends';
+
+  @override
+  String get friendsSignInPrompt =>
+      'Sign in to add friends, chat and split expenses.';
+
+  @override
+  String get myQrCode => 'My QR code';
+
+  @override
+  String get addFriend => 'Add friend';
+
+  @override
+  String get friendRequests => 'Requests';
+
+  @override
+  String get friendsSection => 'Your friends';
+
+  @override
+  String get noFriendsYet =>
+      'No friends yet. Let a friend scan your QR code, or scan theirs.';
+
+  @override
+  String get incomingRequestSubtitle => 'Wants to be your friend';
+
+  @override
+  String get acceptRequest => 'Accept';
+
+  @override
+  String get declineRequest => 'Decline';
+
+  @override
+  String get outgoingPending => 'Waiting for a reply';
+
+  @override
+  String get outgoingDeclined => 'Request not accepted';
+
+  @override
+  String get cancelRequest => 'Cancel request';
+
+  @override
+  String get removeFriend => 'Remove friend';
+
+  @override
+  String removeFriendBody(String name) {
+    return '$name will no longer be among your friends. You can add each other again later.';
+  }
+
+  @override
+  String get blockUser => 'Block';
+
+  @override
+  String blockUserBody(String name) {
+    return '$name won\'t be able to send you requests or find you with your code, and your friendship ends. They won\'t be notified.';
+  }
+
+  @override
+  String get blockedSection => 'Blocked';
+
+  @override
+  String get unblockUser => 'Unblock';
+
+  @override
+  String get unnamedUser => 'Unnamed user';
+
+  @override
+  String get myQrHelp =>
+      'Ask a friend to scan this code: their friend request will reach you.';
+
+  @override
+  String get shareFriendCode => 'Share';
+
+  @override
+  String shareFriendCodeText(String link, String code) {
+    return 'Add me on nIpay: $link (code $code)';
+  }
+
+  @override
+  String get scanQrHint => 'Point the camera at a friend\'s nIpay QR code.';
+
+  @override
+  String get cameraUnavailable =>
+      'Camera not available. Allow access in Settings, or enter the code by hand.';
+
+  @override
+  String get enterCodeManually => 'Or enter the code';
+
+  @override
+  String get findFriend => 'Find';
+
+  @override
+  String get invalidFriendCode => 'This isn\'t a valid friend code.';
+
+  @override
+  String get notANipayQr => 'This QR code isn\'t an nIpay friend code.';
+
+  @override
+  String get friendCodeNoMatch => 'No one found with this code.';
+
+  @override
+  String sendFriendRequestTitle(String name) {
+    return 'Send a friend request to $name?';
+  }
+
+  @override
+  String get sendRequest => 'Send request';
+
+  @override
+  String friendRequestSent(String name) {
+    return 'Request sent to $name';
+  }
+
+  @override
+  String nowFriends(String name) {
+    return 'You and $name are now friends';
+  }
+
+  @override
+  String get friendsErrorNotAvailable => 'This person isn\'t available.';
+
+  @override
+  String get friendsErrorCooldown =>
+      'This person declined your request recently. Try again in a few days.';
+
+  @override
+  String get friendsErrorTooManyPending =>
+      'You have too many requests waiting. Cancel some or wait for replies.';
+
+  @override
+  String get friendsErrorNotFound => 'This request is no longer available.';
+
+  @override
+  String get friendsLoadFailed =>
+      'Couldn\'t load your friends. Check your connection and try again.';
+
+  @override
+  String friendRequestsBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count friend requests',
+      one: '1 friend request',
+    );
+    return '$_temp0';
+  }
 }

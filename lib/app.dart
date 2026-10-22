@@ -7,7 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/providers.dart';
 import 'core/theme/app_theme.dart';
 import 'core/ui/ui.dart';
+import 'data/services/friends_service.dart' show FriendRequestDirection;
 import 'features/account/account_screen.dart';
+import 'features/friends/friends_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/stats/stats_screen.dart';
@@ -206,11 +208,12 @@ class _RootShellState extends ConsumerState<RootShell>
         ),
         data: (_) => FadeIndexedStack(
           index: _tab,
-          children: const [
-            HomeScreen(),
-            TransactionsScreen(),
-            StatsScreen(),
-            SettingsScreen(),
+          children: [
+            const HomeScreen(),
+            const TransactionsScreen(),
+            const StatsScreen(),
+            FriendsScreen(active: _tab == 3),
+            const SettingsScreen(),
           ],
         ),
       ),
@@ -231,8 +234,27 @@ class _RootShellState extends ConsumerState<RootShell>
       (Icons.home_outlined, Icons.home_rounded, l10n.homeTab),
       (Icons.receipt_long_outlined, Icons.receipt_long, l10n.transactionsTab),
       (Icons.donut_small_outlined, Icons.donut_small, l10n.statsTab),
+      (Icons.group_outlined, Icons.group, l10n.friendsTab),
       (Icons.settings_outlined, Icons.settings, l10n.settingsTab),
     ];
+    // Richieste di amicizia in arrivo: badge sulla tab Amici (indice 3).
+    // Vuoto senza account: in solo-locale non si contatta il server.
+    final incomingRequests =
+        (ref.watch(friendRequestsProvider).valueOrNull ?? const [])
+            .where((r) => r.direction == FriendRequestDirection.incoming)
+            .length;
+    Widget tabIcon(int index, IconData icon) => index == 3
+        ? Badge(
+            isLabelVisible: incomingRequests > 0,
+            label: Text('$incomingRequests'),
+            child: Semantics(
+              label: incomingRequests > 0
+                  ? l10n.friendRequestsBadge(incomingRequests)
+                  : null,
+              child: Icon(icon),
+            ),
+          )
+        : Icon(icon);
     void select(int i) => setState(() => _tab = i);
 
     return LayoutBuilder(
@@ -256,10 +278,11 @@ class _RootShellState extends ConsumerState<RootShell>
                       child: SizedBox(height: 56, child: fab),
                     ),
                     destinations: [
-                      for (final (icon, selectedIcon, label) in destinations)
+                      for (final (i, (icon, selectedIcon, label))
+                          in destinations.indexed)
                         NavigationRailDestination(
-                          icon: Icon(icon),
-                          selectedIcon: Icon(selectedIcon),
+                          icon: tabIcon(i, icon),
+                          selectedIcon: tabIcon(i, selectedIcon),
                           label: Text(label),
                         ),
                     ],
@@ -300,10 +323,11 @@ class _RootShellState extends ConsumerState<RootShell>
               selectedIndex: _tab,
               onDestinationSelected: select,
               destinations: [
-                for (final (icon, selectedIcon, label) in destinations)
+                for (final (i, (icon, selectedIcon, label))
+                    in destinations.indexed)
                   NavigationDestination(
-                    icon: Icon(icon),
-                    selectedIcon: Icon(selectedIcon),
+                    icon: tabIcon(i, icon),
+                    selectedIcon: tabIcon(i, selectedIcon),
                     label: label,
                   ),
               ],
