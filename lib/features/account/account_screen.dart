@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/providers.dart';
@@ -6,8 +7,10 @@ import '../../core/theme/app_theme.dart';
 import '../../core/ui/ui.dart';
 import '../../core/validation.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/profile_service.dart';
 import '../../data/services/sync_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../friends/display_name_dialog.dart';
 
 /// Messaggio l10n per un errore di autenticazione: mai il testo grezzo del
 /// server (SECURITY_AUDIT NIP-17).
@@ -203,6 +206,8 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
             ),
           ),
         ),
+        const SizedBox(height: 12),
+        const _ProfileCard(),
         FutureBuilder<DateTime?>(
           future: _deletionStatus,
           builder: (context, snapshot) {
@@ -1015,6 +1020,207 @@ class _PasswordRecoveryDialogState
 }
 
 /// Riga di stato con icona (sync riuscita, fallita, elementi in sospeso).
+/// Profilo visibile agli amici (M-SOC1): nome visualizzato e codice amico,
+/// con copia e rigenerazione. Il QR del codice arriva con la sezione
+/// Amici (M-SOC2).
+class _ProfileCard extends ConsumerStatefulWidget {
+  const _ProfileCard();
+
+  @override
+  ConsumerState<_ProfileCard> createState() => _ProfileCardState();
+}
+
+class _ProfileCardState extends ConsumerState<_ProfileCard> {
+  late Future<MyProfile?> _profile = _load();
+  bool _isRegenerating = false;
+
+  Future<MyProfile?> _load() => ref.read(profileServiceProvider).getMyProfile();
+
+  // Corpo a blocco: con la freccia la closure restituirebbe il Future
+  // assegnato, e setState lo rifiuta.
+  void _reload() => setState(() {
+    _profile = _load();
+  });
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _editName(String? current) async {
+    final l10n = AppLocalizations.of(context)!;
+    final saved = await showDisplayNameDialog(context, initialName: current);
+    if (saved == null) return;
+    _showSnack(l10n.displayNameSaved);
+    _reload();
+  }
+
+  Future<void> _copyCode(String code) async {
+    final l10n = AppLocalizations.of(context)!;
+    await Clipboard.setData(ClipboardData(text: formatFriendCode(code)));
+    _showSnack(l10n.friendCodeCopied);
+  }
+
+  Future<void> _regenerate() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.regenerateFriendCode),
+        content: Text(l10n.regenerateFriendCodeBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            key: const Key('regenerateFriendCodeConfirm'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.regenerateFriendCode),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _isRegenerating = true);
+    try {
+      await ref.read(profileServiceProvider).regenerateFriendCode();
+      _showSnack(l10n.friendCodeRegenerated);
+      _reload();
+    } on ProfileException catch (e) {
+      _showSnack(profileErrorText(l10n, e.code));
+    } finally {
+      if (mounted) setState(() => _isRegenerating = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
+    final muted = context.nipay.muted;
+    return Card(
+      key: const Key('profileCard'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: FutureBuilder<MyProfile?>(
+          future: _profile,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            final profile = snapshot.data;
+            if (snapshot.hasError || profile == null) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _StatusLine(
+                    icon: Icons.cloud_off_outlined,
+                    color: muted,
+                    text: l10n.profileLoadFailed,
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton(onPressed: _reload, child: Text(l10n.retry)),
+                ],
+              );
+            }
+            final name = profile.displayName;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Text(
+                    l10n.profileSection,
+                    style: textTheme.titleMedium,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MergeSemantics(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.displayName,
+                              style: textTheme.labelMedium,
+                            ),
+                            Text(
+                              name ?? l10n.displayNameNotSet,
+                              key: const Key('displayNameValue'),
+                              style: textTheme.bodyLarge?.copyWith(
+                                color: name == null ? muted : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      key: const Key('editDisplayNameButton'),
+                      onPressed: () => _editName(name),
+                      child: Text(l10n.edit),
+                    ),
+                  ],
+                ),
+                Text(
+                  l10n.displayNameHelp,
+                  style: textTheme.bodySmall?.copyWith(color: muted),
+                ),
+                const Divider(height: 28),
+                Text(l10n.friendCode, style: textTheme.labelMedium),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SelectableText(
+                        formatFriendCode(profile.friendCode),
+                        key: const Key('friendCodeValue'),
+                        style: moneyStyle(size: 22, weight: FontWeight.w700),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: l10n.copyFriendCode,
+                      onPressed: () => _copyCode(profile.friendCode),
+                      icon: const Icon(Icons.copy_rounded),
+                    ),
+                  ],
+                ),
+                Text(
+                  l10n.friendCodeHelp,
+                  style: textTheme.bodySmall?.copyWith(color: muted),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: TextButton.icon(
+                    key: const Key('regenerateFriendCodeButton'),
+                    onPressed: _isRegenerating ? null : _regenerate,
+                    icon: _isRegenerating
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.autorenew_rounded),
+                    label: Text(l10n.regenerateFriendCode),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
 class _StatusLine extends StatelessWidget {
   const _StatusLine({
     required this.icon,

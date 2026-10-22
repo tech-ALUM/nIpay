@@ -24,6 +24,7 @@ import '../data/repositories/wallet_repository.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/exchange_rate_service.dart';
 import '../data/services/local_data_service.dart';
+import '../data/services/profile_service.dart';
 import '../data/services/sync_lock.dart';
 import '../data/services/sync_service.dart';
 
@@ -386,6 +387,11 @@ final authStateProvider = StreamProvider<User?>((ref) {
   final service = ref.watch(authServiceProvider);
   return service.authStateChanges;
 });
+
+/// Nome visualizzato e codice amico dell'utente loggato (M-SOC1).
+final profileServiceProvider = Provider<ProfileService>(
+  (ref) => SupabaseProfileService(Supabase.instance.client),
+);
 
 /// Lock condiviso da sync, logout e rimozione dei dati locali.
 final syncLockProvider = Provider<SyncLock>((ref) => SyncLock());

@@ -1345,6 +1345,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get categoryOther;
+
+  /// No description provided for @profileSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileSection;
+
+  /// No description provided for @displayName.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name'**
+  String get displayName;
+
+  /// No description provided for @displayNameNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get displayNameNotSet;
+
+  /// No description provided for @displayNameHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Your friends see this name. Your email stays private.'**
+  String get displayNameHelp;
+
+  /// No description provided for @displayNameDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your name?'**
+  String get displayNameDialogTitle;
+
+  /// No description provided for @displayNameInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 1 to 40 characters.'**
+  String get displayNameInvalid;
+
+  /// No description provided for @displayNameSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Name saved'**
+  String get displayNameSaved;
+
+  /// No description provided for @friendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Your friend code'**
+  String get friendCode;
+
+  /// No description provided for @friendCodeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Share it to receive friend requests.'**
+  String get friendCodeHelp;
+
+  /// No description provided for @copyFriendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get copyFriendCode;
+
+  /// No description provided for @friendCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied'**
+  String get friendCodeCopied;
+
+  /// No description provided for @regenerateFriendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate new code'**
+  String get regenerateFriendCode;
+
+  /// No description provided for @regenerateFriendCodeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current code stops working: anyone who has it can no longer send you requests. The friends you already have stay.'**
+  String get regenerateFriendCodeBody;
+
+  /// No description provided for @friendCodeRegenerated.
+  ///
+  /// In en, this message translates to:
+  /// **'New friend code ready'**
+  String get friendCodeRegenerated;
+
+  /// No description provided for @profileLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your profile. Check your connection and try again.'**
+  String get profileLoadFailed;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
 }
 
 class _AppLocalizationsDelegate

@@ -659,4 +659,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get categoryOther => '其他';
+
+  @override
+  String get profileSection => '个人资料';
+
+  @override
+  String get displayName => '显示名称';
+
+  @override
+  String get displayNameNotSet => '未设置';
+
+  @override
+  String get displayNameHelp => '好友会看到这个名称。你的电子邮箱不会公开。';
+
+  @override
+  String get displayNameDialogTitle => '你叫什么名字？';
+
+  @override
+  String get displayNameInvalid => '请使用 1 到 40 个字符。';
+
+  @override
+  String get displayNameSaved => '名称已保存';
+
+  @override
+  String get friendCode => '你的好友码';
+
+  @override
+  String get friendCodeHelp => '分享它即可收到好友请求。';
+
+  @override
+  String get copyFriendCode => '复制好友码';
+
+  @override
+  String get friendCodeCopied => '已复制好友码';
+
+  @override
+  String get regenerateFriendCode => '生成新好友码';
+
+  @override
+  String get regenerateFriendCodeBody => '当前好友码将失效：持有它的人将无法再向你发送请求。已有的好友不受影响。';
+
+  @override
+  String get friendCodeRegenerated => '新好友码已生成';
+
+  @override
+  String get profileLoadFailed => '无法加载你的个人资料。请检查网络连接后重试。';
+
+  @override
+  String get retry => '重试';
 }

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nipay/core/providers.dart';
 import 'package:nipay/data/services/auth_service.dart';
 import 'package:nipay/data/services/local_data_service.dart';
+import 'package:nipay/data/services/profile_service.dart';
 import 'package:nipay/data/services/sync_service.dart';
 import 'package:nipay/features/account/account_screen.dart';
 import 'package:nipay/l10n/app_localizations.dart';
@@ -178,6 +179,41 @@ class FakeLocalDataService implements LocalDataService {
   }
 }
 
+/// Doppio di [ProfileService]: profilo in memoria, errori su richiesta.
+class FakeProfileService implements ProfileService {
+  String? displayName;
+  String friendCode = 'ABCDE23456';
+  ProfileErrorCode? failNext;
+  final savedNames = <String>[];
+
+  void _maybeFail() {
+    final code = failNext;
+    if (code == null) return;
+    failNext = null;
+    throw ProfileException(code);
+  }
+
+  @override
+  Future<MyProfile?> getMyProfile() async =>
+      MyProfile(displayName: displayName, friendCode: friendCode);
+
+  @override
+  Future<String> setDisplayName(String name) async {
+    _maybeFail();
+    savedNames.add(name);
+    return displayName = name;
+  }
+
+  @override
+  Future<String> regenerateFriendCode() async {
+    _maybeFail();
+    return friendCode = 'FGHJK78923';
+  }
+
+  @override
+  Future<FriendCodeMatch?> resolveFriendCode(String code) async => null;
+}
+
 late SharedPreferences _prefs;
 
 Widget _wrap(
@@ -185,12 +221,16 @@ Widget _wrap(
   required FakeAuthService fakeAuth,
   FakeSyncService? fakeSync,
   FakeLocalDataService? fakeLocalData,
+  FakeProfileService? fakeProfile,
 }) {
   final sync = fakeSync ?? FakeSyncService();
   return ProviderScope(
     overrides: [
       authServiceProvider.overrideWithValue(fakeAuth),
       syncServiceProvider.overrideWithValue(sync),
+      profileServiceProvider.overrideWithValue(
+        fakeProfile ?? FakeProfileService(),
+      ),
       localDataServiceProvider.overrideWithValue(
         fakeLocalData ?? FakeLocalDataService(sync),
       ),
@@ -217,6 +257,16 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({'activeWalletId': 'w1'});
     _prefs = await SharedPreferences.getInstance();
+    // Schermo di test alto (800×1600 logici invece di 800×600): la vista
+    // da loggato, con la card Profilo, è più lunga di 600 e i test toccano
+    // i bottoni senza scorrere, come vedrebbe un telefono dopo lo scroll.
+    final view =
+        TestWidgetsFlutterBinding.instance.platformDispatcher.implicitView!;
+    view.physicalSize = Size(
+      800 * view.devicePixelRatio,
+      1600 * view.devicePixelRatio,
+    );
+    addTearDown(view.resetPhysicalSize);
   });
 
   testWidgets('form validation rejects invalid email and short password', (
@@ -743,6 +793,153 @@ void main() {
 
       expect(
         find.text('Sync paused: this device holds data from another account.'),
+        findsOneWidget,
+      );
+    });
+  });
+
+  group('profile (M-SOC1)', () {
+    Future<void> signInWith(
+      WidgetTester tester,
+      FakeProfileService profile,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const AccountScreen(),
+          fakeAuth: FakeAuthService(),
+          fakeProfile: profile,
+        ),
+      );
+      await tester.enterText(
+        find.byType(TextFormField).first,
+        'test@example.com',
+      );
+      await tester.enterText(find.byType(TextFormField).last, 'password123');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('shows the friend code grouped and the name as not set', (
+      tester,
+    ) async {
+      await signInWith(tester, FakeProfileService());
+
+      expect(find.text('ABCDE-23456'), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.byKey(const Key('displayNameValue'))).data,
+        'Not set',
+      );
+    });
+
+    testWidgets('saving a name sends it trimmed and shows it', (tester) async {
+      final profile = FakeProfileService();
+      await signInWith(tester, profile);
+
+      await tester.ensureVisible(
+        find.byKey(const Key('editDisplayNameButton')),
+      );
+      await tester.tap(find.byKey(const Key('editDisplayNameButton')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('displayNameField')),
+        '  Mario Rossi ',
+      );
+      await tester.tap(find.byKey(const Key('displayNameSaveButton')));
+      await tester.pumpAndSettle();
+
+      expect(profile.savedNames, ['Mario Rossi']);
+      expect(
+        tester.widget<Text>(find.byKey(const Key('displayNameValue'))).data,
+        'Mario Rossi',
+      );
+      expect(find.text('Name saved'), findsOneWidget);
+    });
+
+    testWidgets('an empty name is refused inline without calling the server', (
+      tester,
+    ) async {
+      final profile = FakeProfileService();
+      await signInWith(tester, profile);
+
+      await tester.ensureVisible(
+        find.byKey(const Key('editDisplayNameButton')),
+      );
+      await tester.tap(find.byKey(const Key('editDisplayNameButton')));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('displayNameField')), '   ');
+      await tester.tap(find.byKey(const Key('displayNameSaveButton')));
+      await tester.pumpAndSettle();
+
+      expect(profile.savedNames, isEmpty);
+      expect(find.text('Use 1 to 40 characters.'), findsOneWidget);
+      expect(find.byKey(const Key('displayNameField')), findsOneWidget);
+    });
+
+    testWidgets('a server error on save stays in the dialog, translated', (
+      tester,
+    ) async {
+      final profile = FakeProfileService()..failNext = ProfileErrorCode.network;
+      await signInWith(tester, profile);
+
+      await tester.ensureVisible(
+        find.byKey(const Key('editDisplayNameButton')),
+      );
+      await tester.tap(find.byKey(const Key('editDisplayNameButton')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('displayNameField')),
+        'Mario',
+      );
+      await tester.tap(find.byKey(const Key('displayNameSaveButton')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(
+          "Can't reach the server. Check your connection and try again.",
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('displayNameField')), findsOneWidget);
+    });
+
+    testWidgets('regenerating the code asks for confirmation, then shows the '
+        'new one', (tester) async {
+      final profile = FakeProfileService();
+      await signInWith(tester, profile);
+
+      await tester.ensureVisible(
+        find.byKey(const Key('regenerateFriendCodeButton')),
+      );
+      await tester.tap(find.byKey(const Key('regenerateFriendCodeButton')));
+      await tester.pumpAndSettle();
+      expect(profile.friendCode, 'ABCDE23456', reason: 'serve la conferma');
+
+      await tester.tap(find.byKey(const Key('regenerateFriendCodeConfirm')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('FGHJK-78923'), findsOneWidget);
+      expect(find.text('ABCDE-23456'), findsNothing);
+      expect(find.text('New friend code ready'), findsOneWidget);
+    });
+
+    testWidgets('a rate-limited regeneration keeps the old code and explains', (
+      tester,
+    ) async {
+      final profile = FakeProfileService()
+        ..failNext = ProfileErrorCode.rateLimited;
+      await signInWith(tester, profile);
+
+      await tester.ensureVisible(
+        find.byKey(const Key('regenerateFriendCodeButton')),
+      );
+      await tester.tap(find.byKey(const Key('regenerateFriendCodeButton')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('regenerateFriendCodeConfirm')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('ABCDE-23456'), findsOneWidget);
+      expect(
+        find.text('Too many attempts. Wait a few minutes and try again.'),
         findsOneWidget,
       );
     });

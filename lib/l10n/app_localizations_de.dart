@@ -688,4 +688,56 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get categoryOther => 'Sonstiges';
+
+  @override
+  String get profileSection => 'Profil';
+
+  @override
+  String get displayName => 'Anzeigename';
+
+  @override
+  String get displayNameNotSet => 'Nicht festgelegt';
+
+  @override
+  String get displayNameHelp =>
+      'Deine Freunde sehen diesen Namen. Deine E-Mail bleibt privat.';
+
+  @override
+  String get displayNameDialogTitle => 'Wie heißt du?';
+
+  @override
+  String get displayNameInvalid => 'Verwende 1 bis 40 Zeichen.';
+
+  @override
+  String get displayNameSaved => 'Name gespeichert';
+
+  @override
+  String get friendCode => 'Dein Freundescode';
+
+  @override
+  String get friendCodeHelp =>
+      'Teile ihn, um Freundschaftsanfragen zu erhalten.';
+
+  @override
+  String get copyFriendCode => 'Code kopieren';
+
+  @override
+  String get friendCodeCopied => 'Code kopiert';
+
+  @override
+  String get regenerateFriendCode => 'Neuen Code erzeugen';
+
+  @override
+  String get regenerateFriendCodeBody =>
+      'Dein aktueller Code funktioniert dann nicht mehr: Wer ihn hat, kann dir keine Anfragen mehr senden. Deine bisherigen Freunde bleiben.';
+
+  @override
+  String get friendCodeRegenerated => 'Neuer Freundescode bereit';
+
+  @override
+  String get profileLoadFailed =>
+      'Dein Profil konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.';
+
+  @override
+  String get retry => 'Erneut versuchen';
 }

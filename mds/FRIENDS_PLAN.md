@@ -109,41 +109,61 @@ amicizia reale.
 
 ---
 
-## M-SOC1 — Profilo e codice amico
+## M-SOC1 — Profilo e codice amico ✅ (2026-10-22)
 
-- [ ] Migration: `profiles` guadagna
-  - `display_name text` (1–40 caratteri, trim, niente caratteri di
-    controllo; check constraint);
-  - `friend_code text unique` (10 caratteri base32 senza ambigui,
-    ~50 bit casuali generati **dal server**, mai dal client);
+- [x] Migration [`20261022000000_profiles_friend_code.sql`](../supabase/migrations/20261022000000_profiles_friend_code.sql):
+  `profiles` guadagna
+  - `display_name text` (1–40 caratteri, niente spazi ai bordi né
+    caratteri di controllo; check constraint);
+  - `friend_code text not null unique` (10 caratteri da un alfabeto di 32
+    senza ambigui, 50 bit da `extensions.gen_random_bytes`, generati
+    **dal server** in `private.new_friend_code()`; assegnato anche ai
+    profili esistenti e a ogni signup da `handle_new_user`);
   - `friend_code_rotated_at timestamptz`.
-- [ ] RPC `regenerate_friend_code()` (SECURITY DEFINER, schema `private`
-  per le funzioni interne, wrapper pubblico minimale): solo per
-  `auth.uid()`, genera un nuovo codice e invalida il precedente.
-- [ ] RPC `resolve_friend_code(code text)` → solo `id` + `display_name`
-  dell'utente (mai email, mai altri campi). Restituisce niente se il
-  codice non esiste, se è il proprio, o se c'è un blocco in una delle due
-  direzioni. Il codice è casuale a 50 bit: l'enumerazione non è
-  praticabile, ma aggiungere comunque un limite di chiamate per utente
-  (es. 30/ora, contatore in `private.rate_limits`).
-- [ ] La SELECT diretta su `profiles` resta "solo il proprio profilo". I
-  profili degli amici si leggono da una **vista** (`friend_profiles`) che
-  espone solo `id` + `display_name` degli amici accettati. La vista va
-  creata `with (security_invoker = true)`: una vista normale gira coi
-  permessi del proprietario e salterebbe la RLS, esponendo tutti i
-  profili.
-- [ ] App: alla prima apertura di Amici, schermata "Come ti chiami?" per
-  il nome visualizzato; modificabile in Account.
-- [ ] Test pgTAP: un utente non legge il `friend_code` di altri, la vista
-  non mostra non-amici, `resolve_friend_code` non rivela l'email.
+- [x] RPC `set_display_name(new_name)`: il client non scrive `profiles`
+  direttamente (NIP-05); stesse regole lato app in
+  `normalizeDisplayName` (`lib/core/validation.dart`), che conta i
+  caratteri come Postgres (`runes`, non unità UTF-16).
+- [x] RPC `regenerate_friend_code()`: nuovo codice, il vecchio smette
+  subito di funzionare; massimo 5 rigenerazioni in 24 ore.
+- [x] RPC `resolve_friend_code(code)` → solo `id` + `display_name`.
+  Accetta minuscole, spazi e trattini; niente risultati (indistinguibili
+  tra loro) per codice proprio, inesistente, malformato o di un account
+  in cancellazione; massimo 30 ricerche/ora. Limiti in
+  `private.rate_limit_events` + `private.consume_rate_limit` (riusabili
+  per richieste, messaggi e segnalazioni).
+- [x] La SELECT diretta su `profiles` resta "solo il proprio profilo".
+- [x] App: `ProfileService` (`lib/data/services/profile_service.dart`,
+  come `AuthService`: i `repositories` restano per Drift), errori del
+  server tradotti (`profileErrorOf`), card **Profilo** in Account (nome
+  modificabile, codice amico `ABCDE-23456` con copia e rigenerazione
+  confermata) e dialog riutilizzabile `showDisplayNameDialog`
+  (`lib/features/friends/`). 15 stringhe nuove nelle 8 lingue.
+- [x] Test: pgTAP `supabase/tests/profiles_friend_code_test.sql` (34:
+  formato e unicità, nessuna lettura di codici altrui, niente update
+  diretto, validazione del nome, risoluzione, rigenerazione, limiti
+  contati davvero, anonimo bloccato); Dart: validazione, formato del
+  codice, traduzione degli errori, 6 test widget della card Profilo.
+- **Spostato a M-SOC2** (dipende da `friendships` e `blocks`): la vista
+  `friend_profiles` (`security_invoker = true`) e il filtro sui blocchi
+  in `resolve_friend_code`; il prompt "Come ti chiami?" alla prima
+  apertura della tab Amici (il dialog esiste già); il QR del codice.
+- **Da fare con ok esplicito**: applicare la migration all'hosted.
 
-**Fatto quando**: nome e codice gestiti, stringhe nelle 8 lingue, test
-pgTAP verdi, nessuna via per
-leggere email o codici altrui.
+**Fatto quando**: nome e codice gestiti ✓, stringhe nelle 8 lingue ✓,
+test pgTAP verdi ✓, nessuna via per leggere email o codici altrui ✓.
 
 ---
 
 ## M-SOC2 — Richieste di amicizia, QR, blocchi
+
+### Da M-SOC1
+
+- Vista `friend_profiles` (`with (security_invoker = true)`): solo `id` +
+  `display_name` degli amici accettati.
+- `resolve_friend_code` filtra i blocchi in entrambe le direzioni.
+- Prompt "Come ti chiami?" (`showDisplayNameDialog`) alla prima apertura
+  della tab Amici se il nome non è impostato.
 
 ### Modello
 

@@ -226,5 +226,21 @@
   "categoryShopping": "खरीदारी",
   "categorySalary": "वेतन",
   "categoryGifts": "उपहार",
-  "categoryOther": "अन्य"
+  "categoryOther": "अन्य",
+  "profileSection": "प्रोफ़ाइल",
+  "displayName": "दिखाया जाने वाला नाम",
+  "displayNameNotSet": "सेट नहीं है",
+  "displayNameHelp": "आपके दोस्त यही नाम देखते हैं। आपका ईमेल निजी रहता है।",
+  "displayNameDialogTitle": "आपका नाम क्या है?",
+  "displayNameInvalid": "1 से 40 अक्षरों का उपयोग करें।",
+  "displayNameSaved": "नाम सहेजा गया",
+  "friendCode": "आपका फ़्रेंड कोड",
+  "friendCodeHelp": "दोस्ती के अनुरोध पाने के लिए इसे साझा करें।",
+  "copyFriendCode": "कोड कॉपी करें",
+  "friendCodeCopied": "कोड कॉपी हो गया",
+  "regenerateFriendCode": "नया कोड बनाएं",
+  "regenerateFriendCodeBody": "आपका मौजूदा कोड काम करना बंद कर देगा: जिसके पास यह है, वह अब आपको अनुरोध नहीं भेज पाएगा। आपके मौजूदा दोस्त बने रहेंगे।",
+  "friendCodeRegenerated": "नया फ़्रेंड कोड तैयार है",
+  "profileLoadFailed": "आपकी प्रोफ़ाइल लोड नहीं हो सकी। अपना कनेक्शन जांचें और फिर से कोशिश करें।",
+  "retry": "फिर से कोशिश करें"
 }

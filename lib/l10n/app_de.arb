@@ -226,5 +226,21 @@
   "categoryShopping": "Shopping",
   "categorySalary": "Gehalt",
   "categoryGifts": "Geschenke",
-  "categoryOther": "Sonstiges"
+  "categoryOther": "Sonstiges",
+  "profileSection": "Profil",
+  "displayName": "Anzeigename",
+  "displayNameNotSet": "Nicht festgelegt",
+  "displayNameHelp": "Deine Freunde sehen diesen Namen. Deine E-Mail bleibt privat.",
+  "displayNameDialogTitle": "Wie heißt du?",
+  "displayNameInvalid": "Verwende 1 bis 40 Zeichen.",
+  "displayNameSaved": "Name gespeichert",
+  "friendCode": "Dein Freundescode",
+  "friendCodeHelp": "Teile ihn, um Freundschaftsanfragen zu erhalten.",
+  "copyFriendCode": "Code kopieren",
+  "friendCodeCopied": "Code kopiert",
+  "regenerateFriendCode": "Neuen Code erzeugen",
+  "regenerateFriendCodeBody": "Dein aktueller Code funktioniert dann nicht mehr: Wer ihn hat, kann dir keine Anfragen mehr senden. Deine bisherigen Freunde bleiben.",
+  "friendCodeRegenerated": "Neuer Freundescode bereit",
+  "profileLoadFailed": "Dein Profil konnte nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.",
+  "retry": "Erneut versuchen"
 }

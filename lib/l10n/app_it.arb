@@ -225,5 +225,21 @@
   "categoryShopping": "Shopping",
   "categorySalary": "Stipendio",
   "categoryGifts": "Regali",
-  "categoryOther": "Altro"
+  "categoryOther": "Altro",
+  "profileSection": "Profilo",
+  "displayName": "Nome visualizzato",
+  "displayNameNotSet": "Non impostato",
+  "displayNameHelp": "I tuoi amici vedono questo nome. La tua email resta privata.",
+  "displayNameDialogTitle": "Come ti chiami?",
+  "displayNameInvalid": "Usa da 1 a 40 caratteri.",
+  "displayNameSaved": "Nome salvato",
+  "friendCode": "Il tuo codice amico",
+  "friendCodeHelp": "Condividilo per ricevere richieste di amicizia.",
+  "copyFriendCode": "Copia codice",
+  "friendCodeCopied": "Codice copiato",
+  "regenerateFriendCode": "Genera nuovo codice",
+  "regenerateFriendCodeBody": "Il codice attuale smette di funzionare: chi ce l'ha non potrà più inviarti richieste. Gli amici che hai già restano.",
+  "friendCodeRegenerated": "Nuovo codice amico pronto",
+  "profileLoadFailed": "Impossibile caricare il profilo. Controlla la connessione e riprova.",
+  "retry": "Riprova"
 }

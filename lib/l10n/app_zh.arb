@@ -226,5 +226,21 @@
   "categoryShopping": "购物",
   "categorySalary": "工资",
   "categoryGifts": "礼物",
-  "categoryOther": "其他"
+  "categoryOther": "其他",
+  "profileSection": "个人资料",
+  "displayName": "显示名称",
+  "displayNameNotSet": "未设置",
+  "displayNameHelp": "好友会看到这个名称。你的电子邮箱不会公开。",
+  "displayNameDialogTitle": "你叫什么名字？",
+  "displayNameInvalid": "请使用 1 到 40 个字符。",
+  "displayNameSaved": "名称已保存",
+  "friendCode": "你的好友码",
+  "friendCodeHelp": "分享它即可收到好友请求。",
+  "copyFriendCode": "复制好友码",
+  "friendCodeCopied": "已复制好友码",
+  "regenerateFriendCode": "生成新好友码",
+  "regenerateFriendCodeBody": "当前好友码将失效：持有它的人将无法再向你发送请求。已有的好友不受影响。",
+  "friendCodeRegenerated": "新好友码已生成",
+  "profileLoadFailed": "无法加载你的个人资料。请检查网络连接后重试。",
+  "retry": "重试"
 }

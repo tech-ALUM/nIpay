@@ -677,4 +677,55 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get categoryOther => 'أخرى';
+
+  @override
+  String get profileSection => 'الملف الشخصي';
+
+  @override
+  String get displayName => 'الاسم المعروض';
+
+  @override
+  String get displayNameNotSet => 'غير محدد';
+
+  @override
+  String get displayNameHelp =>
+      'يرى أصدقاؤك هذا الاسم. ويبقى بريدك الإلكتروني خاصًا.';
+
+  @override
+  String get displayNameDialogTitle => 'ما اسمك؟';
+
+  @override
+  String get displayNameInvalid => 'استخدم من 1 إلى 40 حرفًا.';
+
+  @override
+  String get displayNameSaved => 'تم حفظ الاسم';
+
+  @override
+  String get friendCode => 'رمز الصداقة الخاص بك';
+
+  @override
+  String get friendCodeHelp => 'شاركه لتلقي طلبات الصداقة.';
+
+  @override
+  String get copyFriendCode => 'نسخ الرمز';
+
+  @override
+  String get friendCodeCopied => 'تم نسخ الرمز';
+
+  @override
+  String get regenerateFriendCode => 'إنشاء رمز جديد';
+
+  @override
+  String get regenerateFriendCodeBody =>
+      'سيتوقف رمزك الحالي عن العمل: لن يتمكن من لديه من إرسال طلبات إليك بعد الآن. ويبقى أصدقاؤك الحاليون.';
+
+  @override
+  String get friendCodeRegenerated => 'رمز الصداقة الجديد جاهز';
+
+  @override
+  String get profileLoadFailed =>
+      'تعذّر تحميل ملفك الشخصي. تحقّق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get retry => 'إعادة المحاولة';
 }

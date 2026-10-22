@@ -30,7 +30,14 @@ const kMinPasswordLength = 12;
 /// bcrypt (usato da Supabase Auth) considera solo i primi 72 byte.
 const kMaxPasswordLength = 72;
 
+/// Nome visualizzato agli amici. Stesse regole del server
+/// (`set_display_name` e il CHECK su `profiles.display_name`, migration
+/// 20261022000000): 1–[kMaxDisplayNameLength] caratteri, niente spazi ai
+/// bordi né caratteri di controllo.
+const kMaxDisplayNameLength = 40;
+
 final _email = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+final _controlChar = RegExp(r'[\u0000-\u001F\u007F-\u009F]');
 final _letter = RegExp(r'[A-Za-z]');
 final _digit = RegExp(r'[0-9]');
 
@@ -44,3 +51,17 @@ bool isStrongPassword(String value) =>
     value.length <= kMaxPasswordLength &&
     _letter.hasMatch(value) &&
     _digit.hasMatch(value);
+
+/// Nome visualizzato ripulito dagli spazi ai bordi, o null se non valido.
+/// La lunghezza si conta in caratteri Unicode (`runes`), come
+/// `char_length` di Postgres: un'emoji vale 1, non 2.
+String? normalizeDisplayName(String value) {
+  final trimmed = value.trim();
+  final length = trimmed.runes.length;
+  if (length < 1 ||
+      length > kMaxDisplayNameLength ||
+      _controlChar.hasMatch(trimmed)) {
+    return null;
+  }
+  return trimmed;
+}

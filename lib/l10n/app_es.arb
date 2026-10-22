@@ -226,5 +226,21 @@
   "categoryShopping": "Compras",
   "categorySalary": "Salario",
   "categoryGifts": "Regalos",
-  "categoryOther": "Otros"
+  "categoryOther": "Otros",
+  "profileSection": "Perfil",
+  "displayName": "Nombre visible",
+  "displayNameNotSet": "Sin definir",
+  "displayNameHelp": "Tus amigos ven este nombre. Tu correo sigue siendo privado.",
+  "displayNameDialogTitle": "¿Cómo te llamas?",
+  "displayNameInvalid": "Usa entre 1 y 40 caracteres.",
+  "displayNameSaved": "Nombre guardado",
+  "friendCode": "Tu código de amigo",
+  "friendCodeHelp": "Compártelo para recibir solicitudes de amistad.",
+  "copyFriendCode": "Copiar código",
+  "friendCodeCopied": "Código copiado",
+  "regenerateFriendCode": "Generar código nuevo",
+  "regenerateFriendCodeBody": "Tu código actual dejará de funcionar: quien lo tenga ya no podrá enviarte solicitudes. Los amigos que ya tienes se mantienen.",
+  "friendCodeRegenerated": "Nuevo código de amigo listo",
+  "profileLoadFailed": "No se ha podido cargar tu perfil. Comprueba tu conexión e inténtalo de nuevo.",
+  "retry": "Reintentar"
 }

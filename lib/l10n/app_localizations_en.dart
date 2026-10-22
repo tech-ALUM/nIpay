@@ -680,4 +680,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryOther => 'Other';
+
+  @override
+  String get profileSection => 'Profile';
+
+  @override
+  String get displayName => 'Display name';
+
+  @override
+  String get displayNameNotSet => 'Not set';
+
+  @override
+  String get displayNameHelp =>
+      'Your friends see this name. Your email stays private.';
+
+  @override
+  String get displayNameDialogTitle => 'What\'s your name?';
+
+  @override
+  String get displayNameInvalid => 'Use 1 to 40 characters.';
+
+  @override
+  String get displayNameSaved => 'Name saved';
+
+  @override
+  String get friendCode => 'Your friend code';
+
+  @override
+  String get friendCodeHelp => 'Share it to receive friend requests.';
+
+  @override
+  String get copyFriendCode => 'Copy code';
+
+  @override
+  String get friendCodeCopied => 'Code copied';
+
+  @override
+  String get regenerateFriendCode => 'Generate new code';
+
+  @override
+  String get regenerateFriendCodeBody =>
+      'Your current code stops working: anyone who has it can no longer send you requests. The friends you already have stay.';
+
+  @override
+  String get friendCodeRegenerated => 'New friend code ready';
+
+  @override
+  String get profileLoadFailed =>
+      'Couldn\'t load your profile. Check your connection and try again.';
+
+  @override
+  String get retry => 'Retry';
 }

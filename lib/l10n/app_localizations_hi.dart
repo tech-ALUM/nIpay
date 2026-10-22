@@ -682,4 +682,55 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get categoryOther => 'अन्य';
+
+  @override
+  String get profileSection => 'प्रोफ़ाइल';
+
+  @override
+  String get displayName => 'दिखाया जाने वाला नाम';
+
+  @override
+  String get displayNameNotSet => 'सेट नहीं है';
+
+  @override
+  String get displayNameHelp =>
+      'आपके दोस्त यही नाम देखते हैं। आपका ईमेल निजी रहता है।';
+
+  @override
+  String get displayNameDialogTitle => 'आपका नाम क्या है?';
+
+  @override
+  String get displayNameInvalid => '1 से 40 अक्षरों का उपयोग करें।';
+
+  @override
+  String get displayNameSaved => 'नाम सहेजा गया';
+
+  @override
+  String get friendCode => 'आपका फ़्रेंड कोड';
+
+  @override
+  String get friendCodeHelp => 'दोस्ती के अनुरोध पाने के लिए इसे साझा करें।';
+
+  @override
+  String get copyFriendCode => 'कोड कॉपी करें';
+
+  @override
+  String get friendCodeCopied => 'कोड कॉपी हो गया';
+
+  @override
+  String get regenerateFriendCode => 'नया कोड बनाएं';
+
+  @override
+  String get regenerateFriendCodeBody =>
+      'आपका मौजूदा कोड काम करना बंद कर देगा: जिसके पास यह है, वह अब आपको अनुरोध नहीं भेज पाएगा। आपके मौजूदा दोस्त बने रहेंगे।';
+
+  @override
+  String get friendCodeRegenerated => 'नया फ़्रेंड कोड तैयार है';
+
+  @override
+  String get profileLoadFailed =>
+      'आपकी प्रोफ़ाइल लोड नहीं हो सकी। अपना कनेक्शन जांचें और फिर से कोशिश करें।';
+
+  @override
+  String get retry => 'फिर से कोशिश करें';
 }
