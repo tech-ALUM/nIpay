@@ -669,55 +669,60 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
         _AmountHero(
           color: typeColor,
           children: [
-            TextField(
-              key: const Key('amountField'),
-              controller: _amount,
-              autofocus: true,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: moneyInputFormatters,
-              textAlign: TextAlign.center,
-              style: moneyStyle(size: 40, color: typeColor),
-              cursorColor: typeColor,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                labelText: l10n.amount,
-                errorText: _error,
-                filled: false,
-                floatingLabelAlignment: FloatingLabelAlignment.center,
-                floatingLabelStyle: Theme.of(context).textTheme.labelLarge
-                    ?.copyWith(
-                      color: _error != null ? scheme.error : typeColor,
+            // Valuta affiancata all'importo: si leggono come un'unità sola
+            // ("42,50 EUR €").
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const Key('amountField'),
+                    controller: _amount,
+                    autofocus: true,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
                     ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: palette.line),
+                    inputFormatters: moneyInputFormatters,
+                    textAlign: TextAlign.end,
+                    style: moneyStyle(size: 40, color: typeColor),
+                    cursorColor: typeColor,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      labelText: l10n.amount,
+                      errorText: _error,
+                      filled: false,
+                      floatingLabelAlignment: FloatingLabelAlignment.start,
+                      floatingLabelStyle: Theme.of(context).textTheme.labelLarge
+                          ?.copyWith(
+                            color: _error != null ? scheme.error : typeColor,
+                          ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: palette.line),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: typeColor, width: 2),
+                      ),
+                      errorBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: scheme.error),
+                      ),
+                      focusedErrorBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: scheme.error, width: 2),
+                      ),
+                    ),
+                  ),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: typeColor, width: 2),
-                ),
-                errorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: scheme.error),
-                ),
-                focusedErrorBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: scheme.error, width: 2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Center(
-              child: SizedBox(
-                width: 170,
-                child: CurrencyField(
+                const SizedBox(width: 10),
+                CurrencyChip(
                   key: const Key('transactionCurrencyDropdown'),
                   value: effectiveCurrency,
+                  color: typeColor,
                   onChanged: (v) {
                     setState(() => _currency = v);
                     _maybeFetchRate();
                   },
                 ),
-              ),
+              ],
             ),
             if (effectiveCurrency != activeCurrency)
               Padding(

@@ -38,6 +38,71 @@ class CurrencyField extends StatelessWidget {
   );
 }
 
+/// Variante compatta di [CurrencyField] da affiancare a un importo grande
+/// ("42,50 [EUR € ▾]"): stessa scelta con ricerca, ingombro di una pillola.
+/// Annunciata come "Valuta: EUR €".
+class CurrencyChip extends StatelessWidget {
+  const CurrencyChip({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    this.color,
+  });
+
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  /// Colore di testo e bordo; di default quello del testo del tema.
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+    final fg = color ?? scheme.onSurface;
+    Future<void> pick() async {
+      final picked = await showCurrencyPicker(context, selected: value);
+      if (picked != null && picked != value) onChanged(picked);
+    }
+
+    return Semantics(
+      button: true,
+      label: '${l10n.currency}: ${currencyLabel(value)}',
+      excludeSemantics: true,
+      onTap: pick,
+      child: Material(
+        color: fg.withValues(alpha: .10),
+        shape: StadiumBorder(
+          side: BorderSide(color: fg.withValues(alpha: .35)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: pick,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(14, 8, 8, 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    currencyLabel(value),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelLarge?.copyWith(color: fg),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(Icons.expand_more, size: 20, color: fg),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Riquadro di scelta valuta; null se chiuso senza scegliere.
 Future<String?> showCurrencyPicker(
   BuildContext context, {
