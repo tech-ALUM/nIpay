@@ -97,6 +97,10 @@ provare con più account".
   lettura dopo la fine dell'amicizia.
 - [ ] M-SOC3, sicurezza: un non membro non riceve eventi Realtime della
   conversazione (SECURITY_AUDIT NIP-21, aggiornamento 2026-10-23).
+- [ ] M-SOC4: l'esempio della cena (A paga 60 € per A, B, C) inserito dal
+  foglio transazione torna identico su tre dispositivi; B registra la
+  quota e la spesa si blocca per A; rimborso parziale confermato e uno
+  rifiutato; saldo che resta dopo la fine dell'amicizia.
 
 ---
 
@@ -390,6 +394,24 @@ eventi Realtime" documentato.
 ---
 
 ## M-SOC4 — Spese divise e saldi
+
+**Decisioni (Sergio, 2026-10-23)**:
+- Rimborso di **qualsiasi importo** fino a quanto si deve (proposto il
+  saldo intero); conta quando il ricevente conferma, si può rifiutare.
+- Finita l'amicizia (rimossa o blocco) **saldi e rimborsi restano**; nuove
+  spese insieme no.
+- Spesa **bloccata** appena un altro partecipante registra la sua quota
+  nel proprio portafoglio (`registered_at`): da lì niente modifica né
+  eliminazione, per correggere serve una spesa nuova o un rimborso. La
+  quota di chi crea non blocca (nasce registrata). Sostituisce la regola
+  "gli altri vedono spesa modificata e aggiornano".
+- Lavoro **a fasi**, un commit ciascuna: (1) server, (2) tipo "con amici"
+  nel database locale, (3) foglio transazione, (4) saldi e Salda in Amici.
+
+**Stato**: fase 1 fatta in locale — migration
+`20261024000000_shared_expenses.sql` (spese, quote, rimborsi, saldi per
+valuta, tutto via RPC) + `supabase/tests/shared_expenses_test.sql`
+(64 test pgTAP). Da applicare all'hosted insieme alla fase che la usa.
 
 ### Modello (server)
 
