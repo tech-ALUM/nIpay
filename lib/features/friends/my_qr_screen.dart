@@ -10,6 +10,7 @@ import '../../core/ui/ui.dart';
 import '../../data/services/friends_service.dart';
 import '../../data/services/profile_service.dart';
 import '../../l10n/app_localizations.dart';
+import 'display_name_dialog.dart';
 import 'friends_ui.dart';
 
 /// Il mio QR (M-SOC2): contiene il link `com.alum.nipay://friend/<codice>`,
@@ -60,13 +61,13 @@ class _ProfileUnavailable extends StatelessWidget {
   }
 }
 
-class _QrBody extends StatelessWidget {
+class _QrBody extends ConsumerWidget {
   const _QrBody({required this.profile});
 
   final MyProfile profile;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final code = formatFriendCode(profile.friendCode);
     final link = friendLink(profile.friendCode);
@@ -86,6 +87,18 @@ class _QrBody extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
+                // Senza nome chi scansiona vedrebbe "Utente senza nome":
+                // si rimedia da qui, prima di mostrare il QR.
+                if (profile.displayName == null)
+                  TextButton.icon(
+                    key: const Key('myQrAddNameButton'),
+                    icon: const Icon(Icons.edit_outlined),
+                    label: Text(l10n.myQrAddName),
+                    onPressed: () async {
+                      final saved = await showDisplayNameDialog(context);
+                      if (saved != null) ref.invalidate(myProfileProvider);
+                    },
+                  ),
                 const SizedBox(height: 18),
                 Semantics(
                   label: '${l10n.myQrCode}: $code',

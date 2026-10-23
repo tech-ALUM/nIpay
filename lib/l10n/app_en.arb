@@ -303,6 +303,7 @@
   "blockedSection": "Blocked",
   "unblockUser": "Unblock",
   "unnamedUser": "Unnamed user",
+  "myQrAddName": "Add your name",
   "myQrHelp": "Ask a friend to scan this code: their friend request will reach you.",
   "shareFriendCode": "Share",
   "shareFriendCodeText": "Add me on nIpay: {link} (code {code})",

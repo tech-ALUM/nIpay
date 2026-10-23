@@ -453,6 +453,44 @@ void main() {
     );
   });
 
+  testWidgets('My QR code without a name offers to add it, then shows it', (
+    tester,
+  ) async {
+    final profile = FakeProfileService(); // nessun nome
+    await tester.pumpWidget(
+      _wrap(
+        const MyQrScreen(),
+        friends: FakeFriendsService(),
+        profile: profile,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Unnamed user'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('myQrAddNameButton')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('displayNameField')), 'Sergio');
+    await tester.tap(find.byKey(const Key('displayNameSaveButton')));
+    await tester.pumpAndSettle();
+
+    expect(profile.savedNames, ['Sergio']);
+    expect(find.text('Sergio'), findsOneWidget);
+    expect(find.text('Unnamed user'), findsNothing);
+    expect(find.byKey(const Key('myQrAddNameButton')), findsNothing);
+  });
+
+  testWidgets('My QR code with a name does not offer to add one', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(const MyQrScreen(), friends: FakeFriendsService()),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Io'), findsOneWidget);
+    expect(find.byKey(const Key('myQrAddNameButton')), findsNothing);
+  });
+
   group('add friend by code', () {
     testWidgets('an invalid code is refused inline, without calling the '
         'server', (tester) async {

@@ -26,6 +26,7 @@ class FakeAuthService implements AuthService {
   String? lastResetEmail;
   bool throwOnNextCall = false;
   bool signedOutEverywhere = false;
+  String? lastSignUpDisplayName;
 
   /// Password "vera" dell'account, per simulare la riautenticazione.
   static const accountPassword = 'password123';
@@ -52,7 +53,11 @@ class FakeAuthService implements AuthService {
   Future<void> signUpWithEmail({
     required String email,
     required String password,
-  }) => _signIn(email);
+    required String displayName,
+  }) {
+    lastSignUpDisplayName = displayName;
+    return _signIn(email);
+  }
 
   @override
   Future<void> signInWithEmail({
@@ -346,7 +351,8 @@ void main() {
     await tester.tap(find.text("Don't have an account? Sign up"));
     await tester.pump();
 
-    await tester.enterText(find.byType(TextFormField).first, 'new@example.com');
+    await tester.enterText(find.byKey(const Key('signUpNameField')), 'Nuovo');
+    await tester.enterText(find.byType(TextFormField).at(1), 'new@example.com');
     await tester.enterText(find.byType(TextFormField).last, 'password');
     await tester.tap(find.widgetWithText(FilledButton, 'Sign up'));
     await tester.pump();
@@ -358,6 +364,54 @@ void main() {
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Sign up'));
     await tester.pumpAndSettle();
+    expect(fakeAuth.currentUser, isNotNull);
+  });
+
+  testWidgets('sign-up asks for the name shown to friends and refuses an '
+      'empty one', (tester) async {
+    final fakeAuth = FakeAuthService();
+    await tester.pumpWidget(_wrap(const AccountScreen(), fakeAuth: fakeAuth));
+    // Solo in registrazione: chi accede ha già il suo nome.
+    expect(find.byKey(const Key('signUpNameField')), findsNothing);
+    await tester.tap(find.text("Don't have an account? Sign up"));
+    await tester.pump();
+
+    expect(find.byKey(const Key('signUpNameField')), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('signUpNameField')), '   ');
+    await tester.enterText(find.byType(TextFormField).at(1), 'new@example.com');
+    await tester.enterText(
+      find.byType(TextFormField).last,
+      'lunga-password-2026',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign up'));
+    await tester.pump();
+
+    expect(find.text('Use 1 to 40 characters.'), findsOneWidget);
+    expect(fakeAuth.currentUser, isNull);
+    expect(fakeAuth.lastSignUpDisplayName, isNull);
+  });
+
+  testWidgets('sign-up sends the name trimmed with the registration', (
+    tester,
+  ) async {
+    final fakeAuth = FakeAuthService();
+    await tester.pumpWidget(_wrap(const AccountScreen(), fakeAuth: fakeAuth));
+    await tester.tap(find.text("Don't have an account? Sign up"));
+    await tester.pump();
+
+    await tester.enterText(
+      find.byKey(const Key('signUpNameField')),
+      '  Sergio  ',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), 'new@example.com');
+    await tester.enterText(
+      find.byType(TextFormField).last,
+      'lunga-password-2026',
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign up'));
+    await tester.pumpAndSettle();
+
+    expect(fakeAuth.lastSignUpDisplayName, 'Sergio');
     expect(fakeAuth.currentUser, isNotNull);
   });
 

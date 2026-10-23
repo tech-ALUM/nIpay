@@ -801,6 +801,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get unnamedUser => 'बिना नाम का उपयोगकर्ता';
 
   @override
+  String get myQrAddName => 'अपना नाम जोड़ें';
+
+  @override
   String get myQrHelp =>
       'किसी दोस्त से यह कोड स्कैन करवाएं: उसका दोस्ती का अनुरोध आप तक पहुंच जाएगा।';
 

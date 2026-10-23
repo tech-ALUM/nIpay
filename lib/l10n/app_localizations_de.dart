@@ -808,6 +808,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get unnamedUser => 'Nutzer ohne Namen';
 
   @override
+  String get myQrAddName => 'Namen hinzufügen';
+
+  @override
   String get myQrHelp =>
       'Lass einen Freund diesen Code scannen: Seine Freundschaftsanfrage kommt dann bei dir an.';
 

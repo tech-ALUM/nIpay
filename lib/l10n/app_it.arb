@@ -262,6 +262,7 @@
   "blockedSection": "Bloccati",
   "unblockUser": "Sblocca",
   "unnamedUser": "Utente senza nome",
+  "myQrAddName": "Aggiungi il tuo nome",
   "myQrHelp": "Fai inquadrare questo codice a un amico: ti arriverà la sua richiesta di amicizia.",
   "shareFriendCode": "Condividi",
   "shareFriendCodeText": "Aggiungimi su nIpay: {link} (codice {code})",

@@ -799,6 +799,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unnamedUser => 'Unnamed user';
 
   @override
+  String get myQrAddName => 'Add your name';
+
+  @override
   String get myQrHelp =>
       'Ask a friend to scan this code: their friend request will reach you.';
 

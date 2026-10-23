@@ -204,6 +204,13 @@ Chiusi il 2026-10-23:
   (`ios/Runner/<lingua>.lproj/InfoPlist.strings`, registrati nel
   progetto Xcode; il cinese è `zh-Hans`).
 
+- Nome chiesto già alla registrazione (campo obbligatorio nel form).
+  Con la conferma email non c'è una sessione per `set_display_name`:
+  il nome va nei metadati del signup e lo salva `handle_new_user`
+  (migration `20261023000000`, stesse regole; un nome non valido resta
+  vuoto senza bloccare la registrazione). Per chi non ha ancora un nome,
+  Il mio QR mostra "Aggiungi il tuo nome".
+
 Ancora aperto in M-SOC2:
 - Prova end-to-end con due account veri (richiesta, accettazione,
   blocco).

@@ -1562,6 +1562,12 @@ abstract class AppLocalizations {
   /// **'Unnamed user'**
   String get unnamedUser;
 
+  /// No description provided for @myQrAddName.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your name'**
+  String get myQrAddName;
+
   /// No description provided for @myQrHelp.
   ///
   /// In en, this message translates to:

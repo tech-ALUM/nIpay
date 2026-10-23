@@ -48,9 +48,13 @@ abstract interface class AuthService {
   /// chiama [completePasswordRecovery].
   Stream<void> get passwordRecoveryRequests;
 
+  /// [displayName] (già validato con `normalizeDisplayName`) va nei
+  /// metadati della registrazione: con la conferma email non c'è ancora
+  /// una sessione per `set_display_name`, lo salva il trigger del signup.
   Future<void> signUpWithEmail({
     required String email,
     required String password,
+    required String displayName,
   });
 
   Future<void> signInWithEmail({
@@ -117,7 +121,14 @@ class SupabaseAuthService implements AuthService {
   Future<void> signUpWithEmail({
     required String email,
     required String password,
-  }) => _guard(() => _client.auth.signUp(email: email, password: password));
+    required String displayName,
+  }) => _guard(
+    () => _client.auth.signUp(
+      email: email,
+      password: password,
+      data: {'display_name': displayName},
+    ),
+  );
 
   @override
   Future<void> signInWithEmail({

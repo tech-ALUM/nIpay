@@ -587,6 +587,7 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
   static const _resetCooldown = Duration(seconds: 60);
 
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSignUp = false;
@@ -596,6 +597,7 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -634,6 +636,29 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
               ),
             ),
             const SizedBox(height: 20),
+            // Il nome che vedono gli amici, chiesto subito: con la conferma
+            // email non c'è una sessione per chiederlo dopo il signup.
+            if (_isSignUp) ...[
+              TextFormField(
+                key: const Key('signUpNameField'),
+                controller: _nameController,
+                textInputAction: TextInputAction.next,
+                textCapitalization: TextCapitalization.words,
+                autofillHints: const [AutofillHints.name],
+                maxLength: kMaxDisplayNameLength,
+                decoration: InputDecoration(
+                  labelText: l10n.displayName,
+                  prefixIcon: const Icon(Icons.person_outline),
+                  helperText: l10n.displayNameHelp,
+                  helperMaxLines: 2,
+                  counterText: '',
+                ),
+                validator: (value) => normalizeDisplayName(value ?? '') == null
+                    ? l10n.displayNameInvalid
+                    : null,
+              ),
+              const SizedBox(height: 14),
+            ],
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -727,7 +752,11 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
     final password = _passwordController.text;
     try {
       if (_isSignUp) {
-        await service.signUpWithEmail(email: email, password: password);
+        await service.signUpWithEmail(
+          email: email,
+          password: password,
+          displayName: normalizeDisplayName(_nameController.text)!,
+        );
       } else {
         await service.signInWithEmail(email: email, password: password);
       }

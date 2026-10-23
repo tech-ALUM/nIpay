@@ -773,6 +773,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unnamedUser => '未命名用户';
 
   @override
+  String get myQrAddName => '添加你的名字';
+
+  @override
   String get myQrHelp => '让好友扫描这个二维码，你就会收到对方的好友请求。';
 
   @override

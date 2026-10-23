@@ -805,6 +805,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get unnamedUser => 'Utilisateur sans nom';
 
   @override
+  String get myQrAddName => 'Ajoutez votre nom';
+
+  @override
   String get myQrHelp =>
       'Faites scanner ce code par un ami : vous recevrez sa demande d\'ami.';
 

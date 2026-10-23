@@ -263,6 +263,7 @@
   "blockedSection": "已屏蔽",
   "unblockUser": "解除屏蔽",
   "unnamedUser": "未命名用户",
+  "myQrAddName": "添加你的名字",
   "myQrHelp": "让好友扫描这个二维码，你就会收到对方的好友请求。",
   "shareFriendCode": "分享",
   "shareFriendCodeText": "在 nIpay 上加我为好友：{link}（好友码 {code}）",

@@ -263,6 +263,7 @@
   "blockedSection": "المحظورون",
   "unblockUser": "إلغاء الحظر",
   "unnamedUser": "مستخدم بلا اسم",
+  "myQrAddName": "أضف اسمك",
   "myQrHelp": "اطلب من صديق مسح هذا الرمز: سيصلك طلب صداقته.",
   "shareFriendCode": "مشاركة",
   "shareFriendCodeText": "أضفني على nIpay: {link} (الرمز {code})",

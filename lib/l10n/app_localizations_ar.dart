@@ -796,6 +796,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get unnamedUser => 'مستخدم بلا اسم';
 
   @override
+  String get myQrAddName => 'أضف اسمك';
+
+  @override
   String get myQrHelp => 'اطلب من صديق مسح هذا الرمز: سيصلك طلب صداقته.';
 
   @override
