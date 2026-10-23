@@ -1301,6 +1301,19 @@ Basso.
 - Disabilitare Realtime, o accettare solo canali privati.
 - Lanciare periodicamente il Security Advisor di Supabase.
 
+> **Aggiornamento 2026-10-23 (M-SOC3, chat).** Realtime non è più spento:
+> serve alla chat. È limitato in due modi. (1) La publication
+> `supabase_realtime` contiene **solo** `messages`, `conversation_members` e
+> `friendships`, mai le tabelle dei portafogli (pgTAP
+> `supabase/tests/chat_test.sql` verifica l'elenco esatto e che non sia
+> `for all tables`). (2) `postgres_changes` applica la RLS di SELECT di
+> quelle tabelle a ogni evento INSERT/UPDATE. Gli eventi **DELETE** non
+> passano dalla RLS e mandano a tutti gli iscritti la sola chiave primaria:
+> per questo le tabelle pubblicate hanno un `id` uuid casuale come chiave,
+> e l'ora di lettura sta in `conversation_reads` (non pubblicata). Da
+> verificare a mano con due client, prima del rilascio, che un non membro
+> non riceva eventi della conversazione (FRIENDS_PLAN M-SOC3).
+
 ---
 
 ## [INFORMATIONAL] NIP-22 — Configurazione locale (CI) diversa dal progetto hosted e non versionata
