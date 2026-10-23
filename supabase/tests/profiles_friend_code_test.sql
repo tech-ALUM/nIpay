@@ -173,5 +173,50 @@ select throws_ok($$ select set_display_name('x') $$,
 select throws_ok($$ select regenerate_friend_code() $$,
   '42501', null, 'anonimo: niente rigenerazione del codice');
 
+-- =====================================================================
+-- Nome al signup (metadati della registrazione, 20261023000000)
+-- =====================================================================
+reset role;
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('44444444-4444-4444-4444-444444444444', 'meta-ok@test.local',
+   '{"display_name": "  Dario  "}'),
+  ('55555555-5555-5555-5555-555555555555', 'meta-long@test.local',
+   jsonb_build_object('display_name', repeat('x', 41))),
+  ('66666666-6666-6666-6666-666666666666', 'meta-obj@test.local',
+   '{"display_name": {"x": 1}}'),
+  ('77777777-7777-7777-7777-777777777777', 'meta-ctrl@test.local',
+   jsonb_build_object('display_name', 'Eva' || chr(10)));
+insert into auth.users (id, email) values
+  ('88888888-8888-8888-8888-888888888888', 'meta-none@test.local');
+
+select is(
+  (select display_name from profiles
+    where id = '44444444-4444-4444-4444-444444444444'),
+  'Dario', 'signup: il nome dei metadati viene salvato senza spazi ai bordi');
+select is(
+  (select display_name from profiles
+    where id = '55555555-5555-5555-5555-555555555555'),
+  null, 'signup: un nome oltre 40 caratteri resta vuoto');
+select is(
+  (select display_name from profiles
+    where id = '66666666-6666-6666-6666-666666666666'),
+  null, 'signup: un nome che non è testo resta vuoto');
+select is(
+  (select display_name from profiles
+    where id = '77777777-7777-7777-7777-777777777777'),
+  null, 'signup: un nome con caratteri di controllo resta vuoto');
+select is(
+  (select display_name from profiles
+    where id = '88888888-8888-8888-8888-888888888888'),
+  null, 'signup senza metadati: profilo creato, nome vuoto');
+select is(
+  (select count(*)::int from profiles
+    where id in ('55555555-5555-5555-5555-555555555555',
+                 '66666666-6666-6666-6666-666666666666',
+                 '77777777-7777-7777-7777-777777777777',
+                 '88888888-8888-8888-8888-888888888888')
+      and friend_code is not null),
+  4, 'signup: un nome scartato non blocca la registrazione né il codice');
+
 select * from finish();
 rollback;
