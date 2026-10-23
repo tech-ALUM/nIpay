@@ -52,11 +52,32 @@ class TransactionTile extends ConsumerWidget {
           symbolOnly: true,
         ),
       ),
+      TransactionType.friendOut => (
+        palette.transfer,
+        formatCents(
+          -transaction.amountCents,
+          currency: currency,
+          symbolOnly: true,
+        ),
+      ),
+      TransactionType.friendIn => (
+        palette.transfer,
+        formatCents(
+          transaction.amountCents,
+          currency: currency,
+          signed: true,
+          symbolOnly: true,
+        ),
+      ),
     };
 
     final badge = switch (transaction.type) {
       TransactionType.transfer => IconBadge(
         icon: Icons.swap_horiz_rounded,
+        color: palette.transfer,
+      ),
+      TransactionType.friendOut || TransactionType.friendIn => IconBadge(
+        icon: Icons.group_outlined,
         color: palette.transfer,
       ),
       _ => IconBadge(

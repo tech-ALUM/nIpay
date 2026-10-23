@@ -62,7 +62,22 @@ class _TransactionDetailSheet extends ConsumerWidget {
         formatCents(t.amountCents, currency: currency),
         l10n.transfer,
       ),
+      TransactionType.friendOut => (
+        palette.transfer,
+        formatCents(-t.amountCents, currency: currency),
+        l10n.friendOut,
+      ),
+      TransactionType.friendIn => (
+        palette.transfer,
+        formatCents(t.amountCents, currency: currency, signed: true),
+        l10n.friendIn,
+      ),
     };
+    // I movimenti "con amici" seguono la spesa divisa: non si modificano
+    // dal foglio transazione (M-SOC4).
+    final editable =
+        t.type != TransactionType.friendOut &&
+        t.type != TransactionType.friendIn;
 
     return SheetScaffold(
       title: t.description.isEmpty
@@ -85,23 +100,24 @@ class _TransactionDetailSheet extends ConsumerWidget {
             if (context.mounted) Navigator.of(context).pop();
           },
         ),
-        FilledButton.icon(
-          key: const Key('editTransactionButton'),
-          icon: const Icon(Icons.edit_outlined, size: 20),
-          label: Text(l10n.edit),
-          onPressed: () async {
-            final entry = await ref
-                .read(expenseReportRepositoryProvider)
-                .dataOf(t.id);
-            if (!context.mounted) return;
-            Navigator.of(context).pop();
-            await showAddTransactionSheet(
-              context,
-              existing: t,
-              existingEntry: entry,
-            );
-          },
-        ),
+        if (editable)
+          FilledButton.icon(
+            key: const Key('editTransactionButton'),
+            icon: const Icon(Icons.edit_outlined, size: 20),
+            label: Text(l10n.edit),
+            onPressed: () async {
+              final entry = await ref
+                  .read(expenseReportRepositoryProvider)
+                  .dataOf(t.id);
+              if (!context.mounted) return;
+              Navigator.of(context).pop();
+              await showAddTransactionSheet(
+                context,
+                existing: t,
+                existingEntry: entry,
+              );
+            },
+          ),
       ],
       children: [
         MergeSemantics(

@@ -1039,6 +1039,7 @@ class SupabaseSyncService implements SyncService {
       'entry_currency': t.entryCurrency,
       'entry_amount_cents': t.entryAmountCents,
       'amount_cents_to': t.amountCentsTo,
+      'shared_expense_id': t.sharedExpenseId,
     },
     fromRemote: (r) => TransactionsCompanion.insert(
       id: r.key('id'),
@@ -1056,6 +1057,7 @@ class SupabaseSyncService implements SyncService {
       entryCurrency: Value(r.optCurrency('entry_currency')),
       entryAmountCents: Value(r.optInteger('entry_amount_cents', min: 0)),
       amountCentsTo: Value(r.optInteger('amount_cents_to', min: 0)),
+      sharedExpenseId: Value(r.optKey('shared_expense_id')),
     ),
   );
 

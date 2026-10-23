@@ -127,6 +127,10 @@ class DriftRecurringRepository implements RecurringRepository {
             throw UnsupportedError(
               'Trasferimenti ricorrenti non supportati (serve walletTo)',
             );
+          case TransactionType.friendOut || TransactionType.friendIn:
+            throw UnsupportedError(
+              'Movimenti con amici ricorrenti non supportati (M-SOC4)',
+            );
         }
         created++;
         next = _advance(next, rule.frequency);

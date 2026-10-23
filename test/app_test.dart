@@ -313,6 +313,38 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('a "with friends" movement shows its direction and cannot be '
+      'edited from the transaction sheet', (tester) async {
+    await tester.pumpWidget(await _app());
+    await tester.pumpAndSettle();
+    await _createWallet(tester);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(NipayApp)),
+    );
+    final walletId = container.read(activeWalletProvider)!.id;
+    await tester.runAsync(
+      () => container
+          .read(transactionRepositoryProvider)
+          .createFriendMovement(
+            walletId: walletId,
+            amountCents: 4000,
+            date: DateTime.now(),
+            outgoing: true,
+            description: 'Cena, quote di Bea e Carlo',
+          ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Cena, quote di Bea e Carlo'));
+    await tester.pumpAndSettle();
+    expect(find.text('To friends'), findsOneWidget);
+    expect(find.byKey(const Key('editTransactionButton')), findsNothing);
+    expect(find.text('Delete'), findsOneWidget);
+
+    await _unmount(tester);
+  });
+
   testWidgets(
     'editing a transaction shows its existing tags selected, and '
     'deselecting one actually removes it',

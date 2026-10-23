@@ -1553,6 +1553,17 @@ class $TransactionsTable extends Transactions
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _sharedExpenseIdMeta = const VerificationMeta(
+    'sharedExpenseId',
+  );
+  @override
+  late final GeneratedColumn<String> sharedExpenseId = GeneratedColumn<String>(
+    'shared_expense_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1570,6 +1581,7 @@ class $TransactionsTable extends Transactions
     entryCurrency,
     entryAmountCents,
     amountCentsTo,
+    sharedExpenseId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1694,6 +1706,15 @@ class $TransactionsTable extends Transactions
         ),
       );
     }
+    if (data.containsKey('shared_expense_id')) {
+      context.handle(
+        _sharedExpenseIdMeta,
+        sharedExpenseId.isAcceptableOrUnknown(
+          data['shared_expense_id']!,
+          _sharedExpenseIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1765,6 +1786,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.int,
         data['${effectivePrefix}amount_cents_to'],
       ),
+      sharedExpenseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shared_expense_id'],
+      ),
     );
   }
 
@@ -1806,6 +1831,10 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   /// nella SUA valuta, quando diversa da quella di [walletId]. Se null, il
   /// credito usa [amountCents] invariato (stessa valuta su entrambi i lati).
   final int? amountCentsTo;
+
+  /// Spesa divisa sul server da cui nasce il movimento (la propria quota o
+  /// un movimento "con amici"); null per le transazioni normali.
+  final String? sharedExpenseId;
   const Transaction({
     required this.id,
     required this.createdAt,
@@ -1822,6 +1851,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     this.entryCurrency,
     this.entryAmountCents,
     this.amountCentsTo,
+    this.sharedExpenseId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1859,6 +1889,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     if (!nullToAbsent || amountCentsTo != null) {
       map['amount_cents_to'] = Variable<int>(amountCentsTo);
     }
+    if (!nullToAbsent || sharedExpenseId != null) {
+      map['shared_expense_id'] = Variable<String>(sharedExpenseId);
+    }
     return map;
   }
 
@@ -1891,6 +1924,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       amountCentsTo: amountCentsTo == null && nullToAbsent
           ? const Value.absent()
           : Value(amountCentsTo),
+      sharedExpenseId: sharedExpenseId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sharedExpenseId),
     );
   }
 
@@ -1917,6 +1953,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       entryCurrency: serializer.fromJson<String?>(json['entryCurrency']),
       entryAmountCents: serializer.fromJson<int?>(json['entryAmountCents']),
       amountCentsTo: serializer.fromJson<int?>(json['amountCentsTo']),
+      sharedExpenseId: serializer.fromJson<String?>(json['sharedExpenseId']),
     );
   }
   @override
@@ -1940,6 +1977,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'entryCurrency': serializer.toJson<String?>(entryCurrency),
       'entryAmountCents': serializer.toJson<int?>(entryAmountCents),
       'amountCentsTo': serializer.toJson<int?>(amountCentsTo),
+      'sharedExpenseId': serializer.toJson<String?>(sharedExpenseId),
     };
   }
 
@@ -1959,6 +1997,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     Value<String?> entryCurrency = const Value.absent(),
     Value<int?> entryAmountCents = const Value.absent(),
     Value<int?> amountCentsTo = const Value.absent(),
+    Value<String?> sharedExpenseId = const Value.absent(),
   }) => Transaction(
     id: id ?? this.id,
     createdAt: createdAt ?? this.createdAt,
@@ -1981,6 +2020,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     amountCentsTo: amountCentsTo.present
         ? amountCentsTo.value
         : this.amountCentsTo,
+    sharedExpenseId: sharedExpenseId.present
+        ? sharedExpenseId.value
+        : this.sharedExpenseId,
   );
   Transaction copyWithCompanion(TransactionsCompanion data) {
     return Transaction(
@@ -2013,6 +2055,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       amountCentsTo: data.amountCentsTo.present
           ? data.amountCentsTo.value
           : this.amountCentsTo,
+      sharedExpenseId: data.sharedExpenseId.present
+          ? data.sharedExpenseId.value
+          : this.sharedExpenseId,
     );
   }
 
@@ -2033,7 +2078,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('note: $note, ')
           ..write('entryCurrency: $entryCurrency, ')
           ..write('entryAmountCents: $entryAmountCents, ')
-          ..write('amountCentsTo: $amountCentsTo')
+          ..write('amountCentsTo: $amountCentsTo, ')
+          ..write('sharedExpenseId: $sharedExpenseId')
           ..write(')'))
         .toString();
   }
@@ -2055,6 +2101,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     entryCurrency,
     entryAmountCents,
     amountCentsTo,
+    sharedExpenseId,
   );
   @override
   bool operator ==(Object other) =>
@@ -2074,7 +2121,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.note == this.note &&
           other.entryCurrency == this.entryCurrency &&
           other.entryAmountCents == this.entryAmountCents &&
-          other.amountCentsTo == this.amountCentsTo);
+          other.amountCentsTo == this.amountCentsTo &&
+          other.sharedExpenseId == this.sharedExpenseId);
 }
 
 class TransactionsCompanion extends UpdateCompanion<Transaction> {
@@ -2093,6 +2141,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<String?> entryCurrency;
   final Value<int?> entryAmountCents;
   final Value<int?> amountCentsTo;
+  final Value<String?> sharedExpenseId;
   final Value<int> rowid;
   const TransactionsCompanion({
     this.id = const Value.absent(),
@@ -2110,6 +2159,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.entryCurrency = const Value.absent(),
     this.entryAmountCents = const Value.absent(),
     this.amountCentsTo = const Value.absent(),
+    this.sharedExpenseId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TransactionsCompanion.insert({
@@ -2128,6 +2178,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.entryCurrency = const Value.absent(),
     this.entryAmountCents = const Value.absent(),
     this.amountCentsTo = const Value.absent(),
+    this.sharedExpenseId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        createdAt = Value(createdAt),
@@ -2152,6 +2203,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? entryCurrency,
     Expression<int>? entryAmountCents,
     Expression<int>? amountCentsTo,
+    Expression<String>? sharedExpenseId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2170,6 +2222,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (entryCurrency != null) 'entry_currency': entryCurrency,
       if (entryAmountCents != null) 'entry_amount_cents': entryAmountCents,
       if (amountCentsTo != null) 'amount_cents_to': amountCentsTo,
+      if (sharedExpenseId != null) 'shared_expense_id': sharedExpenseId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2190,6 +2243,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<String?>? entryCurrency,
     Value<int?>? entryAmountCents,
     Value<int?>? amountCentsTo,
+    Value<String?>? sharedExpenseId,
     Value<int>? rowid,
   }) {
     return TransactionsCompanion(
@@ -2208,6 +2262,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       entryCurrency: entryCurrency ?? this.entryCurrency,
       entryAmountCents: entryAmountCents ?? this.entryAmountCents,
       amountCentsTo: amountCentsTo ?? this.amountCentsTo,
+      sharedExpenseId: sharedExpenseId ?? this.sharedExpenseId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2262,6 +2317,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (amountCentsTo.present) {
       map['amount_cents_to'] = Variable<int>(amountCentsTo.value);
     }
+    if (sharedExpenseId.present) {
+      map['shared_expense_id'] = Variable<String>(sharedExpenseId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2286,6 +2344,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('entryCurrency: $entryCurrency, ')
           ..write('entryAmountCents: $entryAmountCents, ')
           ..write('amountCentsTo: $amountCentsTo, ')
+          ..write('sharedExpenseId: $sharedExpenseId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -10904,6 +10963,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<String?> entryCurrency,
       Value<int?> entryAmountCents,
       Value<int?> amountCentsTo,
+      Value<String?> sharedExpenseId,
       Value<int> rowid,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
@@ -10923,6 +10983,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<String?> entryCurrency,
       Value<int?> entryAmountCents,
       Value<int?> amountCentsTo,
+      Value<String?> sharedExpenseId,
       Value<int> rowid,
     });
 
@@ -11151,6 +11212,11 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<int> get amountCentsTo => $composableBuilder(
     column: $table.amountCentsTo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sharedExpenseId => $composableBuilder(
+    column: $table.sharedExpenseId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -11418,6 +11484,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sharedExpenseId => $composableBuilder(
+    column: $table.sharedExpenseId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$WalletsTableOrderingComposer get walletId {
     final $$WalletsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -11540,6 +11611,11 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<int> get amountCentsTo => $composableBuilder(
     column: $table.amountCentsTo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sharedExpenseId => $composableBuilder(
+    column: $table.sharedExpenseId,
     builder: (column) => column,
   );
 
@@ -11792,6 +11868,7 @@ class $$TransactionsTableTableManager
                 Value<String?> entryCurrency = const Value.absent(),
                 Value<int?> entryAmountCents = const Value.absent(),
                 Value<int?> amountCentsTo = const Value.absent(),
+                Value<String?> sharedExpenseId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
@@ -11809,6 +11886,7 @@ class $$TransactionsTableTableManager
                 entryCurrency: entryCurrency,
                 entryAmountCents: entryAmountCents,
                 amountCentsTo: amountCentsTo,
+                sharedExpenseId: sharedExpenseId,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -11828,6 +11906,7 @@ class $$TransactionsTableTableManager
                 Value<String?> entryCurrency = const Value.absent(),
                 Value<int?> entryAmountCents = const Value.absent(),
                 Value<int?> amountCentsTo = const Value.absent(),
+                Value<String?> sharedExpenseId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
@@ -11845,6 +11924,7 @@ class $$TransactionsTableTableManager
                 entryCurrency: entryCurrency,
                 entryAmountCents: entryAmountCents,
                 amountCentsTo: amountCentsTo,
+                sharedExpenseId: sharedExpenseId,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -1981,6 +1981,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 unread message} other{{count} unread messages}}'**
   String unreadMessagesBadge(int count);
+
+  /// No description provided for @friendOut.
+  ///
+  /// In en, this message translates to:
+  /// **'To friends'**
+  String get friendOut;
+
+  /// No description provided for @friendIn.
+  ///
+  /// In en, this message translates to:
+  /// **'From friends'**
+  String get friendIn;
 }
 
 class _AppLocalizationsDelegate

@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nipay/data/db/app_database.dart';
+import 'package:nipay/data/db/tables.dart';
 import 'package:nipay/data/export/excel_codec.dart';
 import 'package:nipay/data/export/json_codec.dart';
 import 'package:nipay/data/repositories/budget_repository.dart';
@@ -245,5 +246,108 @@ void main() {
       await importFromJson(target, json);
       expect(await target.select(target.attachments).get(), hasLength(1));
     });
+  });
+
+  group('friend movements (M-SOC4, export v5)', () {
+    /// Cena da 60 € pagata da me per tre: la mia quota (spesa) e l'anticipo
+    /// per gli altri due, più un rimborso ricevuto non collegato.
+    Future<String> seedDinner(AppDatabase db) async {
+      final wallet = await DriftWalletRepository(
+        db,
+      ).create(name: 'Conto', colorHex: '#0E7C86', initialBalanceCents: 10000);
+      final txs = DriftTransactionRepository(db);
+      await txs.createExpense(
+        walletId: wallet,
+        amountCents: 2000,
+        date: DateTime(2026, 10, 23),
+        sharedExpenseId: 'se-cena',
+      );
+      await txs.createFriendMovement(
+        walletId: wallet,
+        amountCents: 4000,
+        date: DateTime(2026, 10, 23),
+        outgoing: true,
+        sharedExpenseId: 'se-cena',
+      );
+      await txs.createFriendMovement(
+        walletId: wallet,
+        amountCents: 2000,
+        date: DateTime(2026, 10, 24),
+        outgoing: false,
+      );
+      return wallet;
+    }
+
+    test('restore keeps types, links and the balance', () async {
+      final source = AppDatabase(NativeDatabase.memory());
+      final wallet = await seedDinner(source);
+      final json = await exportToJson(source);
+      expect(json['schemaVersion'], 5);
+
+      final target = AppDatabase(NativeDatabase.memory());
+      await importFromJson(target, json);
+      final txs = await target.select(target.transactions).get();
+      expect(txs.map((t) => t.type).toSet(), {
+        TransactionType.expense,
+        TransactionType.friendOut,
+        TransactionType.friendIn,
+      });
+      expect(txs.where((t) => t.sharedExpenseId == 'se-cena'), hasLength(2));
+      // 100 − 20 (quota) − 40 (anticipo) + 20 (rimborso) = 60 €.
+      expect(await DriftTransactionRepository(target).balanceOf(wallet), 6000);
+
+      await source.close();
+      await target.close();
+    });
+
+    test('a v4 backup (before shared expenses) still imports', () async {
+      final source = AppDatabase(NativeDatabase.memory());
+      await seed(source);
+      final json = await exportToJson(source);
+      json['schemaVersion'] = 4;
+      for (final t in json['transactions'] as List) {
+        (t as Map<String, dynamic>).remove('sharedExpenseId');
+      }
+
+      final target = AppDatabase(NativeDatabase.memory());
+      await importFromJson(target, json);
+      final txs = await target.select(target.transactions).get();
+      expect(txs, hasLength(2));
+      expect(txs.every((t) => t.sharedExpenseId == null), isTrue);
+
+      await source.close();
+      await target.close();
+    });
+
+    test('an unknown future version is refused', () async {
+      final source = AppDatabase(NativeDatabase.memory());
+      await seed(source);
+      final json = await exportToJson(source)
+        ..['schemaVersion'] = 6;
+      final target = AppDatabase(NativeDatabase.memory());
+      expect(() => importFromJson(target, json), throwsFormatException);
+      await source.close();
+      await target.close();
+    });
+
+    test(
+      'an additive wallet copy keeps the movements but not the links',
+      () async {
+        final db = AppDatabase(NativeDatabase.memory());
+        final wallet = await seedDinner(db);
+        final json = await exportWalletToJson(db, wallet);
+
+        final copy = await importWalletFromJson(db, json);
+        final copied = await (db.select(
+          db.transactions,
+        )..where((t) => t.walletId.equals(copy))).get();
+        expect(copied, hasLength(3));
+        expect(copied.every((t) => t.sharedExpenseId == null), isTrue);
+        final txRepo = DriftTransactionRepository(db);
+        expect(await txRepo.balanceOf(copy), await txRepo.balanceOf(wallet));
+
+        await db.close();
+      },
+    );
   });
 }

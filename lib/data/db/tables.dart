@@ -14,7 +14,12 @@ mixin SyncColumns on Table {
   Set<Column> get primaryKey => {id};
 }
 
-enum TransactionType { expense, income, transfer }
+/// [friendOut] e [friendIn]: movimenti "con amici" delle spese divise
+/// (M-SOC4). Come i trasferimenti non contano in spese, entrate e budget,
+/// ma cambiano il saldo: [friendOut] sono soldi usciti per altri (anticipo
+/// della loro quota, rimborso inviato), [friendIn] soldi che altri hanno
+/// messo per te (la tua quota pagata da un amico, rimborso ricevuto).
+enum TransactionType { expense, income, transfer, friendOut, friendIn }
 
 enum CustomFieldType { text, number, choice, date }
 
@@ -110,6 +115,10 @@ class Transactions extends Table with SyncColumns {
   /// nella SUA valuta, quando diversa da quella di [walletId]. Se null, il
   /// credito usa [amountCents] invariato (stessa valuta su entrambi i lati).
   IntColumn get amountCentsTo => integer().nullable()();
+
+  /// Spesa divisa sul server da cui nasce il movimento (la propria quota o
+  /// un movimento "con amici"); null per le transazioni normali.
+  TextColumn get sharedExpenseId => text().nullable()();
 }
 
 /// A cosa si applica una categoria.

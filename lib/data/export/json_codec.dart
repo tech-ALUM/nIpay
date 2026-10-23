@@ -8,8 +8,14 @@ import '../db/app_database.dart';
 /// incompatibile del formato. v3: nota spese (costCenters, expenseReports,
 /// expenseReportEntries, expenseReportOnly sui campi custom). v4: soft-delete
 /// di transactionTags (updatedAt, deletedAt) ed expenseReportEntries
-/// (deletedAt).
-const kExportSchemaVersion = 4;
+/// (deletedAt). v5: movimenti "con amici" (tipi friendOut/friendIn) e
+/// sharedExpenseId sulle transazioni (M-SOC4).
+const kExportSchemaVersion = 5;
+
+/// Versioni che l'import accetta: un file v4 è un v5 senza movimenti con
+/// amici né collegamenti a spese divise (decisione 2026-10-23: i backup v4
+/// restano importabili).
+const kImportableSchemaVersions = {4, 5};
 
 /// Gli allegati importati devono puntare a un file dentro `attachments/`
 /// con un nome generato dall'app: un `relativePath` come
@@ -152,7 +158,7 @@ Future<String> importWalletFromJson(
   Map<String, dynamic> json,
 ) async {
   if (json['app'] != 'nipay' ||
-      json['schemaVersion'] != kExportSchemaVersion ||
+      !kImportableSchemaVersions.contains(json['schemaVersion']) ||
       json['kind'] != 'wallet') {
     throw const FormatException('File portafoglio nIpay non valido');
   }
@@ -206,9 +212,12 @@ Future<String> importWalletFromJson(
       ]);
       b.insertAll(db.transactions, [
         for (final r in rows('transactions'))
-          Transaction.fromJson(
-            rewrite(r, ['id', 'walletId', 'walletToId', 'categoryId']),
-          ),
+          Transaction.fromJson({
+            ...rewrite(r, ['id', 'walletId', 'walletToId', 'categoryId']),
+            // Una copia non è la quota registrata della spesa divisa: niente
+            // collegamento, i movimenti restano (il saldo torna).
+            'sharedExpenseId': null,
+          }),
       ]);
       b.insertAll(db.tags, [
         for (final r in rows('tags'))
@@ -269,7 +278,8 @@ Future<String> importWalletFromJson(
 /// Restore completo: azzera il DB e reinserisce tutto dal JSON.
 /// Lancia [FormatException] se il file non è un export nIpay compatibile.
 Future<void> importFromJson(AppDatabase db, Map<String, dynamic> json) async {
-  if (json['app'] != 'nipay' || json['schemaVersion'] != kExportSchemaVersion) {
+  if (json['app'] != 'nipay' ||
+      !kImportableSchemaVersions.contains(json['schemaVersion'])) {
     throw const FormatException('File di backup nIpay non valido');
   }
 

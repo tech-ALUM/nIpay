@@ -1057,4 +1057,10 @@ class AppLocalizationsHi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get friendOut => 'दोस्तों को';
+
+  @override
+  String get friendIn => 'दोस्तों से';
 }

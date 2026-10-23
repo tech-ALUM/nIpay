@@ -63,6 +63,13 @@ Team: Alberto Boffi, Francesco Miccoli, Tommaso Panseri, Paolo Gnata.
   cache pregressa (mai scaricata con successo, tipicamente al primissimo
   utilizzo offline) — l'unico caso in cui serve ancora un fetch bloccante.
 
+- **Spese divise (M-SOC4, 2026-10-23, mds/FRIENDS_PLAN.md)**: tipi di
+  transazione `friendOut`/`friendIn` ("con amici"): cambiano il saldo ma,
+  come i trasferimenti, non contano in spese, entrate, statistiche e
+  budget; importi sempre positivi, il verso lo dà il tipo. La propria
+  quota di una spesa divisa è una spesa normale; il resto è "con amici"
+  (`lib/core/split_accounting.dart`). Colonna `sharedExpenseId`, schema
+  Drift **v8**, export **v5** (importa anche v4).
 - **Security fix (2026-10-05, vedi mds/SECURITY_FIX_REPORT.md)**:
   - **Sync**: coda `SyncOutbox` riempita da trigger SQLite (niente più
     `updatedAt > lastPushedAt`), watermark di pull **per tabella**

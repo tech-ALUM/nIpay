@@ -1060,4 +1060,10 @@ class AppLocalizationsIt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get friendOut => 'Verso amici';
+
+  @override
+  String get friendIn => 'Da amici';
 }

@@ -332,5 +332,7 @@
   "chatErrorTooManyMembers": "一个群组最多可有 50 名成员。",
   "chatErrorNotFound": "此聊天已不可用。",
   "chatErrorInvalidReport": "请检查详细说明：最多 500 个字符。",
-  "unreadMessagesBadge": "{count, plural, =1{1 条未读消息} other{{count} 条未读消息}}"
+  "unreadMessagesBadge": "{count, plural, =1{1 条未读消息} other{{count} 条未读消息}}",
+  "friendOut": "给好友",
+  "friendIn": "来自好友"
 }

@@ -29,7 +29,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   /// Tabelle sincronizzate con Supabase (nome SQL → espressione SQL della
   /// chiave della riga, con `{r}` al posto di NEW/alias). Le chiavi
@@ -196,6 +196,12 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(syncOutbox);
         await _backfillOutbox();
         await _createSyncTriggers();
+      }
+      if (from < 8) {
+        // v8: spese divise (M-SOC4). Le righe esistenti restano senza
+        // collegamento; i nuovi tipi friendOut/friendIn sono testo, nessun
+        // cambio di schema per loro.
+        await m.addColumn(transactions, transactions.sharedExpenseId);
       }
     },
   );

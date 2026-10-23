@@ -332,5 +332,7 @@
   "chatErrorTooManyMembers": "يمكن أن تضم المجموعة 50 عضوًا كحد أقصى.",
   "chatErrorNotFound": "لم تعد هذه المحادثة متاحة.",
   "chatErrorInvalidReport": "تحقّق من التفاصيل: 500 حرف كحد أقصى.",
-  "unreadMessagesBadge": "{count, plural, =1{رسالة واحدة غير مقروءة} other{{count} من الرسائل غير المقروءة}}"
+  "unreadMessagesBadge": "{count, plural, =1{رسالة واحدة غير مقروءة} other{{count} من الرسائل غير المقروءة}}",
+  "friendOut": "إلى الأصدقاء",
+  "friendIn": "من الأصدقاء"
 }

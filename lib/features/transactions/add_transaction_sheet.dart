@@ -361,6 +361,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
             entryAmountCents: persistedEntryAmountCents,
             amountCentsTo: amountCentsTo,
           );
+        case TransactionType.friendOut || TransactionType.friendIn:
+          // Il foglio non li offre: nascono dalle spese divise (M-SOC4).
+          throw StateError('Movimenti con amici solo dalle spese divise');
       }
     }
 
@@ -569,7 +572,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           (c) => switch (_type) {
             TransactionType.expense => c.kind != CategoryKind.income,
             TransactionType.income => c.kind != CategoryKind.expense,
-            TransactionType.transfer => false,
+            TransactionType.transfer ||
+            TransactionType.friendOut ||
+            TransactionType.friendIn => false,
           },
         )
         .toList();
@@ -589,7 +594,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     final typeColor = switch (_type) {
       TransactionType.expense => palette.expense,
       TransactionType.income => palette.income,
-      TransactionType.transfer => scheme.onSurface,
+      TransactionType.transfer ||
+      TransactionType.friendOut ||
+      TransactionType.friendIn => scheme.onSurface,
     };
     Future<void> pickDate() async {
       final picked = await showDatePicker(
@@ -612,7 +619,9 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
         scheme.secondaryContainer,
         scheme.onSecondaryContainer,
       ),
-      TransactionType.transfer => (
+      TransactionType.transfer ||
+      TransactionType.friendOut ||
+      TransactionType.friendIn => (
         scheme.surfaceContainerHighest,
         scheme.onSurface,
       ),

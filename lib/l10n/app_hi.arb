@@ -332,5 +332,7 @@
   "chatErrorTooManyMembers": "एक ग्रुप में अधिकतम 50 सदस्य हो सकते हैं।",
   "chatErrorNotFound": "यह चैट अब उपलब्ध नहीं है।",
   "chatErrorInvalidReport": "विवरण जाँचें: अधिकतम 500 अक्षर।",
-  "unreadMessagesBadge": "{count, plural, =1{1 अपठित संदेश} other{{count} अपठित संदेश}}"
+  "unreadMessagesBadge": "{count, plural, =1{1 अपठित संदेश} other{{count} अपठित संदेश}}",
+  "friendOut": "दोस्तों को",
+  "friendIn": "दोस्तों से"
 }

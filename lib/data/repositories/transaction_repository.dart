@@ -16,6 +16,7 @@ typedef MonthTotals = ({
 });
 
 abstract interface class TransactionRepository {
+  /// [sharedExpenseId]: la propria quota di una spesa divisa (M-SOC4).
   Future<String> createExpense({
     required String walletId,
     required int amountCents,
@@ -24,6 +25,7 @@ abstract interface class TransactionRepository {
     String description,
     String? entryCurrency,
     int? entryAmountCents,
+    String? sharedExpenseId,
   });
   Future<String> createIncome({
     required String walletId,
@@ -48,10 +50,26 @@ abstract interface class TransactionRepository {
     int? amountCentsTo,
   });
 
-  /// Saldo del portafoglio: iniziale + entrate − spese ± trasferimenti.
+  /// Movimento "con amici" (M-SOC4): [outgoing] = soldi usciti per altri
+  /// ([TransactionType.friendOut]), altrimenti messi da altri per te
+  /// ([TransactionType.friendIn]). Cambia il saldo, non spese né entrate.
+  Future<String> createFriendMovement({
+    required String walletId,
+    required int amountCents,
+    required DateTime date,
+    required bool outgoing,
+    String description,
+    String? entryCurrency,
+    int? entryAmountCents,
+    String? sharedExpenseId,
+  });
+
+  /// Saldo del portafoglio: iniziale + entrate − spese ± trasferimenti ±
+  /// movimenti con amici.
   Future<int> balanceOf(String walletId);
 
-  /// Totali spese/entrate nel periodo [from, to). I trasferimenti sono esclusi.
+  /// Totali spese/entrate nel periodo [from, to). Trasferimenti e movimenti
+  /// con amici sono esclusi.
   /// Con [walletId] limita al singolo portafoglio.
   Future<PeriodTotals> totalsForPeriod({
     required DateTime from,
@@ -105,6 +123,7 @@ class DriftTransactionRepository implements TransactionRepository {
     String? entryCurrency,
     int? entryAmountCents,
     int? amountCentsTo,
+    String? sharedExpenseId,
   }) async {
     assert(amountCents > 0, 'amountCents deve essere positivo');
     final id = _uuid.v4();
@@ -124,6 +143,7 @@ class DriftTransactionRepository implements TransactionRepository {
             entryCurrency: Value(entryCurrency),
             entryAmountCents: Value(entryAmountCents),
             amountCentsTo: Value(amountCentsTo),
+            sharedExpenseId: Value(sharedExpenseId),
             createdAt: now,
             updatedAt: now,
           ),
@@ -140,6 +160,7 @@ class DriftTransactionRepository implements TransactionRepository {
     String description = '',
     String? entryCurrency,
     int? entryAmountCents,
+    String? sharedExpenseId,
   }) => _insert(
     type: TransactionType.expense,
     walletId: walletId,
@@ -149,6 +170,7 @@ class DriftTransactionRepository implements TransactionRepository {
     description: description,
     entryCurrency: entryCurrency,
     entryAmountCents: entryAmountCents,
+    sharedExpenseId: sharedExpenseId,
   );
 
   @override
@@ -194,6 +216,27 @@ class DriftTransactionRepository implements TransactionRepository {
   );
 
   @override
+  Future<String> createFriendMovement({
+    required String walletId,
+    required int amountCents,
+    required DateTime date,
+    required bool outgoing,
+    String description = '',
+    String? entryCurrency,
+    int? entryAmountCents,
+    String? sharedExpenseId,
+  }) => _insert(
+    type: outgoing ? TransactionType.friendOut : TransactionType.friendIn,
+    walletId: walletId,
+    amountCents: amountCents,
+    date: date,
+    description: description,
+    entryCurrency: entryCurrency,
+    entryAmountCents: entryAmountCents,
+    sharedExpenseId: sharedExpenseId,
+  );
+
+  @override
   Future<int> balanceOf(String walletId) async {
     final wallet = await (_db.select(
       _db.wallets,
@@ -221,6 +264,10 @@ class DriftTransactionRepository implements TransactionRepository {
           if (tx.walletToId == walletId) {
             balance += tx.amountCentsTo ?? tx.amountCents;
           }
+        case TransactionType.friendIn:
+          balance += tx.amountCents;
+        case TransactionType.friendOut:
+          balance -= tx.amountCents;
       }
     }
     return balance;

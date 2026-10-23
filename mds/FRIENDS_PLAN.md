@@ -413,6 +413,20 @@ eventi Realtime" documentato.
 valuta, tutto via RPC) + `supabase/tests/shared_expenses_test.sql`
 (64 test pgTAP). Da applicare all'hosted insieme alla fase che la usa.
 
+Fase 2 fatta in locale (2026-10-23): due tipi invece di un `friend` con
+segno, perché gli importi restano sempre ≥ 0 (vincolo
+`transactions_amount_nonneg` sul server, invariante in Drift):
+`friendOut` = soldi usciti per altri (anticipo, rimborso inviato),
+`friendIn` = soldi messi da altri per te (quota pagata da un amico,
+rimborso ricevuto). Drift **v8** con `sharedExpenseId`; migration
+`20261024010000_transactions_friend.sql` (tipi, forma senza categoria né
+destinazione, colonna collegata; ricorrenti escluse); sync della colonna;
+export **v5** che importa anche i v4 (decisione 2026-10-23), copia
+additiva di un portafoglio senza collegamenti; modello contabile in
+`lib/core/split_accounting.dart` (quota + "con amici", parti uguali al
+centesimo) con test property-based dei saldi; dettaglio senza "Modifica"
+per i movimenti con amici.
+
 ### Modello (server)
 
 - `shared_expenses`: `id`, `created_by`, `paid_by`,

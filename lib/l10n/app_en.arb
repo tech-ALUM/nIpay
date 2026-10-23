@@ -413,5 +413,7 @@
   "unreadMessagesBadge": "{count, plural, =1{1 unread message} other{{count} unread messages}}",
   "@unreadMessagesBadge": {
     "placeholders": {"count": {"type": "int"}}
-  }
+  },
+  "friendOut": "To friends",
+  "friendIn": "From friends"
 }

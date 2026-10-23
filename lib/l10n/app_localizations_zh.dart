@@ -1019,4 +1019,10 @@ class AppLocalizationsZh extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get friendOut => '给好友';
+
+  @override
+  String get friendIn => '来自好友';
 }

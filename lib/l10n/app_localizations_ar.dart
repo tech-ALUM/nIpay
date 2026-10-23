@@ -1050,4 +1050,10 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get friendOut => 'إلى الأصدقاء';
+
+  @override
+  String get friendIn => 'من الأصدقاء';
 }

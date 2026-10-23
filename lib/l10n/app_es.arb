@@ -332,5 +332,7 @@
   "chatErrorTooManyMembers": "Un grupo puede tener hasta 50 miembros.",
   "chatErrorNotFound": "Este chat ya no está disponible.",
   "chatErrorInvalidReport": "Revisa los detalles: hasta 500 caracteres.",
-  "unreadMessagesBadge": "{count, plural, =1{1 mensaje sin leer} other{{count} mensajes sin leer}}"
+  "unreadMessagesBadge": "{count, plural, =1{1 mensaje sin leer} other{{count} mensajes sin leer}}",
+  "friendOut": "A amigos",
+  "friendIn": "De amigos"
 }
