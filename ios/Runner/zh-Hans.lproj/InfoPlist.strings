@@ -1,0 +1,3 @@
+/* Testi dei permessi di sistema (mostrati da iOS nella lingua del dispositivo). */
+"NSCameraUsageDescription" = "nIpay 使用相机拍摄收据以附加到交易中，并扫描好友的二维码。";
+"NSPhotoLibraryUsageDescription" = "nIpay 访问你的照片图库，以便将收据照片附加到交易中。";

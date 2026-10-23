@@ -190,12 +190,21 @@ il QR vero); gli stati di errore del server mostrano "Impossibile
 caricare" + Riprova invece di un'eccezione; "Come ti chiami?" compare solo
 con la tab Amici visibile.
 
+Chiusi il 2026-10-23:
+- Link del QR letto con la fotocamera di sistema
+  (`com.alum.nipay://friend/<codice>`): `FriendLinkListener` in
+  `lib/app.dart` apre "Aggiungi amico" col codice già cercato; senza
+  account porta alla tab Amici con l'invito ad accedere. Android ha il
+  suo intent-filter `friend`. La gestione automatica dei deep link di
+  Flutter è spenta (`FlutterDeepLinkingEnabled` in Info.plist,
+  `flutter_deeplinking_enabled` nel manifest): i link li legge solo
+  `app_links`, altrimenti Flutter cercava una rotta `/<codice>`.
+  Provato dal vivo sul simulatore iPhone 17.
+- Testi dei permessi fotocamera e galleria tradotti nelle 8 lingue
+  (`ios/Runner/<lingua>.lproj/InfoPlist.strings`, registrati nel
+  progetto Xcode; il cinese è `zh-Hans`).
+
 Ancora aperto in M-SOC2:
-- Aprire l'app dal link del QR letto con la fotocamera di sistema (oggi
-  il QR si scansiona da dentro l'app; serve un gestore dei deep link
-  `friend/` accanto a quello dell'auth).
-- Testo del permesso fotocamera solo in italiano: localizzarlo richiede
-  `InfoPlist.strings` per lingua nel progetto Xcode.
 - Prova end-to-end con due account veri (richiesta, accettazione,
   blocco).
 

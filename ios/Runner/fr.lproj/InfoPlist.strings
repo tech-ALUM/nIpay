@@ -1,0 +1,3 @@
+/* Testi dei permessi di sistema (mostrati da iOS nella lingua del dispositivo). */
+"NSCameraUsageDescription" = "nIpay utilise l'appareil photo pour photographier les reçus à joindre aux transactions et pour scanner le code QR d'un ami.";
+"NSPhotoLibraryUsageDescription" = "nIpay accède à votre photothèque pour joindre des photos de reçus aux transactions.";

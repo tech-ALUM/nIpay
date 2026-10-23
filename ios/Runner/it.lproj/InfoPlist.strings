@@ -1,0 +1,3 @@
+/* Testi dei permessi di sistema (mostrati da iOS nella lingua del dispositivo). */
+"NSCameraUsageDescription" = "nIpay usa la fotocamera per fotografare gli scontrini da allegare alle transazioni e per scansionare il codice QR di un amico.";
+"NSPhotoLibraryUsageDescription" = "nIpay accede alla galleria per allegare foto di scontrini alle transazioni.";

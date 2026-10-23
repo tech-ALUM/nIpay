@@ -77,6 +77,11 @@
 			</array>
 		</dict>
 	</array>
+	<!-- I link com.alum.nipay:// li legge solo app_links (Supabase Auth,
+	     FriendLinkListener): senza questo Flutter li spinge anche nel
+	     Navigator come rotte con nome, che l'app non ha. -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>nIpay usa la fotocamera per fotografare gli scontrini da allegare alle transazioni e per scansionare il codice QR di un amico.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

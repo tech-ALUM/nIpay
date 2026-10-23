@@ -1,0 +1,3 @@
+/* Testi dei permessi di sistema (mostrati da iOS nella lingua del dispositivo). */
+"NSCameraUsageDescription" = "nIpay uses the camera to photograph receipts to attach to transactions and to scan a friend's QR code.";
+"NSPhotoLibraryUsageDescription" = "nIpay accesses your photo library to attach receipt photos to transactions.";

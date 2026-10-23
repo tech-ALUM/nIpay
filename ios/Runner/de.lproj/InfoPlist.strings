@@ -1,0 +1,3 @@
+/* Testi dei permessi di sistema (mostrati da iOS nella lingua del dispositivo). */
+"NSCameraUsageDescription" = "nIpay verwendet die Kamera, um Belege für Transaktionen zu fotografieren und den QR-Code eines Freundes zu scannen.";
+"NSPhotoLibraryUsageDescription" = "nIpay greift auf deine Fotomediathek zu, um Belegfotos an Transaktionen anzuhängen.";

@@ -15,11 +15,15 @@ import 'friends_ui.dart';
 /// digitato a mano. In entrambi i casi: codice → chi è → conferma →
 /// richiesta. L'amicizia nasce solo quando l'altro accetta.
 class AddFriendScreen extends ConsumerStatefulWidget {
-  const AddFriendScreen({super.key, this.showCamera = true});
+  const AddFriendScreen({super.key, this.showCamera = true, this.initialCode});
 
   /// False nei widget test (lì la fotocamera non esiste): resta solo il
   /// codice a mano, che segue lo stesso percorso della scansione.
   final bool showCamera;
+
+  /// Codice già noto (QR letto con la fotocamera di sistema, vedi
+  /// FriendLinkListener): si parte subito da chi è → conferma.
+  final String? initialCode;
 
   @override
   ConsumerState<AddFriendScreen> createState() => _AddFriendScreenState();
@@ -40,6 +44,18 @@ class _AddFriendScreenState extends ConsumerState<AddFriendScreen> {
   /// L'ultimo valore scansionato: la fotocamera rilegge lo stesso QR più
   /// volte al secondo, si gestisce una volta sola.
   String? _lastScan;
+
+  @override
+  void initState() {
+    super.initState();
+    final code = widget.initialCode;
+    if (code != null) {
+      _codeController.text = formatFriendCode(code);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _addByCode(code);
+      });
+    }
+  }
 
   @override
   void dispose() {

@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'core/ui/ui.dart';
 import 'data/services/friends_service.dart' show FriendRequestDirection;
 import 'features/account/account_screen.dart';
+import 'features/friends/friend_link_listener.dart';
 import 'features/friends/friends_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/settings/settings_screen.dart';
@@ -257,7 +258,7 @@ class _RootShellState extends ConsumerState<RootShell>
         : Icon(icon);
     void select(int i) => setState(() => _tab = i);
 
-    return LayoutBuilder(
+    final shell = LayoutBuilder(
       builder: (context, constraints) {
         // Tablet e telefono in orizzontale: navigazione laterale, così lo
         // spazio verticale resta ai contenuti.
@@ -336,6 +337,8 @@ class _RootShellState extends ConsumerState<RootShell>
         );
       },
     );
+    // Il QR di un amico letto con la fotocamera di sistema apre l'app qui.
+    return FriendLinkListener(onNeedsSignIn: () => select(3), child: shell);
   }
 }
 

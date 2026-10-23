@@ -1,0 +1,3 @@
+/* Testi dei permessi di sistema (mostrati da iOS nella lingua del dispositivo). */
+"NSCameraUsageDescription" = "يستخدم nIpay الكاميرا لتصوير الإيصالات وإرفاقها بالمعاملات ولمسح رمز QR الخاص بصديق.";
+"NSPhotoLibraryUsageDescription" = "يصل nIpay إلى مكتبة الصور لإرفاق صور الإيصالات بالمعاملات.";

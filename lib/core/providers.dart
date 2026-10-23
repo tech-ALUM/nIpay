@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:app_links/app_links.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/material.dart';
@@ -426,6 +427,13 @@ final blockedUsersProvider = FutureProvider<List<BlockedUser>>((ref) async {
   if (user == null) return const [];
   return ref.watch(friendsServiceProvider).listBlocked();
 });
+
+/// Deep link in arrivo (es. il QR di un amico letto con la fotocamera di
+/// sistema). Dalla v6 di app_links il flusso emette anche il link che ha
+/// aperto l'app da chiusa. Sostituito nei test.
+final incomingLinksProvider = Provider<Stream<Uri>>(
+  (ref) => AppLinks().uriLinkStream,
+);
 
 /// Dopo ogni azione su amici, richieste o blocchi.
 void refreshFriends(WidgetRef ref) {
