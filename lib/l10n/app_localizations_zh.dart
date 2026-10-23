@@ -850,4 +850,173 @@ class AppLocalizationsZh extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get chatSection => '聊天';
+
+  @override
+  String get newGroup => '新建群组';
+
+  @override
+  String get noChatsYet => '还没有聊天。点按一位好友即可开始。';
+
+  @override
+  String get chatsLoadFailed => '无法加载你的聊天。请检查网络连接后重试。';
+
+  @override
+  String get messageHint => '消息';
+
+  @override
+  String get sendMessage => '发送';
+
+  @override
+  String get messageDeleted => '消息已删除';
+
+  @override
+  String get deletedUser => '已注销用户';
+
+  @override
+  String get chatReadOnly => '你已无法在此聊天中发送消息。';
+
+  @override
+  String get chatOffline => '你已离线。恢复联网后即可继续发送消息。';
+
+  @override
+  String get loadEarlierMessages => '加载更早的消息';
+
+  @override
+  String get chatEmpty => '还没有消息。打个招呼吧！';
+
+  @override
+  String chatYouPrefix(String text) {
+    return '你：$text';
+  }
+
+  @override
+  String get deleteMessage => '删除消息';
+
+  @override
+  String get deleteMessageBody => '聊天中的所有人都会看到“消息已删除”。';
+
+  @override
+  String get reportAction => '举报';
+
+  @override
+  String get reportMessageTitle => '举报消息';
+
+  @override
+  String reportUserTitle(String name) {
+    return '举报 $name';
+  }
+
+  @override
+  String get reportReasonLabel => '原因';
+
+  @override
+  String get reportChooseReason => '请选择原因。';
+
+  @override
+  String get reportReasonSpam => '垃圾信息';
+
+  @override
+  String get reportReasonOffensive => '冒犯性内容';
+
+  @override
+  String get reportReasonHarassment => '骚扰';
+
+  @override
+  String get reportReasonOther => '其他';
+
+  @override
+  String get reportDetails => '详细说明（可选）';
+
+  @override
+  String get reportAlsoBlock => '同时屏蔽此用户';
+
+  @override
+  String get reportSend => '提交举报';
+
+  @override
+  String get reportSent => '举报已提交，谢谢。';
+
+  @override
+  String get groupName => '群组名称';
+
+  @override
+  String get chooseFriends => '选择好友';
+
+  @override
+  String get createGroup => '创建群组';
+
+  @override
+  String get groupNeedsMembers => '请至少选择一位好友。';
+
+  @override
+  String get groupNameInvalid => '请使用 1 到 60 个字符。';
+
+  @override
+  String groupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 名成员',
+      one: '1 名成员',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInfo => '群组信息';
+
+  @override
+  String get groupAdmin => '管理员';
+
+  @override
+  String get addMembers => '添加成员';
+
+  @override
+  String get removeFromGroup => '移出群组';
+
+  @override
+  String removeFromGroupBody(String name) {
+    return '$name 将无法再看到此群组。';
+  }
+
+  @override
+  String get leaveGroup => '退出群组';
+
+  @override
+  String get leaveGroupBody => '你将无法再看到此群组的消息。';
+
+  @override
+  String get youLabel => '你';
+
+  @override
+  String get noFriendsToAdd => '你的所有好友都已在群组中。';
+
+  @override
+  String get messageFriend => '发消息';
+
+  @override
+  String get chatErrorInvalidMessage => '一条消息可包含 1 到 2000 个字符。';
+
+  @override
+  String get chatErrorTooManyMembers => '一个群组最多可有 50 名成员。';
+
+  @override
+  String get chatErrorNotFound => '此聊天已不可用。';
+
+  @override
+  String get chatErrorInvalidReport => '请检查详细说明：最多 500 个字符。';
+
+  @override
+  String unreadMessagesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 条未读消息',
+      one: '1 条未读消息',
+    );
+    return '$_temp0';
+  }
 }

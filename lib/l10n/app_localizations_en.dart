@@ -881,4 +881,178 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get chatSection => 'Chats';
+
+  @override
+  String get newGroup => 'New group';
+
+  @override
+  String get noChatsYet => 'No chats yet. Tap a friend to start one.';
+
+  @override
+  String get chatsLoadFailed =>
+      'Couldn\'t load your chats. Check your connection and try again.';
+
+  @override
+  String get messageHint => 'Message';
+
+  @override
+  String get sendMessage => 'Send';
+
+  @override
+  String get messageDeleted => 'Message deleted';
+
+  @override
+  String get deletedUser => 'Deleted user';
+
+  @override
+  String get chatReadOnly => 'You can no longer write in this chat.';
+
+  @override
+  String get chatOffline =>
+      'You\'re offline. You can write again when you\'re back online.';
+
+  @override
+  String get loadEarlierMessages => 'Load earlier messages';
+
+  @override
+  String get chatEmpty => 'No messages yet. Say hi!';
+
+  @override
+  String chatYouPrefix(String text) {
+    return 'You: $text';
+  }
+
+  @override
+  String get deleteMessage => 'Delete message';
+
+  @override
+  String get deleteMessageBody =>
+      'Everyone in the chat will see “Message deleted”.';
+
+  @override
+  String get reportAction => 'Report';
+
+  @override
+  String get reportMessageTitle => 'Report message';
+
+  @override
+  String reportUserTitle(String name) {
+    return 'Report $name';
+  }
+
+  @override
+  String get reportReasonLabel => 'Reason';
+
+  @override
+  String get reportChooseReason => 'Choose a reason.';
+
+  @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonOffensive => 'Offensive content';
+
+  @override
+  String get reportReasonHarassment => 'Harassment';
+
+  @override
+  String get reportReasonOther => 'Other';
+
+  @override
+  String get reportDetails => 'Details (optional)';
+
+  @override
+  String get reportAlsoBlock => 'Also block this person';
+
+  @override
+  String get reportSend => 'Send report';
+
+  @override
+  String get reportSent => 'Report sent. Thank you.';
+
+  @override
+  String get groupName => 'Group name';
+
+  @override
+  String get chooseFriends => 'Choose friends';
+
+  @override
+  String get createGroup => 'Create group';
+
+  @override
+  String get groupNeedsMembers => 'Choose at least one friend.';
+
+  @override
+  String get groupNameInvalid => 'Use 1 to 60 characters.';
+
+  @override
+  String groupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInfo => 'Group info';
+
+  @override
+  String get groupAdmin => 'Admin';
+
+  @override
+  String get addMembers => 'Add members';
+
+  @override
+  String get removeFromGroup => 'Remove from group';
+
+  @override
+  String removeFromGroupBody(String name) {
+    return '$name will no longer see this group.';
+  }
+
+  @override
+  String get leaveGroup => 'Leave group';
+
+  @override
+  String get leaveGroupBody => 'You\'ll no longer see this group\'s messages.';
+
+  @override
+  String get youLabel => 'You';
+
+  @override
+  String get noFriendsToAdd => 'All your friends are already in the group.';
+
+  @override
+  String get messageFriend => 'Message';
+
+  @override
+  String get chatErrorInvalidMessage =>
+      'A message can have 1 to 2000 characters.';
+
+  @override
+  String get chatErrorTooManyMembers => 'A group can have up to 50 members.';
+
+  @override
+  String get chatErrorNotFound => 'This chat is no longer available.';
+
+  @override
+  String get chatErrorInvalidReport =>
+      'Check the details: up to 500 characters.';
+
+  @override
+  String unreadMessagesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unread messages',
+      one: '1 unread message',
+    );
+    return '$_temp0';
+  }
 }

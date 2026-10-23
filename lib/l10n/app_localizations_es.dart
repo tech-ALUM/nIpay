@@ -888,4 +888,179 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get chatSection => 'Chats';
+
+  @override
+  String get newGroup => 'Nuevo grupo';
+
+  @override
+  String get noChatsYet =>
+      'Aún no hay chats. Toca a un amigo para empezar uno.';
+
+  @override
+  String get chatsLoadFailed =>
+      'No se han podido cargar tus chats. Comprueba la conexión e inténtalo de nuevo.';
+
+  @override
+  String get messageHint => 'Mensaje';
+
+  @override
+  String get sendMessage => 'Enviar';
+
+  @override
+  String get messageDeleted => 'Mensaje eliminado';
+
+  @override
+  String get deletedUser => 'Usuario eliminado';
+
+  @override
+  String get chatReadOnly => 'Ya no puedes escribir en este chat.';
+
+  @override
+  String get chatOffline =>
+      'Estás sin conexión. Podrás escribir cuando vuelvas a estar en línea.';
+
+  @override
+  String get loadEarlierMessages => 'Cargar mensajes anteriores';
+
+  @override
+  String get chatEmpty => 'Aún no hay mensajes. ¡Saluda!';
+
+  @override
+  String chatYouPrefix(String text) {
+    return 'Tú: $text';
+  }
+
+  @override
+  String get deleteMessage => 'Eliminar mensaje';
+
+  @override
+  String get deleteMessageBody => 'Todos en el chat verán «Mensaje eliminado».';
+
+  @override
+  String get reportAction => 'Denunciar';
+
+  @override
+  String get reportMessageTitle => 'Denunciar mensaje';
+
+  @override
+  String reportUserTitle(String name) {
+    return 'Denunciar a $name';
+  }
+
+  @override
+  String get reportReasonLabel => 'Motivo';
+
+  @override
+  String get reportChooseReason => 'Elige un motivo.';
+
+  @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonOffensive => 'Contenido ofensivo';
+
+  @override
+  String get reportReasonHarassment => 'Acoso';
+
+  @override
+  String get reportReasonOther => 'Otro';
+
+  @override
+  String get reportDetails => 'Detalles (opcional)';
+
+  @override
+  String get reportAlsoBlock => 'Bloquear también a esta persona';
+
+  @override
+  String get reportSend => 'Enviar denuncia';
+
+  @override
+  String get reportSent => 'Denuncia enviada. Gracias.';
+
+  @override
+  String get groupName => 'Nombre del grupo';
+
+  @override
+  String get chooseFriends => 'Elige amigos';
+
+  @override
+  String get createGroup => 'Crear grupo';
+
+  @override
+  String get groupNeedsMembers => 'Elige al menos un amigo.';
+
+  @override
+  String get groupNameInvalid => 'Usa entre 1 y 60 caracteres.';
+
+  @override
+  String groupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count miembros',
+      one: '1 miembro',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInfo => 'Información del grupo';
+
+  @override
+  String get groupAdmin => 'Admin';
+
+  @override
+  String get addMembers => 'Añadir miembros';
+
+  @override
+  String get removeFromGroup => 'Quitar del grupo';
+
+  @override
+  String removeFromGroupBody(String name) {
+    return '$name dejará de ver este grupo.';
+  }
+
+  @override
+  String get leaveGroup => 'Salir del grupo';
+
+  @override
+  String get leaveGroupBody => 'Dejarás de ver los mensajes de este grupo.';
+
+  @override
+  String get youLabel => 'Tú';
+
+  @override
+  String get noFriendsToAdd => 'Todos tus amigos ya están en el grupo.';
+
+  @override
+  String get messageFriend => 'Escribir';
+
+  @override
+  String get chatErrorInvalidMessage =>
+      'Un mensaje puede tener entre 1 y 2000 caracteres.';
+
+  @override
+  String get chatErrorTooManyMembers =>
+      'Un grupo puede tener hasta 50 miembros.';
+
+  @override
+  String get chatErrorNotFound => 'Este chat ya no está disponible.';
+
+  @override
+  String get chatErrorInvalidReport =>
+      'Revisa los detalles: hasta 500 caracteres.';
+
+  @override
+  String unreadMessagesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count mensajes sin leer',
+      one: '1 mensaje sin leer',
+    );
+    return '$_temp0';
+  }
 }

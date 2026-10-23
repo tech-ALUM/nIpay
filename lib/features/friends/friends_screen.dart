@@ -4,17 +4,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/ui/ui.dart';
+import '../../data/services/chat_service.dart';
 import '../../data/services/friends_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../account/account_screen.dart';
+import '../chat/chat_screen.dart';
+import '../chat/chat_ui.dart';
+import '../chat/group_screens.dart';
+import '../chat/report_sheet.dart';
 import 'add_friend_screen.dart';
 import 'display_name_dialog.dart';
 import 'friends_ui.dart';
 import 'my_qr_screen.dart';
 
-/// Tab Amici (M-SOC2): richieste in arrivo/uscita, amici, bloccati, e le
-/// due vie per aggiungersi (il mio QR, scansiona o inserisci un codice).
-/// Senza account mostra solo l'invito ad accedere.
+/// Tab Amici (M-SOC2, M-SOC3): richieste in arrivo/uscita, chat, amici,
+/// bloccati, e le due vie per aggiungersi (il mio QR, scansiona o inserisci
+/// un codice). Senza account mostra solo l'invito ad accedere.
 class FriendsScreen extends ConsumerStatefulWidget {
   const FriendsScreen({super.key, this.active = true});
 
@@ -105,6 +110,32 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
     await _run((s) => s.block(userId));
   }
 
+  /// Apre (o crea) la chat 1:1 con un amico.
+  Future<void> _openChat(Friend friend) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final id = await ref.read(chatServiceProvider).openDirect(friend.userId);
+      if (!mounted) return;
+      ref.invalidate(conversationsProvider);
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => ChatScreen(conversationId: id)));
+    } on ChatException catch (e) {
+      _showSnack(chatErrorText(l10n, e.code));
+    }
+  }
+
+  Future<void> _report(Friend friend) async {
+    final sent = await showReportSheet(
+      context,
+      userId: friend.userId,
+      displayName: friend.displayName,
+    );
+    if (sent && mounted) {
+      _showSnack(AppLocalizations.of(context)!.reportSent);
+    }
+  }
+
   /// La tab è davvero davanti all'utente: selezionata e senza un'altra
   /// schermata aperta sopra (Il mio QR, Account…).
   bool get _isVisible =>
@@ -176,6 +207,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       child: RefreshIndicator(
         onRefresh: () async {
           refreshFriends(ref);
+          ref.invalidate(conversationsProvider);
           await ref.read(friendsListProvider.future);
         },
         child: CenteredListView(
@@ -233,6 +265,47 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                 ),
               ),
             ],
+            SectionHeader(
+              l10n.chatSection,
+              action: TextButton.icon(
+                key: const Key('newGroupButton'),
+                icon: const Icon(Icons.group_add_outlined),
+                label: Text(l10n.newGroup),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NewGroupScreen()),
+                ),
+              ),
+            ),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: switch (ref.watch(conversationsProvider)) {
+                AsyncValue(hasError: true) => EmptyState(
+                  icon: Icons.cloud_off_outlined,
+                  message: l10n.chatsLoadFailed,
+                  action: OutlinedButton(
+                    onPressed: () => ref.invalidate(conversationsProvider),
+                    child: Text(l10n.retry),
+                  ),
+                ),
+                AsyncValue(:final valueOrNull?) when valueOrNull.isEmpty =>
+                  EmptyState(
+                    icon: Icons.chat_bubble_outline,
+                    message: l10n.noChatsYet,
+                  ),
+                AsyncValue(:final valueOrNull?) => Column(
+                  children: [
+                    for (final (i, c) in valueOrNull.indexed) ...[
+                      if (i > 0) const Divider(indent: 72),
+                      _ConversationTile(conversation: c, myId: user.id),
+                    ],
+                  ],
+                ),
+                _ => const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              },
+            ),
             SectionHeader(l10n.friendsSection),
             Card(
               clipBehavior: Clip.antiAlias,
@@ -261,15 +334,23 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                         key: ValueKey('friend_${f.userId}'),
                         leading: InitialsAvatar(name: f.displayName),
                         title: Text(personName(l10n, f.displayName)),
+                        onTap: () => _openChat(f),
                         trailing: PopupMenuButton<String>(
                           key: ValueKey('friendMenu_${f.userId}'),
                           tooltip: MaterialLocalizations.of(
                             context,
                           ).showMenuTooltip,
-                          onSelected: (v) => v == 'remove'
-                              ? _removeFriend(f)
-                              : _block(f.userId, f.displayName),
+                          onSelected: (v) => switch (v) {
+                            'message' => _openChat(f),
+                            'remove' => _removeFriend(f),
+                            'report' => _report(f),
+                            _ => _block(f.userId, f.displayName),
+                          },
                           itemBuilder: (_) => [
+                            PopupMenuItem(
+                              value: 'message',
+                              child: Text(l10n.messageFriend),
+                            ),
                             PopupMenuItem(
                               value: 'remove',
                               child: Text(l10n.removeFriend),
@@ -277,6 +358,10 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                             PopupMenuItem(
                               value: 'block',
                               child: Text(l10n.blockUser),
+                            ),
+                            PopupMenuItem(
+                              value: 'report',
+                              child: Text(l10n.reportAction),
                             ),
                           ],
                         ),
@@ -314,6 +399,76 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Una conversazione nella lista: titolo, anteprima dell'ultimo
+/// messaggio, quando e quanti non letti.
+class _ConversationTile extends StatelessWidget {
+  const _ConversationTile({required this.conversation, required this.myId});
+
+  final Conversation conversation;
+  final String myId;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final c = conversation;
+    final title = conversationTitle(l10n, c);
+    final preview = messagePreview(l10n, c.lastMessage, myId);
+    final muted = context.nipay.muted;
+    final unread = c.unreadCount > 0;
+    return ListTile(
+      key: ValueKey('conversation_${c.id}'),
+      leading: c.isGroup
+          ? CircleAvatar(
+              backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+              child: Icon(
+                Icons.groups_outlined,
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              ),
+            )
+          : InitialsAvatar(name: c.peerId == null ? null : c.peerDisplayName),
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(
+        preview ??
+            (c.isGroup
+                ? l10n.groupMembersCount(c.memberCount)
+                : l10n.chatEmpty),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: unread ? null : muted,
+          fontWeight: unread ? FontWeight.w600 : null,
+        ),
+      ),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            formatChatMoment(context, c.activityAt),
+            style: Theme.of(
+              context,
+            ).textTheme.labelSmall?.copyWith(color: muted),
+          ),
+          if (unread) ...[
+            const SizedBox(height: 4),
+            Semantics(
+              label: l10n.unreadMessagesBadge(c.unreadCount),
+              child: ExcludeSemantics(
+                child: Badge(
+                  label: Text(c.unreadCount > 99 ? '99+' : '${c.unreadCount}'),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => ChatScreen(conversationId: c.id)),
       ),
     );
   }

@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show User;
 
 import '../account/account_screen_test.dart' show FakeProfileService;
+import '../chat/fake_chat_service.dart';
 
 /// Doppio di [FriendsService]: stato in memoria, chiamate registrate.
 class FakeFriendsService implements FriendsService {
@@ -152,6 +153,7 @@ Widget _wrap(
   Widget child, {
   required FakeFriendsService friends,
   FakeProfileService? profile,
+  FakeChatService? chat,
   bool signedIn = true,
   bool pushed = false,
 }) => ProviderScope(
@@ -160,6 +162,7 @@ Widget _wrap(
       (ref) => Stream.value(signedIn ? _user() : null),
     ),
     friendsServiceProvider.overrideWithValue(friends),
+    chatServiceProvider.overrideWithValue(chat ?? FakeChatService()),
     profileServiceProvider.overrideWithValue(
       profile ?? (FakeProfileService()..displayName = 'Io'),
     ),

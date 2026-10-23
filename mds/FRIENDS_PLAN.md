@@ -80,6 +80,26 @@ francese, hindi, cinese (`lib/l10n/app_*.arb`, template `app_en.arb`).
 
 ---
 
+## Test con più account (li fa Sergio, alla fine)
+
+Decisione 2026-10-23: le prove che richiedono più account/persone vere non
+si fanno milestone per milestone; le fa Sergio alla fine, tutte insieme.
+Finché non sono fatte, ogni milestone qui sotto è "fatta in locale, da
+provare con più account".
+
+- [ ] M-SOC2: richiesta → accettazione; rifiuto; annulla; rimuovi amico;
+  blocco (l'altro non può più trovarti né scriverti); QR letto con la
+  fotocamera di sistema da un secondo telefono.
+- [ ] M-SOC3: chat 1:1 in tempo reale su due dispositivi; gruppo con tre
+  persone (aggiungi, togli, esci, passaggio di admin); badge dei non letti;
+  eliminazione ("Messaggio eliminato" per l'altro); segnalazione; blocco in
+  un gruppo (i messaggi spariscono solo per chi blocca); chat 1:1 in sola
+  lettura dopo la fine dell'amicizia.
+- [ ] M-SOC3, sicurezza: un non membro non riceve eventi Realtime della
+  conversazione (SECURITY_AUDIT NIP-21, aggiornamento 2026-10-23).
+
+---
+
 ## M-SOC0 — Fondamenta legali e store (PRIMA del codice)
 
 Come M-ACC0: senza questo i nuovi dati sono un rischio legale.
@@ -211,9 +231,8 @@ Chiusi il 2026-10-23:
   vuoto senza bloccare la registrazione). Per chi non ha ancora un nome,
   Il mio QR mostra "Aggiungi il tuo nome".
 
-Ancora aperto in M-SOC2:
-- Prova end-to-end con due account veri (richiesta, accettazione,
-  blocco).
+Ancora aperto in M-SOC2: solo la prova con due account, nella lista
+"Test con più account" qui sotto.
 
 ### Da M-SOC1
 
@@ -283,6 +302,32 @@ nessuna richiesta tra utenti bloccati, nessuna lettura di richieste altrui.
 ---
 
 ## M-SOC3 — Chat 1:1 e di gruppo (Realtime)
+
+**Stato (2026-10-23)**: database e app fatti, in locale. Migration
+`20261023010000_chat.sql` + `supabase/tests/chat_test.sql` (85 test pgTAP);
+app in `lib/data/services/chat_service.dart` e `lib/features/chat/`
+(sezione Chat nella tab Amici, chat, nuovo gruppo, info gruppo, segnala),
+14 widget test, 49 stringhe nelle 8 lingue.
+
+Decisioni prese (Sergio, 2026-10-23):
+- Gruppo con una persona che ho bloccato: restiamo entrambi, ma i suoi
+  messaggi per me spariscono (anteprima, non letti, Realtime: filtro nella
+  RLS). Lei non lo sa. Nelle chat 1:1 il filtro non vale (vedi sotto).
+- Fine amicizia (rimossa o blocco): la chat 1:1 resta, in sola lettura per
+  entrambi; si riattiva se si torna amici.
+- Messaggio eliminato dal mittente: tutti vedono "Messaggio eliminato"; il
+  testo resta nel database ma solo in `private.deleted_message_bodies`
+  (mai leggibile dal client, anche via Realtime), per la moderazione. Da
+  dichiarare nella privacy policy (M-SOC0) con la durata di conservazione.
+- Esce l'ultimo admin: diventa admin il membro entrato da più tempo; esce
+  l'ultimo membro: il gruppo sparisce.
+- (scelta tecnica) Chi entra in un gruppo vede solo i messaggi da quel
+  momento; l'ora di lettura (`conversation_reads`) è visibile solo al
+  proprietario: niente "letto" per gli altri.
+
+Migration applicata all'hosted il 2026-10-23 (publication con le sole tre
+tabelle, verificata). Ancora aperto: solo le prove con più account, nella
+lista "Test con più account" qui sotto.
 
 ### Modello
 

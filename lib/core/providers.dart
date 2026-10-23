@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:app_links/app_links.dart';
@@ -23,6 +24,7 @@ import '../data/repositories/tag_repository.dart';
 import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/wallet_repository.dart';
 import '../data/services/auth_service.dart';
+import '../data/services/chat_service.dart';
 import '../data/services/exchange_rate_service.dart';
 import '../data/services/friends_service.dart';
 import '../data/services/local_data_service.dart';
@@ -434,6 +436,53 @@ final blockedUsersProvider = FutureProvider<List<BlockedUser>>((ref) async {
 final incomingLinksProvider = Provider<Stream<Uri>>(
   (ref) => AppLinks().uriLinkStream,
 );
+
+/// Chat 1:1 e di gruppo (M-SOC3). Come per gli amici: senza login niente
+/// server e liste vuote.
+final chatServiceProvider = Provider<ChatService>(
+  (ref) => SupabaseChatService(Supabase.instance.client),
+);
+
+/// Le mie conversazioni, dalla più recente; si ricarica a ogni evento in
+/// tempo reale ([ChatEventsListener]).
+final conversationsProvider = FutureProvider<List<Conversation>>((ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return const [];
+  return ref.watch(chatServiceProvider).listConversations();
+});
+
+/// Messaggi non letti in tutte le chat: badge della tab Amici.
+final unreadMessagesProvider = Provider<int>(
+  (ref) => (ref.watch(conversationsProvider).valueOrNull ?? const []).fold(
+    0,
+    (sum, c) => sum + c.unreadCount,
+  ),
+);
+
+/// Eventi in tempo reale, un solo canale per l'app finché c'è un account
+/// (broadcast: lo ascoltano la shell e la chat aperta).
+final chatEventsProvider = Provider<Stream<ChatEvent>>((ref) {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return const Stream.empty();
+  final controller = StreamController<ChatEvent>.broadcast();
+  final subscription = ref
+      .watch(chatServiceProvider)
+      .events()
+      .listen(controller.add);
+  ref.onDispose(() {
+    subscription.cancel();
+    controller.close();
+  });
+  return controller.stream;
+});
+
+/// Canale in tempo reale collegato. Finché non si sa (avvio) vale come
+/// collegato: l'invio passa comunque da una chiamata normale.
+final chatConnectionProvider = StreamProvider<bool>((ref) {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return Stream.value(false);
+  return ref.watch(chatServiceProvider).connection();
+});
 
 /// Dopo ogni azione su amici, richieste o blocchi.
 void refreshFriends(WidgetRef ref) {

@@ -1687,6 +1687,300 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 friend request} other{{count} friend requests}}'**
   String friendRequestsBadge(int count);
+
+  /// No description provided for @chatSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats'**
+  String get chatSection;
+
+  /// No description provided for @newGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'New group'**
+  String get newGroup;
+
+  /// No description provided for @noChatsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No chats yet. Tap a friend to start one.'**
+  String get noChatsYet;
+
+  /// No description provided for @chatsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your chats. Check your connection and try again.'**
+  String get chatsLoadFailed;
+
+  /// No description provided for @messageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get messageHint;
+
+  /// No description provided for @sendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get sendMessage;
+
+  /// No description provided for @messageDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Message deleted'**
+  String get messageDeleted;
+
+  /// No description provided for @deletedUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted user'**
+  String get deletedUser;
+
+  /// No description provided for @chatReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'You can no longer write in this chat.'**
+  String get chatReadOnly;
+
+  /// No description provided for @chatOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. You can write again when you\'re back online.'**
+  String get chatOffline;
+
+  /// No description provided for @loadEarlierMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Load earlier messages'**
+  String get loadEarlierMessages;
+
+  /// No description provided for @chatEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet. Say hi!'**
+  String get chatEmpty;
+
+  /// No description provided for @chatYouPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'You: {text}'**
+  String chatYouPrefix(String text);
+
+  /// No description provided for @deleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete message'**
+  String get deleteMessage;
+
+  /// No description provided for @deleteMessageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone in the chat will see “Message deleted”.'**
+  String get deleteMessageBody;
+
+  /// No description provided for @reportAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get reportAction;
+
+  /// No description provided for @reportMessageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report message'**
+  String get reportMessageTitle;
+
+  /// No description provided for @reportUserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report {name}'**
+  String reportUserTitle(String name);
+
+  /// No description provided for @reportReasonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get reportReasonLabel;
+
+  /// No description provided for @reportChooseReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a reason.'**
+  String get reportChooseReason;
+
+  /// No description provided for @reportReasonSpam.
+  ///
+  /// In en, this message translates to:
+  /// **'Spam'**
+  String get reportReasonSpam;
+
+  /// No description provided for @reportReasonOffensive.
+  ///
+  /// In en, this message translates to:
+  /// **'Offensive content'**
+  String get reportReasonOffensive;
+
+  /// No description provided for @reportReasonHarassment.
+  ///
+  /// In en, this message translates to:
+  /// **'Harassment'**
+  String get reportReasonHarassment;
+
+  /// No description provided for @reportReasonOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get reportReasonOther;
+
+  /// No description provided for @reportDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Details (optional)'**
+  String get reportDetails;
+
+  /// No description provided for @reportAlsoBlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Also block this person'**
+  String get reportAlsoBlock;
+
+  /// No description provided for @reportSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send report'**
+  String get reportSend;
+
+  /// No description provided for @reportSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Report sent. Thank you.'**
+  String get reportSent;
+
+  /// No description provided for @groupName.
+  ///
+  /// In en, this message translates to:
+  /// **'Group name'**
+  String get groupName;
+
+  /// No description provided for @chooseFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose friends'**
+  String get chooseFriends;
+
+  /// No description provided for @createGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Create group'**
+  String get createGroup;
+
+  /// No description provided for @groupNeedsMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one friend.'**
+  String get groupNeedsMembers;
+
+  /// No description provided for @groupNameInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 1 to 60 characters.'**
+  String get groupNameInvalid;
+
+  /// No description provided for @groupMembersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 member} other{{count} members}}'**
+  String groupMembersCount(int count);
+
+  /// No description provided for @groupInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Group info'**
+  String get groupInfo;
+
+  /// No description provided for @groupAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get groupAdmin;
+
+  /// No description provided for @addMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Add members'**
+  String get addMembers;
+
+  /// No description provided for @removeFromGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from group'**
+  String get removeFromGroup;
+
+  /// No description provided for @removeFromGroupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will no longer see this group.'**
+  String removeFromGroupBody(String name);
+
+  /// No description provided for @leaveGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave group'**
+  String get leaveGroup;
+
+  /// No description provided for @leaveGroupBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll no longer see this group\'s messages.'**
+  String get leaveGroupBody;
+
+  /// No description provided for @youLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get youLabel;
+
+  /// No description provided for @noFriendsToAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'All your friends are already in the group.'**
+  String get noFriendsToAdd;
+
+  /// No description provided for @messageFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get messageFriend;
+
+  /// No description provided for @chatErrorInvalidMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A message can have 1 to 2000 characters.'**
+  String get chatErrorInvalidMessage;
+
+  /// No description provided for @chatErrorTooManyMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'A group can have up to 50 members.'**
+  String get chatErrorTooManyMembers;
+
+  /// No description provided for @chatErrorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This chat is no longer available.'**
+  String get chatErrorNotFound;
+
+  /// No description provided for @chatErrorInvalidReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the details: up to 500 characters.'**
+  String get chatErrorInvalidReport;
+
+  /// No description provided for @unreadMessagesBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 unread message} other{{count} unread messages}}'**
+  String unreadMessagesBadge(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -888,4 +888,181 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get chatSection => 'Discussions';
+
+  @override
+  String get newGroup => 'Nouveau groupe';
+
+  @override
+  String get noChatsYet =>
+      'Aucune discussion. Touchez un ami pour en commencer une.';
+
+  @override
+  String get chatsLoadFailed =>
+      'Impossible de charger vos discussions. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get messageHint => 'Message';
+
+  @override
+  String get sendMessage => 'Envoyer';
+
+  @override
+  String get messageDeleted => 'Message supprimé';
+
+  @override
+  String get deletedUser => 'Utilisateur supprimé';
+
+  @override
+  String get chatReadOnly =>
+      'Vous ne pouvez plus écrire dans cette discussion.';
+
+  @override
+  String get chatOffline =>
+      'Vous êtes hors ligne. Vous pourrez écrire dès que vous serez de nouveau en ligne.';
+
+  @override
+  String get loadEarlierMessages => 'Charger les messages précédents';
+
+  @override
+  String get chatEmpty => 'Aucun message pour l\'instant. Dites bonjour !';
+
+  @override
+  String chatYouPrefix(String text) {
+    return 'Vous : $text';
+  }
+
+  @override
+  String get deleteMessage => 'Supprimer le message';
+
+  @override
+  String get deleteMessageBody =>
+      'Tout le monde dans la discussion verra « Message supprimé ».';
+
+  @override
+  String get reportAction => 'Signaler';
+
+  @override
+  String get reportMessageTitle => 'Signaler le message';
+
+  @override
+  String reportUserTitle(String name) {
+    return 'Signaler $name';
+  }
+
+  @override
+  String get reportReasonLabel => 'Motif';
+
+  @override
+  String get reportChooseReason => 'Choisissez un motif.';
+
+  @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonOffensive => 'Contenu offensant';
+
+  @override
+  String get reportReasonHarassment => 'Harcèlement';
+
+  @override
+  String get reportReasonOther => 'Autre';
+
+  @override
+  String get reportDetails => 'Détails (facultatif)';
+
+  @override
+  String get reportAlsoBlock => 'Bloquer aussi cette personne';
+
+  @override
+  String get reportSend => 'Envoyer le signalement';
+
+  @override
+  String get reportSent => 'Signalement envoyé. Merci.';
+
+  @override
+  String get groupName => 'Nom du groupe';
+
+  @override
+  String get chooseFriends => 'Choisir des amis';
+
+  @override
+  String get createGroup => 'Créer le groupe';
+
+  @override
+  String get groupNeedsMembers => 'Choisissez au moins un ami.';
+
+  @override
+  String get groupNameInvalid => 'Utilisez de 1 à 60 caractères.';
+
+  @override
+  String groupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count membres',
+      one: '1 membre',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInfo => 'Infos du groupe';
+
+  @override
+  String get groupAdmin => 'Admin';
+
+  @override
+  String get addMembers => 'Ajouter des membres';
+
+  @override
+  String get removeFromGroup => 'Retirer du groupe';
+
+  @override
+  String removeFromGroupBody(String name) {
+    return '$name ne verra plus ce groupe.';
+  }
+
+  @override
+  String get leaveGroup => 'Quitter le groupe';
+
+  @override
+  String get leaveGroupBody => 'Vous ne verrez plus les messages de ce groupe.';
+
+  @override
+  String get youLabel => 'Vous';
+
+  @override
+  String get noFriendsToAdd => 'Tous vos amis sont déjà dans le groupe.';
+
+  @override
+  String get messageFriend => 'Écrire';
+
+  @override
+  String get chatErrorInvalidMessage =>
+      'Un message peut contenir de 1 à 2000 caractères.';
+
+  @override
+  String get chatErrorTooManyMembers =>
+      'Un groupe peut compter jusqu\'à 50 membres.';
+
+  @override
+  String get chatErrorNotFound => 'Cette discussion n\'est plus disponible.';
+
+  @override
+  String get chatErrorInvalidReport =>
+      'Vérifiez les détails : 500 caractères maximum.';
+
+  @override
+  String unreadMessagesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count messages non lus',
+      one: '1 message non lu',
+    );
+    return '$_temp0';
+  }
 }

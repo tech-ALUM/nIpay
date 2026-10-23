@@ -883,4 +883,178 @@ class AppLocalizationsHi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get chatSection => 'चैट';
+
+  @override
+  String get newGroup => 'नया ग्रुप';
+
+  @override
+  String get noChatsYet =>
+      'अभी कोई चैट नहीं। चैट शुरू करने के लिए किसी दोस्त पर टैप करें।';
+
+  @override
+  String get chatsLoadFailed =>
+      'आपकी चैट लोड नहीं हो सकीं। अपना कनेक्शन जाँचें और फिर से कोशिश करें।';
+
+  @override
+  String get messageHint => 'संदेश';
+
+  @override
+  String get sendMessage => 'भेजें';
+
+  @override
+  String get messageDeleted => 'संदेश हटाया गया';
+
+  @override
+  String get deletedUser => 'हटाया गया उपयोगकर्ता';
+
+  @override
+  String get chatReadOnly => 'आप अब इस चैट में नहीं लिख सकते।';
+
+  @override
+  String get chatOffline =>
+      'आप ऑफ़लाइन हैं। ऑनलाइन होने पर आप फिर से लिख पाएँगे।';
+
+  @override
+  String get loadEarlierMessages => 'पुराने संदेश लोड करें';
+
+  @override
+  String get chatEmpty => 'अभी कोई संदेश नहीं। नमस्ते कहें!';
+
+  @override
+  String chatYouPrefix(String text) {
+    return 'आप: $text';
+  }
+
+  @override
+  String get deleteMessage => 'संदेश हटाएँ';
+
+  @override
+  String get deleteMessageBody => 'चैट में सभी को “संदेश हटाया गया” दिखेगा।';
+
+  @override
+  String get reportAction => 'रिपोर्ट करें';
+
+  @override
+  String get reportMessageTitle => 'संदेश की रिपोर्ट करें';
+
+  @override
+  String reportUserTitle(String name) {
+    return '$name की रिपोर्ट करें';
+  }
+
+  @override
+  String get reportReasonLabel => 'कारण';
+
+  @override
+  String get reportChooseReason => 'एक कारण चुनें।';
+
+  @override
+  String get reportReasonSpam => 'स्पैम';
+
+  @override
+  String get reportReasonOffensive => 'आपत्तिजनक सामग्री';
+
+  @override
+  String get reportReasonHarassment => 'उत्पीड़न';
+
+  @override
+  String get reportReasonOther => 'अन्य';
+
+  @override
+  String get reportDetails => 'विवरण (वैकल्पिक)';
+
+  @override
+  String get reportAlsoBlock => 'इस व्यक्ति को भी ब्लॉक करें';
+
+  @override
+  String get reportSend => 'रिपोर्ट भेजें';
+
+  @override
+  String get reportSent => 'रिपोर्ट भेज दी गई। धन्यवाद।';
+
+  @override
+  String get groupName => 'ग्रुप का नाम';
+
+  @override
+  String get chooseFriends => 'दोस्त चुनें';
+
+  @override
+  String get createGroup => 'ग्रुप बनाएँ';
+
+  @override
+  String get groupNeedsMembers => 'कम से कम एक दोस्त चुनें।';
+
+  @override
+  String get groupNameInvalid => '1 से 60 अक्षर इस्तेमाल करें।';
+
+  @override
+  String groupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count सदस्य',
+      one: '1 सदस्य',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInfo => 'ग्रुप की जानकारी';
+
+  @override
+  String get groupAdmin => 'एडमिन';
+
+  @override
+  String get addMembers => 'सदस्य जोड़ें';
+
+  @override
+  String get removeFromGroup => 'ग्रुप से हटाएँ';
+
+  @override
+  String removeFromGroupBody(String name) {
+    return '$name को यह ग्रुप अब नहीं दिखेगा।';
+  }
+
+  @override
+  String get leaveGroup => 'ग्रुप छोड़ें';
+
+  @override
+  String get leaveGroupBody => 'आपको इस ग्रुप के संदेश अब नहीं दिखेंगे।';
+
+  @override
+  String get youLabel => 'आप';
+
+  @override
+  String get noFriendsToAdd => 'आपके सभी दोस्त पहले से ग्रुप में हैं।';
+
+  @override
+  String get messageFriend => 'संदेश भेजें';
+
+  @override
+  String get chatErrorInvalidMessage =>
+      'एक संदेश में 1 से 2000 अक्षर हो सकते हैं।';
+
+  @override
+  String get chatErrorTooManyMembers =>
+      'एक ग्रुप में अधिकतम 50 सदस्य हो सकते हैं।';
+
+  @override
+  String get chatErrorNotFound => 'यह चैट अब उपलब्ध नहीं है।';
+
+  @override
+  String get chatErrorInvalidReport => 'विवरण जाँचें: अधिकतम 500 अक्षर।';
+
+  @override
+  String unreadMessagesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count अपठित संदेश',
+      one: '1 अपठित संदेश',
+    );
+    return '$_temp0';
+  }
 }

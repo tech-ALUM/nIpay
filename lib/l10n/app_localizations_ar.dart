@@ -877,4 +877,177 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get chatSection => 'المحادثات';
+
+  @override
+  String get newGroup => 'مجموعة جديدة';
+
+  @override
+  String get noChatsYet => 'لا توجد محادثات بعد. اضغط على صديق لبدء محادثة.';
+
+  @override
+  String get chatsLoadFailed =>
+      'تعذّر تحميل محادثاتك. تحقّق من اتصالك وحاول مجددًا.';
+
+  @override
+  String get messageHint => 'رسالة';
+
+  @override
+  String get sendMessage => 'إرسال';
+
+  @override
+  String get messageDeleted => 'تم حذف الرسالة';
+
+  @override
+  String get deletedUser => 'مستخدم محذوف';
+
+  @override
+  String get chatReadOnly => 'لم يعد بإمكانك الكتابة في هذه المحادثة.';
+
+  @override
+  String get chatOffline =>
+      'أنت غير متصل. يمكنك الكتابة مجددًا عند عودة الاتصال.';
+
+  @override
+  String get loadEarlierMessages => 'تحميل الرسائل الأقدم';
+
+  @override
+  String get chatEmpty => 'لا توجد رسائل بعد. قل مرحبًا!';
+
+  @override
+  String chatYouPrefix(String text) {
+    return 'أنت: $text';
+  }
+
+  @override
+  String get deleteMessage => 'حذف الرسالة';
+
+  @override
+  String get deleteMessageBody => 'سيرى الجميع في المحادثة «تم حذف الرسالة».';
+
+  @override
+  String get reportAction => 'إبلاغ';
+
+  @override
+  String get reportMessageTitle => 'الإبلاغ عن الرسالة';
+
+  @override
+  String reportUserTitle(String name) {
+    return 'الإبلاغ عن $name';
+  }
+
+  @override
+  String get reportReasonLabel => 'السبب';
+
+  @override
+  String get reportChooseReason => 'اختر سببًا.';
+
+  @override
+  String get reportReasonSpam => 'رسائل مزعجة';
+
+  @override
+  String get reportReasonOffensive => 'محتوى مسيء';
+
+  @override
+  String get reportReasonHarassment => 'تحرّش';
+
+  @override
+  String get reportReasonOther => 'أخرى';
+
+  @override
+  String get reportDetails => 'التفاصيل (اختياري)';
+
+  @override
+  String get reportAlsoBlock => 'حظر هذا الشخص أيضًا';
+
+  @override
+  String get reportSend => 'إرسال البلاغ';
+
+  @override
+  String get reportSent => 'تم إرسال البلاغ. شكرًا لك.';
+
+  @override
+  String get groupName => 'اسم المجموعة';
+
+  @override
+  String get chooseFriends => 'اختر أصدقاء';
+
+  @override
+  String get createGroup => 'إنشاء المجموعة';
+
+  @override
+  String get groupNeedsMembers => 'اختر صديقًا واحدًا على الأقل.';
+
+  @override
+  String get groupNameInvalid => 'استخدم من 1 إلى 60 حرفًا.';
+
+  @override
+  String groupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count من الأعضاء',
+      one: 'عضو واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInfo => 'معلومات المجموعة';
+
+  @override
+  String get groupAdmin => 'مشرف';
+
+  @override
+  String get addMembers => 'إضافة أعضاء';
+
+  @override
+  String get removeFromGroup => 'إزالة من المجموعة';
+
+  @override
+  String removeFromGroupBody(String name) {
+    return 'لن يرى $name هذه المجموعة بعد الآن.';
+  }
+
+  @override
+  String get leaveGroup => 'مغادرة المجموعة';
+
+  @override
+  String get leaveGroupBody => 'لن ترى رسائل هذه المجموعة بعد الآن.';
+
+  @override
+  String get youLabel => 'أنت';
+
+  @override
+  String get noFriendsToAdd => 'جميع أصدقائك موجودون في المجموعة بالفعل.';
+
+  @override
+  String get messageFriend => 'مراسلة';
+
+  @override
+  String get chatErrorInvalidMessage =>
+      'يمكن أن تحتوي الرسالة على 1 إلى 2000 حرف.';
+
+  @override
+  String get chatErrorTooManyMembers =>
+      'يمكن أن تضم المجموعة 50 عضوًا كحد أقصى.';
+
+  @override
+  String get chatErrorNotFound => 'لم تعد هذه المحادثة متاحة.';
+
+  @override
+  String get chatErrorInvalidReport => 'تحقّق من التفاصيل: 500 حرف كحد أقصى.';
+
+  @override
+  String unreadMessagesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count من الرسائل غير المقروءة',
+      one: 'رسالة واحدة غير مقروءة',
+    );
+    return '$_temp0';
+  }
 }

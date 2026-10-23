@@ -349,5 +349,69 @@
     "placeholders": {
       "count": {"type": "int"}
     }
+  },
+  "chatSection": "Chats",
+  "newGroup": "New group",
+  "noChatsYet": "No chats yet. Tap a friend to start one.",
+  "chatsLoadFailed": "Couldn't load your chats. Check your connection and try again.",
+  "messageHint": "Message",
+  "sendMessage": "Send",
+  "messageDeleted": "Message deleted",
+  "deletedUser": "Deleted user",
+  "chatReadOnly": "You can no longer write in this chat.",
+  "chatOffline": "You're offline. You can write again when you're back online.",
+  "loadEarlierMessages": "Load earlier messages",
+  "chatEmpty": "No messages yet. Say hi!",
+  "chatYouPrefix": "You: {text}",
+  "@chatYouPrefix": {
+    "placeholders": {"text": {"type": "String"}}
+  },
+  "deleteMessage": "Delete message",
+  "deleteMessageBody": "Everyone in the chat will see “Message deleted”.",
+  "reportAction": "Report",
+  "reportMessageTitle": "Report message",
+  "reportUserTitle": "Report {name}",
+  "@reportUserTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "reportReasonLabel": "Reason",
+  "reportChooseReason": "Choose a reason.",
+  "reportReasonSpam": "Spam",
+  "reportReasonOffensive": "Offensive content",
+  "reportReasonHarassment": "Harassment",
+  "reportReasonOther": "Other",
+  "reportDetails": "Details (optional)",
+  "reportAlsoBlock": "Also block this person",
+  "reportSend": "Send report",
+  "reportSent": "Report sent. Thank you.",
+  "groupName": "Group name",
+  "chooseFriends": "Choose friends",
+  "createGroup": "Create group",
+  "groupNeedsMembers": "Choose at least one friend.",
+  "groupNameInvalid": "Use 1 to 60 characters.",
+  "groupMembersCount": "{count, plural, =1{1 member} other{{count} members}}",
+  "@groupMembersCount": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "groupInfo": "Group info",
+  "groupAdmin": "Admin",
+  "addMembers": "Add members",
+  "removeFromGroup": "Remove from group",
+  "removeFromGroupBody": "{name} will no longer see this group.",
+  "@removeFromGroupBody": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "leaveGroup": "Leave group",
+  "leaveGroupBody": "You'll no longer see this group's messages.",
+  "youLabel": "You",
+  "noFriendsToAdd": "All your friends are already in the group.",
+  "messageFriend": "Message",
+  "chatErrorInvalidMessage": "A message can have 1 to 2000 characters.",
+  "chatErrorTooManyMembers": "A group can have up to 50 members.",
+  "chatErrorNotFound": "This chat is no longer available.",
+  "chatErrorInvalidReport": "Check the details: up to 500 characters.",
+  "unreadMessagesBadge": "{count, plural, =1{1 unread message} other{{count} unread messages}}",
+  "@unreadMessagesBadge": {
+    "placeholders": {"count": {"type": "int"}}
   }
 }

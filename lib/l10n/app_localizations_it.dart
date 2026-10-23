@@ -886,4 +886,178 @@ class AppLocalizationsIt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get chatSection => 'Chat';
+
+  @override
+  String get newGroup => 'Nuovo gruppo';
+
+  @override
+  String get noChatsYet => 'Nessuna chat. Tocca un amico per iniziarne una.';
+
+  @override
+  String get chatsLoadFailed =>
+      'Impossibile caricare le chat. Controlla la connessione e riprova.';
+
+  @override
+  String get messageHint => 'Messaggio';
+
+  @override
+  String get sendMessage => 'Invia';
+
+  @override
+  String get messageDeleted => 'Messaggio eliminato';
+
+  @override
+  String get deletedUser => 'Utente eliminato';
+
+  @override
+  String get chatReadOnly => 'Non puoi più scrivere in questa chat.';
+
+  @override
+  String get chatOffline => 'Sei offline: potrai scrivere quando torni online.';
+
+  @override
+  String get loadEarlierMessages => 'Carica messaggi precedenti';
+
+  @override
+  String get chatEmpty => 'Ancora nessun messaggio. Saluta!';
+
+  @override
+  String chatYouPrefix(String text) {
+    return 'Tu: $text';
+  }
+
+  @override
+  String get deleteMessage => 'Elimina messaggio';
+
+  @override
+  String get deleteMessageBody =>
+      'Tutti nella chat vedranno “Messaggio eliminato”.';
+
+  @override
+  String get reportAction => 'Segnala';
+
+  @override
+  String get reportMessageTitle => 'Segnala messaggio';
+
+  @override
+  String reportUserTitle(String name) {
+    return 'Segnala $name';
+  }
+
+  @override
+  String get reportReasonLabel => 'Motivo';
+
+  @override
+  String get reportChooseReason => 'Scegli un motivo.';
+
+  @override
+  String get reportReasonSpam => 'Spam';
+
+  @override
+  String get reportReasonOffensive => 'Contenuto offensivo';
+
+  @override
+  String get reportReasonHarassment => 'Molestie';
+
+  @override
+  String get reportReasonOther => 'Altro';
+
+  @override
+  String get reportDetails => 'Dettagli (facoltativi)';
+
+  @override
+  String get reportAlsoBlock => 'Blocca anche questa persona';
+
+  @override
+  String get reportSend => 'Invia segnalazione';
+
+  @override
+  String get reportSent => 'Segnalazione inviata. Grazie.';
+
+  @override
+  String get groupName => 'Nome del gruppo';
+
+  @override
+  String get chooseFriends => 'Scegli gli amici';
+
+  @override
+  String get createGroup => 'Crea gruppo';
+
+  @override
+  String get groupNeedsMembers => 'Scegli almeno un amico.';
+
+  @override
+  String get groupNameInvalid => 'Usa da 1 a 60 caratteri.';
+
+  @override
+  String groupMembersCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count membri',
+      one: '1 membro',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupInfo => 'Info gruppo';
+
+  @override
+  String get groupAdmin => 'Admin';
+
+  @override
+  String get addMembers => 'Aggiungi membri';
+
+  @override
+  String get removeFromGroup => 'Rimuovi dal gruppo';
+
+  @override
+  String removeFromGroupBody(String name) {
+    return '$name non vedrà più questo gruppo.';
+  }
+
+  @override
+  String get leaveGroup => 'Esci dal gruppo';
+
+  @override
+  String get leaveGroupBody => 'Non vedrai più i messaggi di questo gruppo.';
+
+  @override
+  String get youLabel => 'Tu';
+
+  @override
+  String get noFriendsToAdd => 'Tutti i tuoi amici sono già nel gruppo.';
+
+  @override
+  String get messageFriend => 'Scrivi';
+
+  @override
+  String get chatErrorInvalidMessage =>
+      'Un messaggio va da 1 a 2000 caratteri.';
+
+  @override
+  String get chatErrorTooManyMembers =>
+      'Un gruppo può avere al massimo 50 membri.';
+
+  @override
+  String get chatErrorNotFound => 'Questa chat non è più disponibile.';
+
+  @override
+  String get chatErrorInvalidReport =>
+      'Controlla i dettagli: al massimo 500 caratteri.';
+
+  @override
+  String unreadMessagesBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count messaggi non letti',
+      one: '1 messaggio non letto',
+    );
+    return '$_temp0';
+  }
 }

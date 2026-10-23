@@ -9,6 +9,7 @@ import 'core/theme/app_theme.dart';
 import 'core/ui/ui.dart';
 import 'data/services/friends_service.dart' show FriendRequestDirection;
 import 'features/account/account_screen.dart';
+import 'features/chat/chat_events_listener.dart';
 import 'features/friends/friend_link_listener.dart';
 import 'features/friends/friends_screen.dart';
 import 'features/home/home_screen.dart';
@@ -238,20 +239,25 @@ class _RootShellState extends ConsumerState<RootShell>
       (Icons.group_outlined, Icons.group, l10n.friendsTab),
       (Icons.settings_outlined, Icons.settings, l10n.settingsTab),
     ];
-    // Richieste di amicizia in arrivo: badge sulla tab Amici (indice 3).
-    // Vuoto senza account: in solo-locale non si contatta il server.
+    // Richieste di amicizia in arrivo e messaggi non letti: badge sulla
+    // tab Amici (indice 3). Vuoto senza account: in solo-locale non si
+    // contatta il server.
     final incomingRequests =
         (ref.watch(friendRequestsProvider).valueOrNull ?? const [])
             .where((r) => r.direction == FriendRequestDirection.incoming)
             .length;
+    final unreadMessages = ref.watch(unreadMessagesProvider);
+    final friendsBadge = incomingRequests + unreadMessages;
+    final friendsBadgeLabel = [
+      if (incomingRequests > 0) l10n.friendRequestsBadge(incomingRequests),
+      if (unreadMessages > 0) l10n.unreadMessagesBadge(unreadMessages),
+    ].join(', ');
     Widget tabIcon(int index, IconData icon) => index == 3
         ? Badge(
-            isLabelVisible: incomingRequests > 0,
-            label: Text('$incomingRequests'),
+            isLabelVisible: friendsBadge > 0,
+            label: Text(friendsBadge > 99 ? '99+' : '$friendsBadge'),
             child: Semantics(
-              label: incomingRequests > 0
-                  ? l10n.friendRequestsBadge(incomingRequests)
-                  : null,
+              label: friendsBadge > 0 ? friendsBadgeLabel : null,
               child: Icon(icon),
             ),
           )
@@ -338,7 +344,10 @@ class _RootShellState extends ConsumerState<RootShell>
       },
     );
     // Il QR di un amico letto con la fotocamera di sistema apre l'app qui.
-    return FriendLinkListener(onNeedsSignIn: () => select(3), child: shell);
+    return FriendLinkListener(
+      onNeedsSignIn: () => select(3),
+      child: ChatEventsListener(child: shell),
+    );
   }
 }
 
