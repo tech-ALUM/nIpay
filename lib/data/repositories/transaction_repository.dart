@@ -96,14 +96,22 @@ abstract interface class TransactionRepository {
   Stream<List<Transaction>> watchRecent({int limit, String? walletId});
 
   /// Modifica retroattiva: aggiorna solo i campi passati.
+  /// [entryAmountCents]: l'importo come digitato nella valuta originale,
+  /// solo se la transazione ne ha una (es. una quota di spesa divisa in
+  /// un'altra valuta).
   Future<void> updateTransaction(
     String id, {
     int? amountCents,
     DateTime? date,
     String? categoryId,
     String? description,
+    int? entryAmountCents,
   });
   Future<void> softDelete(String id);
+
+  /// I miei movimenti (vivi) collegati a una spesa divisa: la quota e il
+  /// movimento "con amici".
+  Future<List<Transaction>> linkedTo(String sharedExpenseId);
 }
 
 class DriftTransactionRepository implements TransactionRepository {
@@ -395,11 +403,15 @@ class DriftTransactionRepository implements TransactionRepository {
     DateTime? date,
     String? categoryId,
     String? description,
+    int? entryAmountCents,
   }) => (_db.update(_db.transactions)..where((t) => t.id.equals(id))).write(
     TransactionsCompanion(
       amountCents: amountCents == null
           ? const Value.absent()
           : Value(amountCents),
+      entryAmountCents: entryAmountCents == null
+          ? const Value.absent()
+          : Value(entryAmountCents),
       date: date == null ? const Value.absent() : Value(date),
       categoryId: categoryId == null ? const Value.absent() : Value(categoryId),
       description: description == null
@@ -417,4 +429,13 @@ class DriftTransactionRepository implements TransactionRepository {
           updatedAt: Value(DateTime.now()),
         ),
       );
+
+  @override
+  Future<List<Transaction>> linkedTo(String sharedExpenseId) =>
+      (_db.select(_db.transactions)..where(
+            (t) =>
+                t.deletedAt.isNull() &
+                t.sharedExpenseId.equals(sharedExpenseId),
+          ))
+          .get();
 }

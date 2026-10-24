@@ -461,6 +461,17 @@ valuta è diversa; prima i movimenti in locale, poi il server; se il
 server rifiuta i movimenti vengono tolti. Badge di Amici: anche le cose da
 fare. Da applicare all'hosted prima della prossima app distribuita.
 
+Fase 4b fatta (2026-10-24): nel dettaglio di una spesa divisa chi l'ha
+creata, finché non è bloccata, ha **Modifica** (importo, descrizione,
+data e la stessa card "Condividi con amici") ed **Elimina**. Modifica:
+prima il tasso se serve, poi il server, poi in locale la quota aggiornata
+sul posto (tag, scontrino e nota spese restano) e il movimento "con
+amici" rifatto (il verso cambia se cambia chi ha pagato). Elimina: server,
+poi i movimenti locali collegati.
+
+**M-SOC4 fatta in locale**; resta l'hosted per la migration
+`20261024020000` e le prove con più account (lista sopra).
+
 ### Modello (server)
 
 - `shared_expenses`: `id`, `created_by`, `paid_by`,

@@ -9,6 +9,7 @@ import '../../data/services/shared_expense_service.dart';
 import '../../l10n/app_localizations.dart';
 import '../friends/friends_ui.dart';
 import '../transactions/share_with_friends_card.dart';
+import 'edit_shared_expense_sheet.dart';
 import 'register_sheet.dart';
 
 /// Spese divise nella tab Amici (M-SOC4): cose da fare (quote e rimborsi
@@ -536,8 +537,50 @@ class _SharedExpenseSheet extends ConsumerWidget {
         : userId == myId
         ? l10n.youLabel
         : personName(l10n, displayName);
+    // Solo chi l'ha creata, finché nessun altro ha registrato la quota.
+    final editable = e.createdBy != null && e.createdBy == myId && !e.locked;
     return SheetScaffold(
       title: e.description ?? l10n.sharedExpenseFallbackTitle,
+      actions: [
+        if (editable) ...[
+          OutlinedButton.icon(
+            key: const Key('deleteSharedExpenseButton'),
+            icon: const Icon(Icons.delete_outline, size: 20),
+            label: Text(l10n.delete),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              final navigator = Navigator.of(context);
+              if (!await confirmDeletion(
+                context,
+                title: l10n.delete,
+                message: l10n.deleteSharedExpenseBody,
+              )) {
+                return;
+              }
+              final error = await deleteSharedExpense(ref, l10n, e);
+              if (error != null) {
+                messenger.showSnackBar(SnackBar(content: Text(error)));
+                return;
+              }
+              navigator.pop();
+            },
+          ),
+          FilledButton.icon(
+            key: const Key('editSharedExpenseButton'),
+            icon: const Icon(Icons.edit_outlined, size: 20),
+            label: Text(l10n.edit),
+            onPressed: () async {
+              final navigator = Navigator.of(context);
+              if (await showEditSharedExpenseSheet(context, e)) {
+                navigator.pop();
+              }
+            },
+          ),
+        ],
+      ],
       children: [
         Text(
           formatCents(e.totalCents, currency: e.currency),
