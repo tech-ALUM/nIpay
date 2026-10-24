@@ -15,40 +15,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' show User;
 
 import '../chat/fake_chat_service.dart';
 import '../friends/friends_screen_test.dart' show FakeFriendsService;
-
-/// Doppio di [SharedExpenseService]: registra le spese create.
-class FakeSharedExpenseService implements SharedExpenseService {
-  final created = <Map<String, Object?>>[];
-  final deleted = <String>[];
-  SharedExpenseErrorCode? failNext;
-
-  @override
-  Future<String> create({
-    required String? description,
-    required int totalCents,
-    required String currency,
-    required DateTime spentOn,
-    required String paidBy,
-    required List<ShareInput> shares,
-  }) async {
-    final code = failNext;
-    if (code != null) {
-      failNext = null;
-      throw SharedExpenseException(code);
-    }
-    created.add({
-      'description': description,
-      'total': totalCents,
-      'currency': currency,
-      'paidBy': paidBy,
-      'shares': {for (final s in shares) s.userId: s.shareCents},
-    });
-    return 'se-${created.length}';
-  }
-
-  @override
-  Future<void> delete(String expenseId) async => deleted.add(expenseId);
-}
+import '../split/fake_shared_expense_service.dart';
 
 User _user() => User(
   id: 'me',

@@ -1083,4 +1083,133 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get shareErrorInvalid => '请检查分摊支出：金额、币种和好友。';
+
+  @override
+  String get splitSection => '分摊支出';
+
+  @override
+  String get splitTodo => '待处理';
+
+  @override
+  String get splitBalances => '余额';
+
+  @override
+  String get splitRecent => '最近';
+
+  @override
+  String balanceOwesYou(String amount) {
+    return '欠你 $amount';
+  }
+
+  @override
+  String balanceYouOwe(String amount) {
+    return '你欠 $amount';
+  }
+
+  @override
+  String get settleAction => '还款';
+
+  @override
+  String settleTitle(String name) {
+    return '还钱给 $name';
+  }
+
+  @override
+  String settleAmountMax(String amount) {
+    return '最多 $amount：这是你欠的金额。';
+  }
+
+  @override
+  String settleRecorded(String name) {
+    return '已记录。$name 确认后生效。';
+  }
+
+  @override
+  String settleIncoming(String name, String amount) {
+    return '$name 说已给你 $amount';
+  }
+
+  @override
+  String get settleReceived => '已收到';
+
+  @override
+  String get settleNotReceived => '未收到';
+
+  @override
+  String settleWaiting(String name, String amount) {
+    return '等待 $name 确认 $amount';
+  }
+
+  @override
+  String settleDeclined(String name, String amount) {
+    return '$name 未确认 $amount';
+  }
+
+  @override
+  String registerShareItem(String description, String amount) {
+    return '“$description”中你的份额：$amount';
+  }
+
+  @override
+  String registerSettlementOut(String name, String amount) {
+    return '已确认还给 $name：$amount';
+  }
+
+  @override
+  String registerSettlementIn(String name, String amount) {
+    return '来自 $name 的还款：$amount';
+  }
+
+  @override
+  String get registerAction => '记账';
+
+  @override
+  String get registerTitle => '记入钱包';
+
+  @override
+  String registerConverted(String amount) {
+    return '在此钱包中：$amount';
+  }
+
+  @override
+  String get registerDone => '已记入钱包。';
+
+  @override
+  String get sharedExpenseFallbackTitle => '分摊支出';
+
+  @override
+  String sharedExpensePaidBy(String name, String amount) {
+    return '$name 付款 · 你的份额 $amount';
+  }
+
+  @override
+  String sharedExpensePaidByYou(String amount) {
+    return '你付款 · 你的份额 $amount';
+  }
+
+  @override
+  String get splitLocked => '已有人记入了自己的份额，因此无法再修改。';
+
+  @override
+  String get splitNotFound => '此项已不存在。';
+
+  @override
+  String get settleTooMuch => '超出了你欠的金额。';
+
+  @override
+  String get editSharedExpense => '编辑分摊支出';
+
+  @override
+  String get deleteSharedExpenseBody => '它将对所有人消失，你钱包里的相关记录也会一并删除。';
+
+  @override
+  String splitTodoBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 项分摊待处理',
+      one: '1 项分摊待处理',
+    );
+    return '$_temp0';
+  }
 }

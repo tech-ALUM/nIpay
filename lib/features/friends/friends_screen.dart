@@ -12,6 +12,7 @@ import '../chat/chat_screen.dart';
 import '../chat/chat_ui.dart';
 import '../chat/group_screens.dart';
 import '../chat/report_sheet.dart';
+import '../split/split_section.dart';
 import 'add_friend_screen.dart';
 import 'display_name_dialog.dart';
 import 'friends_ui.dart';
@@ -34,6 +35,14 @@ class FriendsScreen extends ConsumerStatefulWidget {
 
 class _FriendsScreenState extends ConsumerState<FriendsScreen> {
   bool _askedForName = false;
+
+  @override
+  void didUpdateWidget(FriendsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Le spese divise non arrivano in tempo reale: si ricaricano a ogni
+    // ritorno sulla tab.
+    if (widget.active && !oldWidget.active) refreshSplits(ref);
+  }
 
   void _showSnack(String message) {
     if (!mounted) return;
@@ -207,6 +216,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
       child: RefreshIndicator(
         onRefresh: () async {
           refreshFriends(ref);
+          refreshSplits(ref);
           ref.invalidate(conversationsProvider);
           await ref.read(friendsListProvider.future);
         },
@@ -265,6 +275,7 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen> {
                 ),
               ),
             ],
+            const SplitSection(),
             SectionHeader(
               l10n.chatSection,
               action: TextButton.icon(

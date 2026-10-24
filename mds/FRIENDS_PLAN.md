@@ -443,6 +443,24 @@ viene eliminata. Valuta digitata diversa da quella del portafoglio:
 Una transazione collegata non si modifica dal foglio: "Spesa divisa: si
 gestisce in Amici" (fase 4).
 
+Decisioni fase 4 (Sergio, 2026-10-24): i movimenti di un rimborso nascono
+**dopo la conferma**, per entrambi (chi riceve registra l'entrata quando
+conferma; chi ha pagato vede "Rimborso confermato: registralo"); chi ha
+creato una spesa la può **modificare** in Amici finché non è bloccata.
+
+Fase 4a fatta (2026-10-24): migration
+`20261024020000_settlement_registration.sql` (`from_registered_at` /
+`to_registered_at`, RPC `register_my_settlement`, `list_settlements` con
+`my_registered`); sezione "Spese divise" in Amici
+(`lib/features/split/`): da fare (quote da registrare, rimborsi da
+confermare o da registrare, in attesa con Annulla, rifiutati), saldi per
+persona e valuta con **Salda** (proposto tutto il debito, mai di più),
+spese recenti con dettaglio delle quote. "Registra in un portafoglio":
+portafoglio (e categoria per la quota), anteprima convertita se la
+valuta è diversa; prima i movimenti in locale, poi il server; se il
+server rifiuta i movimenti vengono tolti. Badge di Amici: anche le cose da
+fare. Da applicare all'hosted prima della prossima app distribuita.
+
 ### Modello (server)
 
 - `shared_expenses`: `id`, `created_by`, `paid_by`,

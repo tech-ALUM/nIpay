@@ -2089,6 +2089,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check the shared expense: amounts, currency and friends.'**
   String get shareErrorInvalid;
+
+  /// No description provided for @splitSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared expenses'**
+  String get splitSection;
+
+  /// No description provided for @splitTodo.
+  ///
+  /// In en, this message translates to:
+  /// **'To do'**
+  String get splitTodo;
+
+  /// No description provided for @splitBalances.
+  ///
+  /// In en, this message translates to:
+  /// **'Balances'**
+  String get splitBalances;
+
+  /// No description provided for @splitRecent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get splitRecent;
+
+  /// No description provided for @balanceOwesYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Owes you {amount}'**
+  String balanceOwesYou(String amount);
+
+  /// No description provided for @balanceYouOwe.
+  ///
+  /// In en, this message translates to:
+  /// **'You owe {amount}'**
+  String balanceYouOwe(String amount);
+
+  /// No description provided for @settleAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Settle'**
+  String get settleAction;
+
+  /// No description provided for @settleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay back {name}'**
+  String settleTitle(String name);
+
+  /// No description provided for @settleAmountMax.
+  ///
+  /// In en, this message translates to:
+  /// **'At most {amount}: that is what you owe.'**
+  String settleAmountMax(String amount);
+
+  /// No description provided for @settleRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded. It counts once {name} confirms.'**
+  String settleRecorded(String name);
+
+  /// No description provided for @settleIncoming.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} says they paid you {amount}'**
+  String settleIncoming(String name, String amount);
+
+  /// No description provided for @settleReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get settleReceived;
+
+  /// No description provided for @settleNotReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Not received'**
+  String get settleNotReceived;
+
+  /// No description provided for @settleWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for {name} to confirm {amount}'**
+  String settleWaiting(String name, String amount);
+
+  /// No description provided for @settleDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} didn\'t confirm {amount}'**
+  String settleDeclined(String name, String amount);
+
+  /// No description provided for @registerShareItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Your share of “{description}”: {amount}'**
+  String registerShareItem(String description, String amount);
+
+  /// No description provided for @registerSettlementOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay-back to {name} confirmed: {amount}'**
+  String registerSettlementOut(String name, String amount);
+
+  /// No description provided for @registerSettlementIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay-back from {name}: {amount}'**
+  String registerSettlementIn(String name, String amount);
+
+  /// No description provided for @registerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get registerAction;
+
+  /// No description provided for @registerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to a wallet'**
+  String get registerTitle;
+
+  /// No description provided for @registerConverted.
+  ///
+  /// In en, this message translates to:
+  /// **'In this wallet: {amount}'**
+  String registerConverted(String amount);
+
+  /// No description provided for @registerDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to your wallet.'**
+  String get registerDone;
+
+  /// No description provided for @sharedExpenseFallbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared expense'**
+  String get sharedExpenseFallbackTitle;
+
+  /// No description provided for @sharedExpensePaidBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid by {name} · your share {amount}'**
+  String sharedExpensePaidBy(String name, String amount);
+
+  /// No description provided for @sharedExpensePaidByYou.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid by you · your share {amount}'**
+  String sharedExpensePaidByYou(String amount);
+
+  /// No description provided for @splitLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone has already registered their share, so it can no longer be changed.'**
+  String get splitLocked;
+
+  /// No description provided for @splitNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This no longer exists.'**
+  String get splitNotFound;
+
+  /// No description provided for @settleTooMuch.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s more than you owe.'**
+  String get settleTooMuch;
+
+  /// No description provided for @editSharedExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit shared expense'**
+  String get editSharedExpense;
+
+  /// No description provided for @deleteSharedExpenseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It disappears for everyone, together with your movements in the wallet.'**
+  String get deleteSharedExpenseBody;
+
+  /// No description provided for @splitTodoBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 shared expense to handle} other{{count} shared expenses to handle}}'**
+  String splitTodoBadge(int count);
 }
 
 class _AppLocalizationsDelegate

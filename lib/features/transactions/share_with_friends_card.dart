@@ -69,10 +69,10 @@ String sharedExpenseErrorText(
   SharedExpenseErrorCode.notAvailable => l10n.friendsErrorNotAvailable,
   SharedExpenseErrorCode.rateLimited => l10n.authErrorRateLimited,
   SharedExpenseErrorCode.network => l10n.authErrorNetwork,
-  SharedExpenseErrorCode.locked ||
-  SharedExpenseErrorCode.notFound ||
-  SharedExpenseErrorCode.amountTooHigh ||
-  SharedExpenseErrorCode.invalidAmount ||
+  SharedExpenseErrorCode.locked => l10n.splitLocked,
+  SharedExpenseErrorCode.notFound => l10n.splitNotFound,
+  SharedExpenseErrorCode.amountTooHigh => l10n.settleTooMuch,
+  SharedExpenseErrorCode.invalidAmount => l10n.invalidAmount,
   SharedExpenseErrorCode.unknown => l10n.authErrorGeneric,
 };
 

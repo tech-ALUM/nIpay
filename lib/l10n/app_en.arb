@@ -446,5 +446,81 @@
   "shareSplitMismatch": "The amounts must add up to the total.",
   "shareTooSmall": "The amount is too small to split between everyone.",
   "shareLinkedNote": "Shared expense: manage it in Friends.",
-  "shareErrorInvalid": "Check the shared expense: amounts, currency and friends."
+  "shareErrorInvalid": "Check the shared expense: amounts, currency and friends.",
+  "splitSection": "Shared expenses",
+  "splitTodo": "To do",
+  "splitBalances": "Balances",
+  "splitRecent": "Recent",
+  "balanceOwesYou": "Owes you {amount}",
+  "@balanceOwesYou": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "balanceYouOwe": "You owe {amount}",
+  "@balanceYouOwe": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "settleAction": "Settle",
+  "settleTitle": "Pay back {name}",
+  "@settleTitle": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "settleAmountMax": "At most {amount}: that is what you owe.",
+  "@settleAmountMax": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "settleRecorded": "Recorded. It counts once {name} confirms.",
+  "@settleRecorded": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "settleIncoming": "{name} says they paid you {amount}",
+  "@settleIncoming": {
+    "placeholders": {"name": {"type": "String"}, "amount": {"type": "String"}}
+  },
+  "settleReceived": "Received",
+  "settleNotReceived": "Not received",
+  "settleWaiting": "Waiting for {name} to confirm {amount}",
+  "@settleWaiting": {
+    "placeholders": {"name": {"type": "String"}, "amount": {"type": "String"}}
+  },
+  "settleDeclined": "{name} didn't confirm {amount}",
+  "@settleDeclined": {
+    "placeholders": {"name": {"type": "String"}, "amount": {"type": "String"}}
+  },
+  "registerShareItem": "Your share of “{description}”: {amount}",
+  "@registerShareItem": {
+    "placeholders": {"description": {"type": "String"}, "amount": {"type": "String"}}
+  },
+  "registerSettlementOut": "Pay-back to {name} confirmed: {amount}",
+  "@registerSettlementOut": {
+    "placeholders": {"name": {"type": "String"}, "amount": {"type": "String"}}
+  },
+  "registerSettlementIn": "Pay-back from {name}: {amount}",
+  "@registerSettlementIn": {
+    "placeholders": {"name": {"type": "String"}, "amount": {"type": "String"}}
+  },
+  "registerAction": "Register",
+  "registerTitle": "Add to a wallet",
+  "registerConverted": "In this wallet: {amount}",
+  "@registerConverted": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "registerDone": "Added to your wallet.",
+  "sharedExpenseFallbackTitle": "Shared expense",
+  "sharedExpensePaidBy": "Paid by {name} · your share {amount}",
+  "@sharedExpensePaidBy": {
+    "placeholders": {"name": {"type": "String"}, "amount": {"type": "String"}}
+  },
+  "sharedExpensePaidByYou": "Paid by you · your share {amount}",
+  "@sharedExpensePaidByYou": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "splitLocked": "Someone has already registered their share, so it can no longer be changed.",
+  "splitNotFound": "This no longer exists.",
+  "settleTooMuch": "That's more than you owe.",
+  "editSharedExpense": "Edit shared expense",
+  "deleteSharedExpenseBody": "It disappears for everyone, together with your movements in the wallet.",
+  "splitTodoBadge": "{count, plural, =1{1 shared expense to handle} other{{count} shared expenses to handle}}",
+  "@splitTodoBadge": {
+    "placeholders": {"count": {"type": "int"}}
+  }
 }

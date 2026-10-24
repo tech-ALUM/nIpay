@@ -490,6 +490,49 @@ final sharedExpenseServiceProvider = Provider<SharedExpenseService>(
   (ref) => SupabaseSharedExpenseService(Supabase.instance.client),
 );
 
+/// Spese divise a cui partecipo, saldi per persona e valuta, rimborsi.
+/// Vuoti senza login. Niente Realtime: si ricaricano aprendo Amici e dopo
+/// ogni azione ([refreshSplits]).
+final sharedExpensesProvider = FutureProvider<List<SharedExpense>>((ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return const [];
+  return ref.watch(sharedExpenseServiceProvider).list();
+});
+
+final friendBalancesProvider = FutureProvider<List<FriendBalance>>((ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return const [];
+  return ref.watch(sharedExpenseServiceProvider).balances();
+});
+
+final settlementsProvider = FutureProvider<List<Settlement>>((ref) async {
+  final user = ref.watch(authStateProvider).valueOrNull;
+  if (user == null) return const [];
+  return ref.watch(sharedExpenseServiceProvider).settlements();
+});
+
+/// Cose da fare sulle spese divise: quote da registrare, rimborsi da
+/// confermare e rimborsi confermati da registrare. Va nel badge di Amici.
+final splitTodoCountProvider = Provider<int>((ref) {
+  final expenses = ref.watch(sharedExpensesProvider).valueOrNull ?? const [];
+  final settlements = ref.watch(settlementsProvider).valueOrNull ?? const [];
+  return expenses.where((e) => !e.myShareRegistered).length +
+      settlements
+          .where(
+            (s) =>
+                (s.status == SettlementStatus.pending &&
+                    s.direction == SettlementDirection.incoming) ||
+                (s.status == SettlementStatus.confirmed && !s.myRegistered),
+          )
+          .length;
+});
+
+void refreshSplits(WidgetRef ref) {
+  ref.invalidate(sharedExpensesProvider);
+  ref.invalidate(friendBalancesProvider);
+  ref.invalidate(settlementsProvider);
+}
+
 /// Dopo ogni azione su amici, richieste o blocchi.
 void refreshFriends(WidgetRef ref) {
   ref.invalidate(friendsListProvider);

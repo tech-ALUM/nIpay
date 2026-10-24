@@ -1133,4 +1133,135 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get shareErrorInvalid =>
       'Vérifiez la dépense partagée : montants, devise et amis.';
+
+  @override
+  String get splitSection => 'Dépenses partagées';
+
+  @override
+  String get splitTodo => 'À faire';
+
+  @override
+  String get splitBalances => 'Soldes';
+
+  @override
+  String get splitRecent => 'Récentes';
+
+  @override
+  String balanceOwesYou(String amount) {
+    return 'Vous doit $amount';
+  }
+
+  @override
+  String balanceYouOwe(String amount) {
+    return 'Vous devez $amount';
+  }
+
+  @override
+  String get settleAction => 'Rembourser';
+
+  @override
+  String settleTitle(String name) {
+    return 'Rembourser $name';
+  }
+
+  @override
+  String settleAmountMax(String amount) {
+    return 'Au maximum $amount : c\'est ce que vous devez.';
+  }
+
+  @override
+  String settleRecorded(String name) {
+    return 'Enregistré. Il comptera dès que $name confirmera.';
+  }
+
+  @override
+  String settleIncoming(String name, String amount) {
+    return '$name dit vous avoir donné $amount';
+  }
+
+  @override
+  String get settleReceived => 'Reçu';
+
+  @override
+  String get settleNotReceived => 'Non reçu';
+
+  @override
+  String settleWaiting(String name, String amount) {
+    return 'En attente de la confirmation de $name pour $amount';
+  }
+
+  @override
+  String settleDeclined(String name, String amount) {
+    return '$name n\'a pas confirmé $amount';
+  }
+
+  @override
+  String registerShareItem(String description, String amount) {
+    return 'Votre part de « $description » : $amount';
+  }
+
+  @override
+  String registerSettlementOut(String name, String amount) {
+    return 'Remboursement à $name confirmé : $amount';
+  }
+
+  @override
+  String registerSettlementIn(String name, String amount) {
+    return 'Remboursement de $name : $amount';
+  }
+
+  @override
+  String get registerAction => 'Enregistrer';
+
+  @override
+  String get registerTitle => 'Enregistrer dans un portefeuille';
+
+  @override
+  String registerConverted(String amount) {
+    return 'Dans ce portefeuille : $amount';
+  }
+
+  @override
+  String get registerDone => 'Enregistré dans le portefeuille.';
+
+  @override
+  String get sharedExpenseFallbackTitle => 'Dépense partagée';
+
+  @override
+  String sharedExpensePaidBy(String name, String amount) {
+    return 'Payée par $name · votre part $amount';
+  }
+
+  @override
+  String sharedExpensePaidByYou(String amount) {
+    return 'Payée par vous · votre part $amount';
+  }
+
+  @override
+  String get splitLocked =>
+      'Quelqu\'un a déjà enregistré sa part : elle ne peut plus être modifiée.';
+
+  @override
+  String get splitNotFound => 'Cela n\'existe plus.';
+
+  @override
+  String get settleTooMuch => 'C\'est plus que ce que vous devez.';
+
+  @override
+  String get editSharedExpense => 'Modifier la dépense partagée';
+
+  @override
+  String get deleteSharedExpenseBody =>
+      'Elle disparaît pour tout le monde, avec vos mouvements dans le portefeuille.';
+
+  @override
+  String splitTodoBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dépenses partagées à traiter',
+      one: '1 dépense partagée à traiter',
+    );
+    return '$_temp0';
+  }
 }

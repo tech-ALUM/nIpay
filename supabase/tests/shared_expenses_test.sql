@@ -238,6 +238,8 @@ select is((select count(*)::int from list_settlements()
   2, 'B vede i due rimborsi in attesa');
 select lives_ok($$ select cancel_settlement(current_setting('test.s2')::uuid) $$,
   'B annulla un rimborso in attesa');
+select throws_ok($$ select register_my_settlement(current_setting('test.s1')::uuid) $$,
+  'P0001', 'rimborso non trovato', 'un rimborso in attesa non si registra');
 select throws_ok($$ select respond_settlement(current_setting('test.s1')::uuid, true) $$,
   'P0001', 'rimborso non trovato', 'chi paga non può confermare da sé');
 
@@ -252,6 +254,16 @@ select results_eq(
   'Anna vede il rimborso in arrivo da Bea');
 select lives_ok($$ select respond_settlement(current_setting('test.s1')::uuid, true) $$,
   'Anna conferma il rimborso');
+select is((select my_registered from list_settlements()
+            where settlement_id = current_setting('test.s1')::uuid),
+  false, 'confermato, per Anna è ancora da registrare');
+select lives_ok($$ select register_my_settlement(current_setting('test.s1')::uuid) $$,
+  'Anna registra l''entrata nel suo portafoglio');
+select lives_ok($$ select register_my_settlement(current_setting('test.s1')::uuid) $$,
+  'registrare due volte non cambia nulla');
+select is((select my_registered from list_settlements()
+            where settlement_id = current_setting('test.s1')::uuid),
+  true, 'per Anna il rimborso risulta registrato');
 select is((select balance_cents from friend_balances() where display_name = 'Bea'),
   1000::bigint, 'confermato, il rimborso scala il saldo');
 select throws_ok($$ select respond_settlement(current_setting('test.s1')::uuid, true) $$,
@@ -271,6 +283,16 @@ select is((select balance_cents from friend_balances() where display_name = 'Bea
 -- =====================================================================
 -- Fine dell'amicizia: saldo e rimborsi restano, nuove spese no
 -- =====================================================================
+set local request.jwt.claims = '{"sub":"b2222222-2222-2222-2222-222222222222","role":"authenticated"}';
+select results_eq(
+  $$ select status, my_registered from list_settlements()
+      where settlement_id = current_setting('test.s1')::uuid $$,
+  $$ values ('confirmed'::text, false) $$,
+  'per Bea il rimborso confermato resta da registrare, separato da quello di Anna');
+set local request.jwt.claims = '{"sub":"c3333333-3333-3333-3333-333333333333","role":"authenticated"}';
+select throws_ok($$ select register_my_settlement(current_setting('test.s1')::uuid) $$,
+  'P0001', 'rimborso non trovato', 'nessuno registra rimborsi altrui');
+set local request.jwt.claims = '{"sub":"a1111111-1111-1111-1111-111111111111","role":"authenticated"}';
 select lives_ok($$ select remove_friend('b2222222-2222-2222-2222-222222222222') $$,
   'Anna rimuove Bea dagli amici');
 select results_eq(

@@ -247,10 +247,12 @@ class _RootShellState extends ConsumerState<RootShell>
             .where((r) => r.direction == FriendRequestDirection.incoming)
             .length;
     final unreadMessages = ref.watch(unreadMessagesProvider);
-    final friendsBadge = incomingRequests + unreadMessages;
+    final splitTodo = ref.watch(splitTodoCountProvider);
+    final friendsBadge = incomingRequests + unreadMessages + splitTodo;
     final friendsBadgeLabel = [
       if (incomingRequests > 0) l10n.friendRequestsBadge(incomingRequests),
       if (unreadMessages > 0) l10n.unreadMessagesBadge(unreadMessages),
+      if (splitTodo > 0) l10n.splitTodoBadge(splitTodo),
     ].join(', ');
     Widget tabIcon(int index, IconData icon) => index == 3
         ? Badge(

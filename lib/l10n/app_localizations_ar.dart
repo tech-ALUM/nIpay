@@ -1116,4 +1116,134 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get shareErrorInvalid =>
       'تحقّق من المصروف المشترك: المبالغ والعملة والأصدقاء.';
+
+  @override
+  String get splitSection => 'المصروفات المشتركة';
+
+  @override
+  String get splitTodo => 'مطلوب منك';
+
+  @override
+  String get splitBalances => 'الأرصدة';
+
+  @override
+  String get splitRecent => 'الأحدث';
+
+  @override
+  String balanceOwesYou(String amount) {
+    return 'مدين لك بـ $amount';
+  }
+
+  @override
+  String balanceYouOwe(String amount) {
+    return 'أنت مدين بـ $amount';
+  }
+
+  @override
+  String get settleAction => 'تسوية';
+
+  @override
+  String settleTitle(String name) {
+    return 'السداد لـ $name';
+  }
+
+  @override
+  String settleAmountMax(String amount) {
+    return 'بحد أقصى $amount: هذا ما أنت مدين به.';
+  }
+
+  @override
+  String settleRecorded(String name) {
+    return 'تم التسجيل. يُحتسب عندما يؤكده $name.';
+  }
+
+  @override
+  String settleIncoming(String name, String amount) {
+    return 'يقول $name إنه دفع لك $amount';
+  }
+
+  @override
+  String get settleReceived => 'تم الاستلام';
+
+  @override
+  String get settleNotReceived => 'لم يتم الاستلام';
+
+  @override
+  String settleWaiting(String name, String amount) {
+    return 'بانتظار أن يؤكد $name مبلغ $amount';
+  }
+
+  @override
+  String settleDeclined(String name, String amount) {
+    return 'لم يؤكد $name مبلغ $amount';
+  }
+
+  @override
+  String registerShareItem(String description, String amount) {
+    return 'حصتك من «$description»: $amount';
+  }
+
+  @override
+  String registerSettlementOut(String name, String amount) {
+    return 'تم تأكيد السداد لـ $name: $amount';
+  }
+
+  @override
+  String registerSettlementIn(String name, String amount) {
+    return 'سداد من $name: $amount';
+  }
+
+  @override
+  String get registerAction => 'تسجيل';
+
+  @override
+  String get registerTitle => 'التسجيل في محفظة';
+
+  @override
+  String registerConverted(String amount) {
+    return 'في هذه المحفظة: $amount';
+  }
+
+  @override
+  String get registerDone => 'تم التسجيل في المحفظة.';
+
+  @override
+  String get sharedExpenseFallbackTitle => 'مصروف مشترك';
+
+  @override
+  String sharedExpensePaidBy(String name, String amount) {
+    return 'دفعها $name · حصتك $amount';
+  }
+
+  @override
+  String sharedExpensePaidByYou(String amount) {
+    return 'دفعتها أنت · حصتك $amount';
+  }
+
+  @override
+  String get splitLocked =>
+      'سجّل أحدهم حصته بالفعل، لذا لم يعد بالإمكان تعديله.';
+
+  @override
+  String get splitNotFound => 'لم يعد هذا موجودًا.';
+
+  @override
+  String get settleTooMuch => 'هذا أكثر مما أنت مدين به.';
+
+  @override
+  String get editSharedExpense => 'تعديل المصروف المشترك';
+
+  @override
+  String get deleteSharedExpenseBody => 'يختفي للجميع، مع حركاتك في المحفظة.';
+
+  @override
+  String splitTodoBadge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count من المصروفات المشتركة بانتظارك',
+      one: 'مصروف مشترك واحد بانتظارك',
+    );
+    return '$_temp0';
+  }
 }
