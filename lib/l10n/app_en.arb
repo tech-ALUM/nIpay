@@ -522,5 +522,6 @@
   "splitTodoBadge": "{count, plural, =1{1 shared expense to handle} other{{count} shared expenses to handle}}",
   "@splitTodoBadge": {
     "placeholders": {"count": {"type": "int"}}
-  }
+  },
+  "accountPendingDeletionError": "Your account is being deleted: you can only read and settle your debts."
 }

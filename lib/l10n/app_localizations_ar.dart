@@ -1246,4 +1246,8 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get accountPendingDeletionError =>
+      'جارٍ حذف حسابك: يمكنك فقط القراءة وتسوية ديونك.';
 }

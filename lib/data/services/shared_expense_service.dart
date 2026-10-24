@@ -117,6 +117,9 @@ enum SharedExpenseErrorCode {
   amountTooHigh,
   invalidAmount,
   rateLimited,
+
+  /// Il mio account è in cancellazione: solo lettura e debiti (M-SOC5).
+  pendingDeletion,
   network,
   unknown,
 }
@@ -191,6 +194,7 @@ SharedExpenseException sharedExpenseErrorOf(Object error) => switch (error) {
     'amount_too_high' => SharedExpenseErrorCode.amountTooHigh,
     'invalid_amount' => SharedExpenseErrorCode.invalidAmount,
     'rate_limited' => SharedExpenseErrorCode.rateLimited,
+    'pending_deletion' => SharedExpenseErrorCode.pendingDeletion,
     _ => SharedExpenseErrorCode.unknown,
   }),
   SocketException() || http.ClientException() || TimeoutException() =>

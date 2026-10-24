@@ -381,5 +381,6 @@
   "settleTooMuch": "Das ist mehr, als du schuldest.",
   "editSharedExpense": "Geteilte Ausgabe bearbeiten",
   "deleteSharedExpenseBody": "Sie verschwindet für alle, zusammen mit deinen Buchungen im Konto.",
-  "splitTodoBadge": "{count, plural, =1{1 geteilte Ausgabe zu erledigen} other{{count} geteilte Ausgaben zu erledigen}}"
+  "splitTodoBadge": "{count, plural, =1{1 geteilte Ausgabe zu erledigen} other{{count} geteilte Ausgaben zu erledigen}}",
+  "accountPendingDeletionError": "Dein Account wird gelöscht: Du kannst nur noch lesen und deine Schulden begleichen."
 }

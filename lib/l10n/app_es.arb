@@ -381,5 +381,6 @@
   "settleTooMuch": "Es más de lo que debes.",
   "editSharedExpense": "Editar gasto compartido",
   "deleteSharedExpenseBody": "Desaparece para todos, junto con tus movimientos en la cartera.",
-  "splitTodoBadge": "{count, plural, =1{1 gasto compartido pendiente} other{{count} gastos compartidos pendientes}}"
+  "splitTodoBadge": "{count, plural, =1{1 gasto compartido pendiente} other{{count} gastos compartidos pendientes}}",
+  "accountPendingDeletionError": "Tu cuenta se está eliminando: solo puedes leer y saldar tus deudas."
 }

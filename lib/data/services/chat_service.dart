@@ -127,6 +127,9 @@ enum ChatErrorCode {
   tooManyMembers,
   invalidReport,
   rateLimited,
+
+  /// Il mio account è in cancellazione: solo lettura e debiti (M-SOC5).
+  pendingDeletion,
   network,
   unknown,
 }
@@ -202,6 +205,7 @@ ChatException chatErrorOf(Object error) => switch (error) {
     'too_many_members' => ChatErrorCode.tooManyMembers,
     'invalid_report' => ChatErrorCode.invalidReport,
     'rate_limited' => ChatErrorCode.rateLimited,
+    'pending_deletion' => ChatErrorCode.pendingDeletion,
     _ => ChatErrorCode.unknown,
   }),
   SocketException() ||

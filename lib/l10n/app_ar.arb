@@ -381,5 +381,6 @@
   "settleTooMuch": "هذا أكثر مما أنت مدين به.",
   "editSharedExpense": "تعديل المصروف المشترك",
   "deleteSharedExpenseBody": "يختفي للجميع، مع حركاتك في المحفظة.",
-  "splitTodoBadge": "{count, plural, =1{مصروف مشترك واحد بانتظارك} other{{count} من المصروفات المشتركة بانتظارك}}"
+  "splitTodoBadge": "{count, plural, =1{مصروف مشترك واحد بانتظارك} other{{count} من المصروفات المشتركة بانتظارك}}",
+  "accountPendingDeletionError": "جارٍ حذف حسابك: يمكنك فقط القراءة وتسوية ديونك."
 }

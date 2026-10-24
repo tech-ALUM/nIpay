@@ -1267,4 +1267,8 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get accountPendingDeletionError =>
+      'Dein Account wird gelöscht: Du kannst nur noch lesen und deine Schulden begleichen.';
 }

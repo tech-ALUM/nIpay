@@ -572,6 +572,17 @@ statistiche contano solo le quote.
 
 ## M-SOC5 — Hardening, cancellazione account, beta
 
+**Stato (2026-10-24)**: fatto tutto tranne la beta (prove con più
+account, lista sopra). Decisioni di Sergio: cancellazione definitiva
+attivata sull'hosted (non lo era); export GDPR **solo su richiesta**
+(`private.export_user_data`, service_role); nei 30 giorni di attesa
+l'account può **solo leggere e chiudere i debiti**. Migration
+`20261024030000_account_deletion_social.sql` (segnalazioni chiuse senza
+copia del testo, contatori legati all'account, trigger "solo lettura e
+debiti", export), `supabase/tests/account_deletion_social_test.sql`
+(35 test: cascata completa, regole dei 30 giorni, tutti i limiti di
+frequenza, export). Revisione in SECURITY_AUDIT, Appendice E.
+
 - [ ] **Cancellazione account** (M-ACC7): al hard-delete dopo i 30 giorni
   → amicizie, blocchi, appartenenze e richieste cancellati; messaggi
   anonimizzati secondo la decisione sopra; spese divise e rimborsi

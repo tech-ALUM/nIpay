@@ -2275,6 +2275,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 shared expense to handle} other{{count} shared expenses to handle}}'**
   String splitTodoBadge(int count);
+
+  /// No description provided for @accountPendingDeletionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is being deleted: you can only read and settle your debts.'**
+  String get accountPendingDeletionError;
 }
 
 class _AppLocalizationsDelegate

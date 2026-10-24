@@ -1212,4 +1212,7 @@ class AppLocalizationsZh extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get accountPendingDeletionError => '你的账户正在注销：你只能查看内容并结清欠款。';
 }

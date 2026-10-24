@@ -1264,4 +1264,8 @@ class AppLocalizationsFr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get accountPendingDeletionError =>
+      'Votre compte est en cours de suppression : vous pouvez seulement lire et rembourser vos dettes.';
 }

@@ -381,5 +381,6 @@
   "settleTooMuch": "C'est plus que ce que vous devez.",
   "editSharedExpense": "Modifier la dépense partagée",
   "deleteSharedExpenseBody": "Elle disparaît pour tout le monde, avec vos mouvements dans le portefeuille.",
-  "splitTodoBadge": "{count, plural, =1{1 dépense partagée à traiter} other{{count} dépenses partagées à traiter}}"
+  "splitTodoBadge": "{count, plural, =1{1 dépense partagée à traiter} other{{count} dépenses partagées à traiter}}",
+  "accountPendingDeletionError": "Votre compte est en cours de suppression : vous pouvez seulement lire et rembourser vos dettes."
 }

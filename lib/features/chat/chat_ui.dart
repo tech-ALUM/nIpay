@@ -14,6 +14,7 @@ String chatErrorText(AppLocalizations l10n, ChatErrorCode code) =>
       ChatErrorCode.tooManyMembers => l10n.chatErrorTooManyMembers,
       ChatErrorCode.invalidReport => l10n.chatErrorInvalidReport,
       ChatErrorCode.rateLimited => l10n.authErrorRateLimited,
+      ChatErrorCode.pendingDeletion => l10n.accountPendingDeletionError,
       ChatErrorCode.network => l10n.authErrorNetwork,
       ChatErrorCode.unknown => l10n.authErrorGeneric,
     };

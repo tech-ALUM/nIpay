@@ -1258,4 +1258,8 @@ class AppLocalizationsIt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get accountPendingDeletionError =>
+      'Il tuo account è in cancellazione: puoi solo leggere e saldare i debiti.';
 }

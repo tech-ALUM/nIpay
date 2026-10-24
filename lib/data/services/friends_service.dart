@@ -63,6 +63,9 @@ enum FriendsErrorCode {
   tooManyPending,
   notFound,
   rateLimited,
+
+  /// Il mio account è in cancellazione: solo lettura e debiti (M-SOC5).
+  pendingDeletion,
   network,
   unknown,
 }
@@ -122,6 +125,7 @@ FriendsException friendsErrorOf(Object error) => switch (error) {
     'too_many_pending' => FriendsErrorCode.tooManyPending,
     'not_found' => FriendsErrorCode.notFound,
     'rate_limited' => FriendsErrorCode.rateLimited,
+    'pending_deletion' => FriendsErrorCode.pendingDeletion,
     _ => FriendsErrorCode.unknown,
   }),
   SocketException() ||

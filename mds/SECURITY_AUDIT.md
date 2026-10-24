@@ -2121,3 +2121,115 @@ rollback;
 ```
 
 </details>
+
+---
+
+## Appendice E — Revisione delle funzioni social (M-SOC1–M-SOC5, 2026-10-24)
+
+Addendum richiesto da FRIENDS_PLAN M-SOC5: nuove superfici esposte da
+profilo e codice amico, amicizie e blocchi, chat con Realtime, spese
+divise e rimborsi. Verifiche con pgTAP su Supabase locale
+(`supabase/tests/*.sql`, **454 test**) e controlli in sola lettura
+sull'hosted dopo ogni migration.
+
+### E.1 RPC `SECURITY DEFINER`
+
+- Il client **non scrive mai** le tabelle social: tutto passa da RPC con
+  `set search_path = ''`, nomi qualificati, `auth.uid()` controllato in
+  testa, `revoke ... from public, anon` e `grant ... to authenticated`.
+  Gli helper stanno nello schema `private` (non esposto); quelli usati
+  dalle policy hanno `execute` solo per `authenticated`/`service_role`.
+- Errori senza oracoli: utente inesistente, in cancellazione, se stessi e
+  blocco danno lo stesso `not_available`; chi è bloccato non può saperlo.
+  L'app mostra solo testi tradotti dagli hint (NIP-17).
+- Il Security Advisor segnala come WARN le 30+ RPC `SECURITY DEFINER`
+  chiamabili da `authenticated`: **accettato**, è lo schema scelto (ogni
+  RPC applica le sue regole; coperte da pgTAP, comprese le chiamate "per
+  conto d'altri" rifiutate).
+
+### E.2 RLS e accesso ai dati
+
+| Tabelle | Lettura dal client | Scrittura dal client |
+|---|---|---|
+| `profiles` (nome, codice) | solo il proprio profilo; degli altri solo id + nome via RPC | solo via RPC |
+| `friendships`, `blocks` | le proprie righe (i blocchi: solo quelli fatti) | no |
+| `conversations`, `conversation_members`, `messages` | solo da membri; nei gruppi niente messaggi di chi ho bloccato né precedenti al mio ingresso | no |
+| `conversation_reads` | solo la propria | no |
+| `reports`, `private.deleted_message_bodies` | **nessuno**, nemmeno le proprie segnalazioni | no (`reports` solo via RPC) |
+| `shared_expenses`, `shared_expense_shares`, `settlements` | nessuna lettura diretta, solo RPC | no |
+
+### E.3 Realtime (riattivato per la chat)
+
+Vedi l'aggiornamento di NIP-21: publication limitata a `messages`,
+`conversation_members`, `friendships` (mai le tabelle finanziarie,
+verificato anche sull'hosted), RLS di SELECT su ogni evento
+INSERT/UPDATE, chiavi `id` casuali perché gli eventi DELETE saltano la
+RLS, ora di lettura non pubblicata. **Da verificare a mano** con due
+client che un non membro non riceva eventi (FRIENDS_PLAN, test con più
+account).
+
+### E.4 Contenuti degli utenti e moderazione
+
+- Limiti lato server: messaggi 1–2000 caratteri senza caratteri di
+  controllo (a capo ammessi), titoli di gruppo 1–60, nomi 1–40,
+  descrizioni delle spese ≤ 200, dettagli delle segnalazioni ≤ 500.
+- Messaggio eliminato: sparisce per tutti (anche dagli eventi Realtime);
+  il testo resta solo in `private.deleted_message_bodies` per la
+  moderazione e sparisce con l'account del mittente.
+- Segnalazioni: copia del testo solo finché la segnalazione è aperta
+  (trigger su `resolved_at`); chi segnala resta anonimo dopo la
+  cancellazione del suo account. Gestione manuale dalla dashboard: i
+  termini d'uso (M-SOC0) devono dire entro quanto.
+
+### E.5 Limiti di frequenza (tutti coperti da pgTAP)
+
+| Azione | Limite |
+|---|---|
+| rigenerare il codice amico | 5 / 24 h |
+| cercare un codice | 30 / h |
+| richieste di amicizia | 30 / 24 h, al massimo 20 in attesa |
+| messaggi | 30 / minuto |
+| gruppi nuovi | 20 / 24 h |
+| spese divise nuove | 50 / 24 h |
+| rimborsi registrati | 30 / 24 h |
+| segnalazioni | 20 / 24 h |
+
+I contatori (`private.rate_limit_events`) spariscono con l'account.
+
+### E.6 Cancellazione dell'account
+
+- **Prima del 2026-10-24 la cancellazione definitiva non era attiva
+  sull'hosted** (Edge Function mai pubblicata, niente `pg_cron`): un
+  account "in cancellazione" non sarebbe mai stato cancellato. Nessuna
+  richiesta era in attesa. Ora: `purge-deleted-accounts` pubblicata
+  (`--no-verify-jwt`, protetta da `CRON_SECRET` a tempo costante;
+  rifiuta senza segreto o con segreto errato: 401), segreto in Supabase
+  secrets e nel Vault (`purge_cron_secret`, mai in chiaro in `cron.job`),
+  job `purge-deleted-accounts-daily` alle 03:00 UTC. Verificato
+  end-to-end in prova a vuoto: cron → `pg_net` → Vault → funzione,
+  risposta 200 `{"dryRun":true,"due":[]}`.
+- Cascata verificata con pgTAP: amicizie, blocchi, appartenenze, letture,
+  testi eliminati e contatori cancellati; messaggi "Messaggio eliminato"
+  di "Utente eliminato"; quote, rimborsi e segnalazioni restano anonimi.
+- Nei 30 giorni di attesa l'account può solo leggere e chiudere i debiti
+  (trigger su messaggi, amicizie, membri, spese divise).
+
+### E.7 Export dei dati (art. 15 e 20 GDPR)
+
+Solo su richiesta al supporto (decisione 2026-10-24, coerente con quella
+del 2026-09-13: niente export in app): `private.export_user_data(uuid)`,
+eseguibile solo con `service_role` (dal SQL editor della dashboard).
+Contiene finanze sincronizzate, profilo, amicizie, blocchi, chat,
+messaggi inviati (anche il testo di quelli eliminati), segnalazioni
+fatte, spese divise e rimborsi; mai password né token (pgTAP).
+
+### E.8 Rischi residui
+
+- Messaggi non cifrati end-to-end (cifrati in transito e a riposo da
+  Supabase): da dichiarare nella privacy policy (M-SOC0).
+- "Leaked password protection" di Supabase Auth disattivata (Advisor):
+  consigliato attivarla dalla dashboard (Authentication → Policies).
+- Un utente attivo può ancora accettare una richiesta inviata in passato
+  da chi poi ha chiesto la cancellazione (l'amicizia nasce, ma chi è in
+  cancellazione non può scrivere né creare spese): impatto basso.
+- Prove con più account ancora da fare (FRIENDS_PLAN).

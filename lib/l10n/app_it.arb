@@ -380,5 +380,6 @@
   "settleTooMuch": "È più di quanto devi.",
   "editSharedExpense": "Modifica spesa divisa",
   "deleteSharedExpenseBody": "Sparisce per tutti, insieme ai tuoi movimenti nel portafoglio.",
-  "splitTodoBadge": "{count, plural, =1{1 spesa divisa da gestire} other{{count} spese divise da gestire}}"
+  "splitTodoBadge": "{count, plural, =1{1 spesa divisa da gestire} other{{count} spese divise da gestire}}",
+  "accountPendingDeletionError": "Il tuo account è in cancellazione: puoi solo leggere e saldare i debiti."
 }

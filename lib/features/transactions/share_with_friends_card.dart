@@ -68,6 +68,7 @@ String sharedExpenseErrorText(
   SharedExpenseErrorCode.invalidPayer => l10n.shareErrorInvalid,
   SharedExpenseErrorCode.notAvailable => l10n.friendsErrorNotAvailable,
   SharedExpenseErrorCode.rateLimited => l10n.authErrorRateLimited,
+  SharedExpenseErrorCode.pendingDeletion => l10n.accountPendingDeletionError,
   SharedExpenseErrorCode.network => l10n.authErrorNetwork,
   SharedExpenseErrorCode.locked => l10n.splitLocked,
   SharedExpenseErrorCode.notFound => l10n.splitNotFound,

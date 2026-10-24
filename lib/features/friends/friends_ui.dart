@@ -11,6 +11,7 @@ String friendsErrorText(AppLocalizations l10n, FriendsErrorCode code) =>
       FriendsErrorCode.tooManyPending => l10n.friendsErrorTooManyPending,
       FriendsErrorCode.notFound => l10n.friendsErrorNotFound,
       FriendsErrorCode.rateLimited => l10n.authErrorRateLimited,
+      FriendsErrorCode.pendingDeletion => l10n.accountPendingDeletionError,
       FriendsErrorCode.network => l10n.authErrorNetwork,
       FriendsErrorCode.unknown => l10n.authErrorGeneric,
     };

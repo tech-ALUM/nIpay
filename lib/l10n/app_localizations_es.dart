@@ -1261,4 +1261,8 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get accountPendingDeletionError =>
+      'Tu cuenta se está eliminando: solo puedes leer y saldar tus deudas.';
 }

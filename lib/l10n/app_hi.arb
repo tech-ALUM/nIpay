@@ -381,5 +381,6 @@
   "settleTooMuch": "यह आपके बकाया से ज़्यादा है।",
   "editSharedExpense": "बाँटा गया खर्च संपादित करें",
   "deleteSharedExpenseBody": "यह सभी के लिए हट जाएगा, साथ ही वॉलेट में आपकी प्रविष्टियाँ भी।",
-  "splitTodoBadge": "{count, plural, =1{1 बाँटा गया खर्च बाकी} other{{count} बाँटे गए खर्च बाकी}}"
+  "splitTodoBadge": "{count, plural, =1{1 बाँटा गया खर्च बाकी} other{{count} बाँटे गए खर्च बाकी}}",
+  "accountPendingDeletionError": "आपका खाता हटाया जा रहा है: आप केवल पढ़ सकते हैं और अपना बकाया चुका सकते हैं।"
 }

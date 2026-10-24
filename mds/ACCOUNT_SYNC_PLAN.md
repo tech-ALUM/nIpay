@@ -467,6 +467,9 @@ esistente ✓ (per costruzione, non caso speciale).
   un percorso non self-service (richiesta manuale via supporto) invece
   di un pulsante in app, per restare conformi senza riesporre la
   funzione nell'interfaccia.
+  **Fatto il 2026-10-24 (M-SOC5)**: export su richiesta con
+  `select private.export_user_data('<uuid>');` dal SQL editor della
+  dashboard (solo `service_role`), dati social compresi.
 - [x] **Cancellazione account**: flusso a due fasi implementato:
   1. Richiesta utente → `profiles.deletion_requested_at = now()`
      (colonna aggiunta in
@@ -483,10 +486,14 @@ esistente ✓ (per costruzione, non caso speciale).
      tocca), poi l'utente da `auth.users`: la cascata già presente
      (`on delete cascade` su `wallets.owner_user_id` e su ogni tabella
      figlia, M-ACC1) elimina automaticamente tutto il resto.
-     **Da fare manualmente** (non automatizzabile da qui): deploy
-     (`supabase functions deploy purge-deleted-accounts --no-verify-jwt`),
-     impostare il secret `CRON_SECRET`, schedulare via Supabase Cron —
-     istruzioni nei commenti in testa al file.
+     **Attivata sull'hosted il 2026-10-24** (prima non lo era: funzione
+     mai pubblicata, niente `pg_cron`): funzione pubblicata con
+     `--no-verify-jwt --use-api`, `CRON_SECRET` nei secret e nel Vault
+     (`purge_cron_secret`), `pg_cron` + `pg_net` attivi, job
+     `purge-deleted-accounts-daily` alle 03:00 UTC; verificata in prova a
+     vuoto end-to-end (SECURITY_AUDIT, Appendice E.6). Per ruotare il
+     segreto: nuovo `supabase secrets set CRON_SECRET=…` e
+     `vault.update_secret` sullo stesso nome.
   3. Comunicazione chiara: data esatta mostrata nel banner, un nuovo
      login prima della scadenza permette di annullare con un tap.
 - [ ] Audit log lato server per: cancellazione account, export dati,

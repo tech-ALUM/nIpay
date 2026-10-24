@@ -1255,4 +1255,8 @@ class AppLocalizationsHi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get accountPendingDeletionError =>
+      'आपका खाता हटाया जा रहा है: आप केवल पढ़ सकते हैं और अपना बकाया चुका सकते हैं।';
 }

@@ -1253,4 +1253,8 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get accountPendingDeletionError =>
+      'Your account is being deleted: you can only read and settle your debts.';
 }

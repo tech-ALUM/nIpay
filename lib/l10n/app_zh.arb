@@ -381,5 +381,6 @@
   "settleTooMuch": "超出了你欠的金额。",
   "editSharedExpense": "编辑分摊支出",
   "deleteSharedExpenseBody": "它将对所有人消失，你钱包里的相关记录也会一并删除。",
-  "splitTodoBadge": "{count, plural, =1{1 项分摊待处理} other{{count} 项分摊待处理}}"
+  "splitTodoBadge": "{count, plural, =1{1 项分摊待处理} other{{count} 项分摊待处理}}",
+  "accountPendingDeletionError": "你的账户正在注销：你只能查看内容并结清欠款。"
 }
