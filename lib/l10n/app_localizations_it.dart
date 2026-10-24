@@ -1066,4 +1066,65 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get friendIn => 'Da amici';
+
+  @override
+  String get shareWithFriends => 'Condividi con amici';
+
+  @override
+  String get shareAddFriends => 'Aggiungi amici';
+
+  @override
+  String get shareWhoPaid => 'Chi ha pagato?';
+
+  @override
+  String get sharePaidByMe => 'Io';
+
+  @override
+  String get shareSplitEqually => 'In parti uguali';
+
+  @override
+  String get shareSplitCustom => 'Importi diversi';
+
+  @override
+  String shareRemaining(String amount) {
+    return 'Mancano $amount';
+  }
+
+  @override
+  String shareExcess(String amount) {
+    return '$amount in più';
+  }
+
+  @override
+  String shareOwesYou(String name, String amount) {
+    return '$name ti deve $amount';
+  }
+
+  @override
+  String shareYouOwe(String name, String amount) {
+    return 'Devi $amount a $name';
+  }
+
+  @override
+  String shareYourShare(String amount) {
+    return 'La tua quota: $amount';
+  }
+
+  @override
+  String get shareNeedsConnection =>
+      'Serve la connessione per condividere: puoi comunque salvarla come spesa normale.';
+
+  @override
+  String get shareSplitMismatch => 'Gli importi devono tornare col totale.';
+
+  @override
+  String get shareTooSmall =>
+      'L\'importo è troppo piccolo da dividere fra tutti.';
+
+  @override
+  String get shareLinkedNote => 'Spesa divisa: si gestisce in Amici.';
+
+  @override
+  String get shareErrorInvalid =>
+      'Controlla la spesa divisa: importi, valuta e amici.';
 }

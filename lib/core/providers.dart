@@ -29,6 +29,7 @@ import '../data/services/exchange_rate_service.dart';
 import '../data/services/friends_service.dart';
 import '../data/services/local_data_service.dart';
 import '../data/services/profile_service.dart';
+import '../data/services/shared_expense_service.dart';
 import '../data/services/sync_lock.dart';
 import '../data/services/sync_service.dart';
 
@@ -483,6 +484,11 @@ final chatConnectionProvider = StreamProvider<bool>((ref) {
   if (user == null) return Stream.value(false);
   return ref.watch(chatServiceProvider).connection();
 });
+
+/// Spese divise, rimborsi e saldi (M-SOC4).
+final sharedExpenseServiceProvider = Provider<SharedExpenseService>(
+  (ref) => SupabaseSharedExpenseService(Supabase.instance.client),
+);
 
 /// Dopo ogni azione su amici, richieste o blocchi.
 void refreshFriends(WidgetRef ref) {

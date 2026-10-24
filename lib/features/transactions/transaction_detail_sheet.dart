@@ -73,11 +73,13 @@ class _TransactionDetailSheet extends ConsumerWidget {
         l10n.friendIn,
       ),
     };
-    // I movimenti "con amici" seguono la spesa divisa: non si modificano
-    // dal foglio transazione (M-SOC4).
-    final editable =
-        t.type != TransactionType.friendOut &&
-        t.type != TransactionType.friendIn;
+    // Spesa divisa (la mia quota o un movimento "con amici"): segue la
+    // spesa sul server, non si modifica dal foglio transazione (M-SOC4).
+    final shared =
+        t.sharedExpenseId != null ||
+        t.type == TransactionType.friendOut ||
+        t.type == TransactionType.friendIn;
+    final editable = !shared;
 
     return SheetScaffold(
       title: t.description.isEmpty
@@ -135,6 +137,24 @@ class _TransactionDetailSheet extends ConsumerWidget {
             ],
           ),
         ),
+        if (t.sharedExpenseId != null) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.group_outlined, size: 16, color: palette.muted),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  l10n.shareLinkedNote,
+                  key: const Key('sharedExpenseNote'),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: palette.muted),
+                ),
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(

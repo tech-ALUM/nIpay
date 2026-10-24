@@ -1061,4 +1061,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get friendIn => 'From friends';
+
+  @override
+  String get shareWithFriends => 'Share with friends';
+
+  @override
+  String get shareAddFriends => 'Add friends';
+
+  @override
+  String get shareWhoPaid => 'Who paid?';
+
+  @override
+  String get sharePaidByMe => 'Me';
+
+  @override
+  String get shareSplitEqually => 'Equally';
+
+  @override
+  String get shareSplitCustom => 'Custom amounts';
+
+  @override
+  String shareRemaining(String amount) {
+    return '$amount left to assign';
+  }
+
+  @override
+  String shareExcess(String amount) {
+    return '$amount too much';
+  }
+
+  @override
+  String shareOwesYou(String name, String amount) {
+    return '$name owes you $amount';
+  }
+
+  @override
+  String shareYouOwe(String name, String amount) {
+    return 'You owe $name $amount';
+  }
+
+  @override
+  String shareYourShare(String amount) {
+    return 'Your share: $amount';
+  }
+
+  @override
+  String get shareNeedsConnection =>
+      'Sharing needs a connection. You can still save it as a normal expense.';
+
+  @override
+  String get shareSplitMismatch => 'The amounts must add up to the total.';
+
+  @override
+  String get shareTooSmall =>
+      'The amount is too small to split between everyone.';
+
+  @override
+  String get shareLinkedNote => 'Shared expense: manage it in Friends.';
+
+  @override
+  String get shareErrorInvalid =>
+      'Check the shared expense: amounts, currency and friends.';
 }

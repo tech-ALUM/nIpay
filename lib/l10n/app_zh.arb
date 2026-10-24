@@ -334,5 +334,21 @@
   "chatErrorInvalidReport": "请检查详细说明：最多 500 个字符。",
   "unreadMessagesBadge": "{count, plural, =1{1 条未读消息} other{{count} 条未读消息}}",
   "friendOut": "给好友",
-  "friendIn": "来自好友"
+  "friendIn": "来自好友",
+  "shareWithFriends": "与好友分摊",
+  "shareAddFriends": "添加好友",
+  "shareWhoPaid": "谁付的钱？",
+  "sharePaidByMe": "我",
+  "shareSplitEqually": "平均分摊",
+  "shareSplitCustom": "自定义金额",
+  "shareRemaining": "还差 {amount}",
+  "shareExcess": "多了 {amount}",
+  "shareOwesYou": "{name} 欠你 {amount}",
+  "shareYouOwe": "你欠 {name} {amount}",
+  "shareYourShare": "你的份额：{amount}",
+  "shareNeedsConnection": "分摊需要联网。你仍可将其保存为普通支出。",
+  "shareSplitMismatch": "各项金额之和必须等于总额。",
+  "shareTooSmall": "金额太小，无法在所有人之间分摊。",
+  "shareLinkedNote": "分摊支出：请在“好友”中管理。",
+  "shareErrorInvalid": "请检查分摊支出：金额、币种和好友。"
 }

@@ -334,5 +334,21 @@
   "chatErrorInvalidReport": "Vérifiez les détails : 500 caractères maximum.",
   "unreadMessagesBadge": "{count, plural, =1{1 message non lu} other{{count} messages non lus}}",
   "friendOut": "Vers des amis",
-  "friendIn": "De la part d'amis"
+  "friendIn": "De la part d'amis",
+  "shareWithFriends": "Partager avec des amis",
+  "shareAddFriends": "Ajouter des amis",
+  "shareWhoPaid": "Qui a payé ?",
+  "sharePaidByMe": "Moi",
+  "shareSplitEqually": "À parts égales",
+  "shareSplitCustom": "Montants personnalisés",
+  "shareRemaining": "Il reste {amount} à répartir",
+  "shareExcess": "{amount} en trop",
+  "shareOwesYou": "{name} vous doit {amount}",
+  "shareYouOwe": "Vous devez {amount} à {name}",
+  "shareYourShare": "Votre part : {amount}",
+  "shareNeedsConnection": "Le partage nécessite une connexion. Vous pouvez quand même l'enregistrer comme une dépense normale.",
+  "shareSplitMismatch": "Les montants doivent correspondre au total.",
+  "shareTooSmall": "Le montant est trop petit pour être réparti entre tous.",
+  "shareLinkedNote": "Dépense partagée : gérez-la dans Amis.",
+  "shareErrorInvalid": "Vérifiez la dépense partagée : montants, devise et amis."
 }

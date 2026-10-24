@@ -415,5 +415,36 @@
     "placeholders": {"count": {"type": "int"}}
   },
   "friendOut": "To friends",
-  "friendIn": "From friends"
+  "friendIn": "From friends",
+  "shareWithFriends": "Share with friends",
+  "shareAddFriends": "Add friends",
+  "shareWhoPaid": "Who paid?",
+  "sharePaidByMe": "Me",
+  "shareSplitEqually": "Equally",
+  "shareSplitCustom": "Custom amounts",
+  "shareRemaining": "{amount} left to assign",
+  "@shareRemaining": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "shareExcess": "{amount} too much",
+  "@shareExcess": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "shareOwesYou": "{name} owes you {amount}",
+  "@shareOwesYou": {
+    "placeholders": {"name": {"type": "String"}, "amount": {"type": "String"}}
+  },
+  "shareYouOwe": "You owe {name} {amount}",
+  "@shareYouOwe": {
+    "placeholders": {"name": {"type": "String"}, "amount": {"type": "String"}}
+  },
+  "shareYourShare": "Your share: {amount}",
+  "@shareYourShare": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "shareNeedsConnection": "Sharing needs a connection. You can still save it as a normal expense.",
+  "shareSplitMismatch": "The amounts must add up to the total.",
+  "shareTooSmall": "The amount is too small to split between everyone.",
+  "shareLinkedNote": "Shared expense: manage it in Friends.",
+  "shareErrorInvalid": "Check the shared expense: amounts, currency and friends."
 }

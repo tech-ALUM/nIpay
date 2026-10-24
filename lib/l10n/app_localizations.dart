@@ -1993,6 +1993,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'From friends'**
   String get friendIn;
+
+  /// No description provided for @shareWithFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Share with friends'**
+  String get shareWithFriends;
+
+  /// No description provided for @shareAddFriends.
+  ///
+  /// In en, this message translates to:
+  /// **'Add friends'**
+  String get shareAddFriends;
+
+  /// No description provided for @shareWhoPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Who paid?'**
+  String get shareWhoPaid;
+
+  /// No description provided for @sharePaidByMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Me'**
+  String get sharePaidByMe;
+
+  /// No description provided for @shareSplitEqually.
+  ///
+  /// In en, this message translates to:
+  /// **'Equally'**
+  String get shareSplitEqually;
+
+  /// No description provided for @shareSplitCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom amounts'**
+  String get shareSplitCustom;
+
+  /// No description provided for @shareRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} left to assign'**
+  String shareRemaining(String amount);
+
+  /// No description provided for @shareExcess.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} too much'**
+  String shareExcess(String amount);
+
+  /// No description provided for @shareOwesYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} owes you {amount}'**
+  String shareOwesYou(String name, String amount);
+
+  /// No description provided for @shareYouOwe.
+  ///
+  /// In en, this message translates to:
+  /// **'You owe {name} {amount}'**
+  String shareYouOwe(String name, String amount);
+
+  /// No description provided for @shareYourShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Your share: {amount}'**
+  String shareYourShare(String amount);
+
+  /// No description provided for @shareNeedsConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing needs a connection. You can still save it as a normal expense.'**
+  String get shareNeedsConnection;
+
+  /// No description provided for @shareSplitMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The amounts must add up to the total.'**
+  String get shareSplitMismatch;
+
+  /// No description provided for @shareTooSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'The amount is too small to split between everyone.'**
+  String get shareTooSmall;
+
+  /// No description provided for @shareLinkedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared expense: manage it in Friends.'**
+  String get shareLinkedNote;
+
+  /// No description provided for @shareErrorInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the shared expense: amounts, currency and friends.'**
+  String get shareErrorInvalid;
 }
 
 class _AppLocalizationsDelegate

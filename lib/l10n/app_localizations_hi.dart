@@ -1063,4 +1063,65 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get friendIn => 'दोस्तों से';
+
+  @override
+  String get shareWithFriends => 'दोस्तों के साथ बाँटें';
+
+  @override
+  String get shareAddFriends => 'दोस्त जोड़ें';
+
+  @override
+  String get shareWhoPaid => 'किसने भुगतान किया?';
+
+  @override
+  String get sharePaidByMe => 'मैं';
+
+  @override
+  String get shareSplitEqually => 'बराबर';
+
+  @override
+  String get shareSplitCustom => 'अलग-अलग राशि';
+
+  @override
+  String shareRemaining(String amount) {
+    return '$amount बाँटना बाकी';
+  }
+
+  @override
+  String shareExcess(String amount) {
+    return '$amount ज़्यादा';
+  }
+
+  @override
+  String shareOwesYou(String name, String amount) {
+    return '$name पर आपके $amount बकाया';
+  }
+
+  @override
+  String shareYouOwe(String name, String amount) {
+    return 'आप पर $name के $amount बकाया';
+  }
+
+  @override
+  String shareYourShare(String amount) {
+    return 'आपका हिस्सा: $amount';
+  }
+
+  @override
+  String get shareNeedsConnection =>
+      'बाँटने के लिए कनेक्शन चाहिए। आप इसे सामान्य खर्च के रूप में फिर भी सहेज सकते हैं।';
+
+  @override
+  String get shareSplitMismatch =>
+      'राशियों का योग कुल राशि के बराबर होना चाहिए।';
+
+  @override
+  String get shareTooSmall => 'यह राशि सभी में बाँटने के लिए बहुत छोटी है।';
+
+  @override
+  String get shareLinkedNote => 'बाँटा गया खर्च: इसे दोस्त में प्रबंधित करें।';
+
+  @override
+  String get shareErrorInvalid =>
+      'बाँटे गए खर्च की जाँच करें: राशियाँ, मुद्रा और दोस्त।';
 }

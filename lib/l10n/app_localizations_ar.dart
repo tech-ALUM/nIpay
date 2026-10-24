@@ -1056,4 +1056,64 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get friendIn => 'من الأصدقاء';
+
+  @override
+  String get shareWithFriends => 'المشاركة مع الأصدقاء';
+
+  @override
+  String get shareAddFriends => 'إضافة أصدقاء';
+
+  @override
+  String get shareWhoPaid => 'من دفع؟';
+
+  @override
+  String get sharePaidByMe => 'أنا';
+
+  @override
+  String get shareSplitEqually => 'بالتساوي';
+
+  @override
+  String get shareSplitCustom => 'مبالغ مخصصة';
+
+  @override
+  String shareRemaining(String amount) {
+    return 'متبقٍ $amount للتوزيع';
+  }
+
+  @override
+  String shareExcess(String amount) {
+    return '$amount زيادة';
+  }
+
+  @override
+  String shareOwesYou(String name, String amount) {
+    return '$name مدين لك بـ $amount';
+  }
+
+  @override
+  String shareYouOwe(String name, String amount) {
+    return 'أنت مدين لـ $name بـ $amount';
+  }
+
+  @override
+  String shareYourShare(String amount) {
+    return 'حصتك: $amount';
+  }
+
+  @override
+  String get shareNeedsConnection =>
+      'تحتاج المشاركة إلى اتصال. لا يزال بإمكانك حفظها كمصروف عادي.';
+
+  @override
+  String get shareSplitMismatch => 'يجب أن يساوي مجموع المبالغ الإجمالي.';
+
+  @override
+  String get shareTooSmall => 'المبلغ صغير جدًا لتقسيمه على الجميع.';
+
+  @override
+  String get shareLinkedNote => 'مصروف مشترك: تتم إدارته من الأصدقاء.';
+
+  @override
+  String get shareErrorInvalid =>
+      'تحقّق من المصروف المشترك: المبالغ والعملة والأصدقاء.';
 }

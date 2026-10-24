@@ -10,13 +10,17 @@ import 'package:uuid/uuid.dart';
 import '../../core/image_sanitizer.dart';
 import '../../core/money.dart';
 import '../../core/providers.dart';
+import '../../core/split_accounting.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/ui/ui.dart';
 import '../../core/validation.dart';
 import '../../data/db/app_database.dart';
 import '../../data/db/tables.dart';
 import '../../data/services/exchange_rate_service.dart';
+import '../../data/services/friends_service.dart';
+import '../../data/services/shared_expense_service.dart';
 import '../../l10n/app_localizations.dart';
+import 'share_with_friends_card.dart';
 
 Future<String?> _promptNewTag(
   BuildContext context,
@@ -135,6 +139,10 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
   bool _fetchingRate = false;
   String? _rateError;
 
+  /// Condivisione con amici (M-SOC4), solo per le nuove spese.
+  ShareDraft _share = const ShareDraft();
+  String? _shareError;
+
   bool get _editing => widget.existing != null;
 
   @override
@@ -247,6 +255,119 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     }
   }
 
+  /// Spesa condivisa: prima la spesa divisa sul server, poi in locale la
+  /// mia quota (spesa) e il movimento "con amici". Se il server rifiuta in
+  /// locale non nasce nulla; se fallisce il locale, la spesa sul server
+  /// viene tolta. Restituisce l'id della mia quota, o null con l'errore già
+  /// mostrato. [entryCents] nella valuta digitata, [walletCents] il totale
+  /// convertito nella valuta del portafoglio.
+  Future<String?> _saveShared({
+    required String walletId,
+    required int entryCents,
+    required String entryCurrency,
+    required int walletCents,
+    required bool convert,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final myId = ref.read(authStateProvider).valueOrNull?.id;
+    if (myId == null) {
+      setState(() => _error = l10n.authErrorGeneric);
+      return null;
+    }
+    final resolved = _share.resolve(myId, entryCents);
+    final shares = resolved.shares;
+    if (shares == null) {
+      final text = splitErrorText(l10n, resolved.error!);
+      setState(() {
+        _shareError = text;
+        _error = text;
+      });
+      return null;
+    }
+    final participants = _share.participants(myId);
+    final payer = _share.payerId ?? myId;
+    final description = _description.text.trim();
+
+    final String expenseId;
+    try {
+      expenseId = await ref
+          .read(sharedExpenseServiceProvider)
+          .create(
+            description: description.isEmpty ? null : description,
+            totalCents: entryCents,
+            currency: entryCurrency,
+            spentOn: _date,
+            paidBy: payer,
+            shares: [
+              for (var i = 0; i < participants.length; i++)
+                (userId: participants[i], shareCents: shares[i]),
+            ],
+          );
+    } on SharedExpenseException catch (e) {
+      final text = sharedExpenseErrorText(l10n, e.code);
+      // Anche nella card: è lì che si guarda quando si condivide.
+      setState(() {
+        _shareError = text;
+        _error = text;
+      });
+      return null;
+    }
+
+    final m = movementsForShare(
+      iPaid: payer == myId,
+      totalCents: entryCents,
+      myShareCents: shares[participants.indexOf(myId)],
+    );
+    final local = convert
+        ? convertShareMovements(
+            m,
+            entryTotalCents: entryCents,
+            walletTotalCents: walletCents,
+          )
+        : m;
+    final myShare = local.expenseCents;
+    final friendOut = local.friendOutCents;
+    final friendIn = local.friendInCents;
+    final repo = ref.read(transactionRepositoryProvider);
+    try {
+      if (myShare <= 0) throw StateError('quota convertita a zero');
+      final txId = await repo.createExpense(
+        walletId: walletId,
+        amountCents: myShare,
+        date: _date,
+        categoryId: _categoryId,
+        description: description,
+        entryCurrency: convert ? entryCurrency : null,
+        entryAmountCents: convert ? m.expenseCents : null,
+        sharedExpenseId: expenseId,
+      );
+      if (friendOut > 0 || friendIn > 0) {
+        await repo.createFriendMovement(
+          walletId: walletId,
+          amountCents: friendOut > 0 ? friendOut : friendIn,
+          date: _date,
+          outgoing: friendOut > 0,
+          description: description,
+          entryCurrency: convert ? entryCurrency : null,
+          entryAmountCents: convert
+              ? (friendOut > 0 ? m.friendOutCents : m.friendInCents)
+              : null,
+          sharedExpenseId: expenseId,
+        );
+      }
+      return txId;
+    } on Object {
+      // Meglio nessuna spesa divisa che una registrata a metà.
+      try {
+        await ref.read(sharedExpenseServiceProvider).delete(expenseId);
+      } on SharedExpenseException {
+        // Resta sul server: la si vedrà (e si potrà eliminare) in Amici.
+      }
+      if (mounted) setState(() => _error = l10n.authErrorGeneric);
+      return null;
+    }
+  }
+
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
     final cents = parseCents(_amount.text);
@@ -301,6 +422,16 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
       );
     } else {
       switch (_type) {
+        case TransactionType.expense when _share.isActive:
+          final shared = await _saveShared(
+            walletId: walletId,
+            entryCents: cents,
+            entryCurrency: entryCurrency,
+            walletCents: amountCentsToSave,
+            convert: persistedEntryCurrency != null,
+          );
+          if (shared == null) return;
+          txId = shared;
         case TransactionType.expense:
           txId = await repo.createExpense(
             walletId: walletId,
@@ -588,6 +719,13 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     final generalFields = fieldDefs.where((d) => !d.expenseReportOnly);
     final reportFields = fieldDefs.where((d) => d.expenseReportOnly);
     final isExpense = _type == TransactionType.expense;
+    // "Condividi con amici": solo nuove spese, con account e almeno un amico.
+    final myId = ref.watch(authStateProvider).valueOrNull?.id;
+    final friends = myId == null
+        ? const <Friend>[]
+        : ref.watch(friendsListProvider).valueOrNull ?? const <Friend>[];
+    final showShare =
+        !_editing && isExpense && myId != null && friends.isNotEmpty;
     // Colore che accompagna il tipo nel riquadro importo e nella categoria
     // scelta: coral per le spese, teal per le entrate, neutro per i
     // trasferimenti (come gli importi in lista).
@@ -940,6 +1078,24 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
               ],
             ],
           ),
+          if (showShare) ...[
+            const SizedBox(height: 12),
+            ShareWithFriendsCard(
+              draft: _share,
+              onChanged: (d) => setState(() {
+                _share = d;
+                _shareError = null;
+              }),
+              myId: myId,
+              friends: friends,
+              totalCents: switch (parseCents(_amount.text)) {
+                final c? when c > 0 => c,
+                _ => null,
+              },
+              currency: effectiveCurrency,
+              errorText: _shareError,
+            ),
+          ],
           if (isExpense) ...[
             const SizedBox(height: 12),
             // Material (non Container colorato): gli switch disegnano

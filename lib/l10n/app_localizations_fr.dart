@@ -1071,4 +1071,66 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get friendIn => 'De la part d\'amis';
+
+  @override
+  String get shareWithFriends => 'Partager avec des amis';
+
+  @override
+  String get shareAddFriends => 'Ajouter des amis';
+
+  @override
+  String get shareWhoPaid => 'Qui a payé ?';
+
+  @override
+  String get sharePaidByMe => 'Moi';
+
+  @override
+  String get shareSplitEqually => 'À parts égales';
+
+  @override
+  String get shareSplitCustom => 'Montants personnalisés';
+
+  @override
+  String shareRemaining(String amount) {
+    return 'Il reste $amount à répartir';
+  }
+
+  @override
+  String shareExcess(String amount) {
+    return '$amount en trop';
+  }
+
+  @override
+  String shareOwesYou(String name, String amount) {
+    return '$name vous doit $amount';
+  }
+
+  @override
+  String shareYouOwe(String name, String amount) {
+    return 'Vous devez $amount à $name';
+  }
+
+  @override
+  String shareYourShare(String amount) {
+    return 'Votre part : $amount';
+  }
+
+  @override
+  String get shareNeedsConnection =>
+      'Le partage nécessite une connexion. Vous pouvez quand même l\'enregistrer comme une dépense normale.';
+
+  @override
+  String get shareSplitMismatch =>
+      'Les montants doivent correspondre au total.';
+
+  @override
+  String get shareTooSmall =>
+      'Le montant est trop petit pour être réparti entre tous.';
+
+  @override
+  String get shareLinkedNote => 'Dépense partagée : gérez-la dans Amis.';
+
+  @override
+  String get shareErrorInvalid =>
+      'Vérifiez la dépense partagée : montants, devise et amis.';
 }

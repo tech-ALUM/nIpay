@@ -334,5 +334,21 @@
   "chatErrorInvalidReport": "विवरण जाँचें: अधिकतम 500 अक्षर।",
   "unreadMessagesBadge": "{count, plural, =1{1 अपठित संदेश} other{{count} अपठित संदेश}}",
   "friendOut": "दोस्तों को",
-  "friendIn": "दोस्तों से"
+  "friendIn": "दोस्तों से",
+  "shareWithFriends": "दोस्तों के साथ बाँटें",
+  "shareAddFriends": "दोस्त जोड़ें",
+  "shareWhoPaid": "किसने भुगतान किया?",
+  "sharePaidByMe": "मैं",
+  "shareSplitEqually": "बराबर",
+  "shareSplitCustom": "अलग-अलग राशि",
+  "shareRemaining": "{amount} बाँटना बाकी",
+  "shareExcess": "{amount} ज़्यादा",
+  "shareOwesYou": "{name} पर आपके {amount} बकाया",
+  "shareYouOwe": "आप पर {name} के {amount} बकाया",
+  "shareYourShare": "आपका हिस्सा: {amount}",
+  "shareNeedsConnection": "बाँटने के लिए कनेक्शन चाहिए। आप इसे सामान्य खर्च के रूप में फिर भी सहेज सकते हैं।",
+  "shareSplitMismatch": "राशियों का योग कुल राशि के बराबर होना चाहिए।",
+  "shareTooSmall": "यह राशि सभी में बाँटने के लिए बहुत छोटी है।",
+  "shareLinkedNote": "बाँटा गया खर्च: इसे दोस्त में प्रबंधित करें।",
+  "shareErrorInvalid": "बाँटे गए खर्च की जाँच करें: राशियाँ, मुद्रा और दोस्त।"
 }

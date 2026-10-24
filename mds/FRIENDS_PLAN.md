@@ -427,6 +427,22 @@ additiva di un portafoglio senza collegamenti; modello contabile in
 centesimo) con test property-based dei saldi; dettaglio senza "Modifica"
 per i movimenti con amici.
 
+Migration delle fasi 1–2 applicate all'hosted il 2026-10-24.
+
+Fase 3 fatta (2026-10-24): card "Condividi con amici" nel foglio
+transazione (`lib/features/transactions/share_with_friends_card.dart`),
+solo per nuove spese, con account e almeno un amico; amici, chi ha
+pagato, parti uguali o importi per persona (quanto manca/avanza),
+anteprima "Bea ti deve 20 €" / "Devi 15 € a Luca"; senza Realtime
+collegato lo dice ("Serve la connessione…"). Salva: spesa divisa sul
+server (`SharedExpenseService`), poi in locale la mia quota come spesa
+(categoria, tag, scontrino, nota spese) e il movimento "con amici"; se il
+server rifiuta non nasce nulla, se fallisce il locale la spesa sul server
+viene eliminata. Valuta digitata diversa da quella del portafoglio:
+`convertShareMovements` (l'anticipo è il resto del totale convertito).
+Una transazione collegata non si modifica dal foglio: "Spesa divisa: si
+gestisce in Amici" (fase 4).
+
 ### Modello (server)
 
 - `shared_expenses`: `id`, `created_by`, `paid_by`,

@@ -37,4 +37,54 @@ void main() {
       expect(shares.every((s) => s >= 0), isTrue);
     },
   );
+
+  test('a split typed in another currency keeps the wallet total exact', () {
+    // 60 USD → 30,01 € nel portafoglio: la quota di 20 USD diventa 10,00 €,
+    // l'anticipo il resto (20,01 €), non 2 × 10,00 €.
+    final paid = convertShareMovements(
+      movementsForShare(iPaid: true, totalCents: 6000, myShareCents: 2000),
+      entryTotalCents: 6000,
+      walletTotalCents: 3001,
+    );
+    expect(paid, (expenseCents: 1000, friendOutCents: 2001, friendInCents: 0));
+    expect(paid.expenseCents + paid.friendOutCents, 3001);
+
+    final owed = convertShareMovements(
+      movementsForShare(iPaid: false, totalCents: 6000, myShareCents: 2000),
+      entryTotalCents: 6000,
+      walletTotalCents: 3001,
+    );
+    expect(owed, (expenseCents: 1000, friendOutCents: 0, friendInCents: 1000));
+  });
+
+  test('custom shares must be positive and add up to the total', () {
+    expect(
+      resolveShares(
+        totalCents: 1000,
+        participants: ['me', 'bea'],
+        custom: {'me': 600, 'bea': 400},
+      ).shares,
+      [600, 400],
+    );
+    expect(
+      resolveShares(
+        totalCents: 1000,
+        participants: ['me', 'bea'],
+        custom: {'me': 600, 'bea': 300},
+      ).error,
+      SplitError.mismatch,
+    );
+    expect(
+      resolveShares(
+        totalCents: 1000,
+        participants: ['me', 'bea'],
+        custom: {'me': 1000},
+      ).error,
+      SplitError.mismatch,
+    );
+    expect(
+      resolveShares(totalCents: 1, participants: ['me', 'bea']).error,
+      SplitError.tooSmall,
+    );
+  });
 }

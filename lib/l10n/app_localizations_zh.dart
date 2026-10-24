@@ -1025,4 +1025,62 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get friendIn => '来自好友';
+
+  @override
+  String get shareWithFriends => '与好友分摊';
+
+  @override
+  String get shareAddFriends => '添加好友';
+
+  @override
+  String get shareWhoPaid => '谁付的钱？';
+
+  @override
+  String get sharePaidByMe => '我';
+
+  @override
+  String get shareSplitEqually => '平均分摊';
+
+  @override
+  String get shareSplitCustom => '自定义金额';
+
+  @override
+  String shareRemaining(String amount) {
+    return '还差 $amount';
+  }
+
+  @override
+  String shareExcess(String amount) {
+    return '多了 $amount';
+  }
+
+  @override
+  String shareOwesYou(String name, String amount) {
+    return '$name 欠你 $amount';
+  }
+
+  @override
+  String shareYouOwe(String name, String amount) {
+    return '你欠 $name $amount';
+  }
+
+  @override
+  String shareYourShare(String amount) {
+    return '你的份额：$amount';
+  }
+
+  @override
+  String get shareNeedsConnection => '分摊需要联网。你仍可将其保存为普通支出。';
+
+  @override
+  String get shareSplitMismatch => '各项金额之和必须等于总额。';
+
+  @override
+  String get shareTooSmall => '金额太小，无法在所有人之间分摊。';
+
+  @override
+  String get shareLinkedNote => '分摊支出：请在“好友”中管理。';
+
+  @override
+  String get shareErrorInvalid => '请检查分摊支出：金额、币种和好友。';
 }

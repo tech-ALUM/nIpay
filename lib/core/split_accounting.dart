@@ -46,3 +46,52 @@ List<int> splitEqually(int totalCents, int people) {
   final rest = totalCents % people;
   return [for (var i = 0; i < people; i++) base + (i < rest ? 1 : 0)];
 }
+
+/// Perché una divisione non si può salvare.
+enum SplitError {
+  /// Meno centesimi che persone: qualcuno avrebbe una quota di 0.
+  tooSmall,
+
+  /// Importi personalizzati mancanti, a zero o che non tornano col totale.
+  mismatch,
+}
+
+/// Quote dei [participants] (nell'ordine dato) per un totale di
+/// [totalCents]: in parti uguali se [custom] è null, altrimenti gli importi
+/// scritti per persona. Restituisce le quote oppure l'errore.
+({List<int>? shares, SplitError? error}) resolveShares({
+  required int totalCents,
+  required List<String> participants,
+  Map<String, int?>? custom,
+}) {
+  if (custom == null) {
+    if (totalCents < participants.length) {
+      return (shares: null, error: SplitError.tooSmall);
+    }
+    return (shares: splitEqually(totalCents, participants.length), error: null);
+  }
+  final shares = [for (final p in participants) custom[p] ?? 0];
+  if (shares.any((s) => s <= 0) ||
+      shares.fold(0, (a, b) => a + b) != totalCents) {
+    return (shares: null, error: SplitError.mismatch);
+  }
+  return (shares: shares, error: null);
+}
+
+/// Gli stessi movimenti nella valuta del portafoglio, quando la spesa è
+/// stata digitata in un'altra: la quota al tasso del totale, l'anticipo
+/// come resto del totale convertito ([walletTotalCents]), così il saldo
+/// scende esattamente di quanto è uscito.
+ShareMovements convertShareMovements(
+  ShareMovements entry, {
+  required int entryTotalCents,
+  required int walletTotalCents,
+}) {
+  final share = (entry.expenseCents * walletTotalCents / entryTotalCents)
+      .round();
+  return (
+    expenseCents: share,
+    friendOutCents: entry.friendOutCents == 0 ? 0 : walletTotalCents - share,
+    friendInCents: entry.friendInCents == 0 ? 0 : share,
+  );
+}

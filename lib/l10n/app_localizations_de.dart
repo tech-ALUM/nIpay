@@ -1074,4 +1074,66 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get friendIn => 'Von Freunden';
+
+  @override
+  String get shareWithFriends => 'Mit Freunden teilen';
+
+  @override
+  String get shareAddFriends => 'Freunde hinzufügen';
+
+  @override
+  String get shareWhoPaid => 'Wer hat bezahlt?';
+
+  @override
+  String get sharePaidByMe => 'Ich';
+
+  @override
+  String get shareSplitEqually => 'Zu gleichen Teilen';
+
+  @override
+  String get shareSplitCustom => 'Eigene Beträge';
+
+  @override
+  String shareRemaining(String amount) {
+    return 'Noch $amount zu verteilen';
+  }
+
+  @override
+  String shareExcess(String amount) {
+    return '$amount zu viel';
+  }
+
+  @override
+  String shareOwesYou(String name, String amount) {
+    return '$name schuldet dir $amount';
+  }
+
+  @override
+  String shareYouOwe(String name, String amount) {
+    return 'Du schuldest $name $amount';
+  }
+
+  @override
+  String shareYourShare(String amount) {
+    return 'Dein Anteil: $amount';
+  }
+
+  @override
+  String get shareNeedsConnection =>
+      'Zum Teilen brauchst du eine Verbindung. Du kannst sie trotzdem als normale Ausgabe speichern.';
+
+  @override
+  String get shareSplitMismatch =>
+      'Die Beträge müssen den Gesamtbetrag ergeben.';
+
+  @override
+  String get shareTooSmall =>
+      'Der Betrag ist zu klein, um ihn auf alle aufzuteilen.';
+
+  @override
+  String get shareLinkedNote => 'Geteilte Ausgabe: Verwalte sie unter Freunde.';
+
+  @override
+  String get shareErrorInvalid =>
+      'Prüfe die geteilte Ausgabe: Beträge, Währung und Freunde.';
 }

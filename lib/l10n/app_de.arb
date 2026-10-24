@@ -334,5 +334,21 @@
   "chatErrorInvalidReport": "Prüfe die Details: höchstens 500 Zeichen.",
   "unreadMessagesBadge": "{count, plural, =1{1 ungelesene Nachricht} other{{count} ungelesene Nachrichten}}",
   "friendOut": "An Freunde",
-  "friendIn": "Von Freunden"
+  "friendIn": "Von Freunden",
+  "shareWithFriends": "Mit Freunden teilen",
+  "shareAddFriends": "Freunde hinzufügen",
+  "shareWhoPaid": "Wer hat bezahlt?",
+  "sharePaidByMe": "Ich",
+  "shareSplitEqually": "Zu gleichen Teilen",
+  "shareSplitCustom": "Eigene Beträge",
+  "shareRemaining": "Noch {amount} zu verteilen",
+  "shareExcess": "{amount} zu viel",
+  "shareOwesYou": "{name} schuldet dir {amount}",
+  "shareYouOwe": "Du schuldest {name} {amount}",
+  "shareYourShare": "Dein Anteil: {amount}",
+  "shareNeedsConnection": "Zum Teilen brauchst du eine Verbindung. Du kannst sie trotzdem als normale Ausgabe speichern.",
+  "shareSplitMismatch": "Die Beträge müssen den Gesamtbetrag ergeben.",
+  "shareTooSmall": "Der Betrag ist zu klein, um ihn auf alle aufzuteilen.",
+  "shareLinkedNote": "Geteilte Ausgabe: Verwalte sie unter Freunde.",
+  "shareErrorInvalid": "Prüfe die geteilte Ausgabe: Beträge, Währung und Freunde."
 }

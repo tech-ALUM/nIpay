@@ -334,5 +334,21 @@
   "chatErrorInvalidReport": "تحقّق من التفاصيل: 500 حرف كحد أقصى.",
   "unreadMessagesBadge": "{count, plural, =1{رسالة واحدة غير مقروءة} other{{count} من الرسائل غير المقروءة}}",
   "friendOut": "إلى الأصدقاء",
-  "friendIn": "من الأصدقاء"
+  "friendIn": "من الأصدقاء",
+  "shareWithFriends": "المشاركة مع الأصدقاء",
+  "shareAddFriends": "إضافة أصدقاء",
+  "shareWhoPaid": "من دفع؟",
+  "sharePaidByMe": "أنا",
+  "shareSplitEqually": "بالتساوي",
+  "shareSplitCustom": "مبالغ مخصصة",
+  "shareRemaining": "متبقٍ {amount} للتوزيع",
+  "shareExcess": "{amount} زيادة",
+  "shareOwesYou": "{name} مدين لك بـ {amount}",
+  "shareYouOwe": "أنت مدين لـ {name} بـ {amount}",
+  "shareYourShare": "حصتك: {amount}",
+  "shareNeedsConnection": "تحتاج المشاركة إلى اتصال. لا يزال بإمكانك حفظها كمصروف عادي.",
+  "shareSplitMismatch": "يجب أن يساوي مجموع المبالغ الإجمالي.",
+  "shareTooSmall": "المبلغ صغير جدًا لتقسيمه على الجميع.",
+  "shareLinkedNote": "مصروف مشترك: تتم إدارته من الأصدقاء.",
+  "shareErrorInvalid": "تحقّق من المصروف المشترك: المبالغ والعملة والأصدقاء."
 }

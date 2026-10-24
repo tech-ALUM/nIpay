@@ -1069,4 +1069,65 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get friendIn => 'De amigos';
+
+  @override
+  String get shareWithFriends => 'Compartir con amigos';
+
+  @override
+  String get shareAddFriends => 'Añadir amigos';
+
+  @override
+  String get shareWhoPaid => '¿Quién ha pagado?';
+
+  @override
+  String get sharePaidByMe => 'Yo';
+
+  @override
+  String get shareSplitEqually => 'A partes iguales';
+
+  @override
+  String get shareSplitCustom => 'Importes distintos';
+
+  @override
+  String shareRemaining(String amount) {
+    return 'Faltan $amount';
+  }
+
+  @override
+  String shareExcess(String amount) {
+    return '$amount de más';
+  }
+
+  @override
+  String shareOwesYou(String name, String amount) {
+    return '$name te debe $amount';
+  }
+
+  @override
+  String shareYouOwe(String name, String amount) {
+    return 'Debes $amount a $name';
+  }
+
+  @override
+  String shareYourShare(String amount) {
+    return 'Tu parte: $amount';
+  }
+
+  @override
+  String get shareNeedsConnection =>
+      'Para compartir necesitas conexión. Puedes guardarla igualmente como un gasto normal.';
+
+  @override
+  String get shareSplitMismatch => 'Los importes deben sumar el total.';
+
+  @override
+  String get shareTooSmall =>
+      'El importe es demasiado pequeño para dividirlo entre todos.';
+
+  @override
+  String get shareLinkedNote => 'Gasto compartido: se gestiona en Amigos.';
+
+  @override
+  String get shareErrorInvalid =>
+      'Revisa el gasto compartido: importes, moneda y amigos.';
 }

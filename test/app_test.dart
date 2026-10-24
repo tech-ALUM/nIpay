@@ -341,6 +341,26 @@ void main() {
     expect(find.text('To friends'), findsOneWidget);
     expect(find.byKey(const Key('editTransactionButton')), findsNothing);
     expect(find.text('Delete'), findsOneWidget);
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+
+    // La propria quota di una spesa divisa: si gestisce in Amici.
+    await tester.runAsync(
+      () => container
+          .read(transactionRepositoryProvider)
+          .createExpense(
+            walletId: walletId,
+            amountCents: 2000,
+            date: DateTime.now(),
+            description: 'La mia quota',
+            sharedExpenseId: 'se-cena',
+          ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('La mia quota'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sharedExpenseNote')), findsOneWidget);
+    expect(find.byKey(const Key('editTransactionButton')), findsNothing);
 
     await _unmount(tester);
   });
