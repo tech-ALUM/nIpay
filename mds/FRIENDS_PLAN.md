@@ -131,6 +131,31 @@ Come M-ACC0: senza questo i nuovi dati sono un rischio legale.
 **Fatto quando**: privacy policy e termini pubblicati prima di qualunque
 amicizia reale.
 
+**Stato (2026-10-25)**: bozze scritte, da far rivedere a un legale e da
+pubblicare:
+- [informativa](legal/privacy-policy.it.md) ([EN](legal/privacy-policy.en.md));
+- [termini](legal/terms.it.md) ([EN](legal/terms.en.md));
+- [guida alle dichiarazioni sugli store](legal/STORE_PRIVACY.md).
+
+Decisioni (Sergio, 2026-10-25):
+- titolare ALUM come società: i dati restano da inserire nel blocco in
+  cima ai documenti;
+- età minima 16 anni;
+- testo dei messaggi eliminati conservato 90 giorni;
+- bozze in italiano e inglese.
+
+Migration
+[`20261025000000_deleted_message_retention.sql`](../supabase/migrations/20261025000000_deleted_message_retention.sql)
+(job `pg_cron` giornaliero alle 03:30 UTC):
+- cancella i testi dei messaggi eliminati da più di 90 giorni;
+- cancella gli eventi dei limiti di frequenza più vecchi di 24 ore.
+
+Test in `supabase/tests/deleted_message_retention_test.sql` (8 test).
+
+Ancora da fare nell'app: casella non pre-spuntata alla registrazione
+(accetto i Termini, ho letto l'informativa, ho almeno 16 anni) e link a
+informativa e termini nella schermata Account.
+
 ---
 
 ## M-SOC1 — Profilo e codice amico ✅ (2026-10-22)
@@ -322,7 +347,8 @@ Decisioni prese (Sergio, 2026-10-23):
 - Messaggio eliminato dal mittente: tutti vedono "Messaggio eliminato"; il
   testo resta nel database ma solo in `private.deleted_message_bodies`
   (mai leggibile dal client, anche via Realtime), per la moderazione. Da
-  dichiarare nella privacy policy (M-SOC0) con la durata di conservazione.
+  dichiarare nella privacy policy (M-SOC0) con la durata di conservazione:
+  90 giorni (decisione 2026-10-25, job `pg_cron`).
 - Esce l'ultimo admin: diventa admin il membro entrato da più tempo; esce
   l'ultimo membro: il gruppo sparisce.
 - (scelta tecnica) Chi entra in un gruppo vede solo i messaggi da quel

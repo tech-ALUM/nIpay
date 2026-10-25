@@ -99,6 +99,13 @@ un rischio legale, non solo tecnico.
 **Fatto quando**: privacy policy pubblicata (anche una singola pagina
 statica) e DPA Supabase accettato, prima di qualunque account reale.
 
+**Stato (2026-10-25)**: bozza unica per M-ACC0 e M-SOC0 in
+[`mds/legal/`](legal/privacy-policy.it.md), in italiano e inglese, da
+far rivedere a un legale e pubblicare. Base giuridica scelta nella bozza:
+esecuzione del contratto (art. 6.1.b), non consenso; la casella alla
+registrazione resta per accettare i Termini. Il motivo è nelle note per il
+legale. I passi DPA sono in [STORE_PRIVACY.md](legal/STORE_PRIVACY.md).
+
 ---
 
 ## M-ACC1 — Progetto Supabase e schema Postgres
