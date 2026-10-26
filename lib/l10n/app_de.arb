@@ -382,5 +382,10 @@
   "editSharedExpense": "Geteilte Ausgabe bearbeiten",
   "deleteSharedExpenseBody": "Sie verschwindet für alle, zusammen mit deinen Buchungen im Konto.",
   "splitTodoBadge": "{count, plural, =1{1 geteilte Ausgabe zu erledigen} other{{count} geteilte Ausgaben zu erledigen}}",
-  "accountPendingDeletionError": "Dein Account wird gelöscht: Du kannst nur noch lesen und deine Schulden begleichen."
+  "accountPendingDeletionError": "Dein Account wird gelöscht: Du kannst nur noch lesen und deine Schulden begleichen.",
+  "privacyPolicy": "Datenschutzerklärung",
+  "termsOfUse": "Nutzungsbedingungen",
+  "signUpLegalConsent": "Ich bin mindestens 16 Jahre alt, akzeptiere die Nutzungsbedingungen und habe die Datenschutzerklärung gelesen.",
+  "signUpLegalConsentRequired": "Um einen Account zu erstellen, musst du dieses Kästchen bestätigen.",
+  "legalLinkError": "Die Seite konnte nicht geöffnet werden. Versuche es später erneut."
 }

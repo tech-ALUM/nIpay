@@ -152,9 +152,16 @@ Migration
 
 Test in `supabase/tests/deleted_message_retention_test.sql` (8 test).
 
-Ancora da fare nell'app: casella non pre-spuntata alla registrazione
-(accetto i Termini, ho letto l'informativa, ho almeno 16 anni) e link a
-informativa e termini nella schermata Account.
+Nell'app (2026-10-26):
+- alla registrazione, casella non pre-spuntata e obbligatoria (ho almeno
+  16 anni, accetto i Termini, ho letto l'informativa), con l'errore
+  sotto la casella;
+- link a informativa e termini nella schermata Account, sia da loggati
+  sia no.
+
+Gli indirizzi sono in `lib/core/legal_links.dart`. Sono PROVVISORI: puntano
+alle bozze su GitHub e vanno cambiati quando le pagine sono pubblicate.
+Decisione: niente richiesta di accettazione agli account già esistenti.
 
 ---
 

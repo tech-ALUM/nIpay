@@ -2281,6 +2281,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your account is being deleted: you can only read and settle your debts.'**
   String get accountPendingDeletionError;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @termsOfUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Use'**
+  String get termsOfUse;
+
+  /// No description provided for @signUpLegalConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'I am at least 16 years old, I accept the Terms of Use and I have read the Privacy Policy.'**
+  String get signUpLegalConsent;
+
+  /// No description provided for @signUpLegalConsentRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'You need to tick this box to create an account.'**
+  String get signUpLegalConsentRequired;
+
+  /// No description provided for @legalLinkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the page. Try again later.'**
+  String get legalLinkError;
 }
 
 class _AppLocalizationsDelegate

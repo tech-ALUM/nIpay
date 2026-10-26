@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nipay/core/legal_links.dart';
 import 'package:nipay/core/providers.dart';
 import 'package:nipay/data/services/auth_service.dart';
 import 'package:nipay/data/services/local_data_service.dart';
@@ -227,6 +228,7 @@ Widget _wrap(
   FakeSyncService? fakeSync,
   FakeLocalDataService? fakeLocalData,
   FakeProfileService? fakeProfile,
+  Future<bool> Function(Uri)? openUrl,
 }) {
   final sync = fakeSync ?? FakeSyncService();
   return ProviderScope(
@@ -240,6 +242,7 @@ Widget _wrap(
         fakeLocalData ?? FakeLocalDataService(sync),
       ),
       sharedPreferencesProvider.overrideWithValue(_prefs),
+      openExternalUrlProvider.overrideWithValue(openUrl ?? (_) async => true),
     ],
     child: MaterialApp(
       localizationsDelegates: const [
@@ -256,6 +259,14 @@ Widget _wrap(
       home: child,
     ),
   );
+}
+
+/// Spunta la casella di registrazione (età, Termini, informativa).
+Future<void> _acceptLegal(WidgetTester tester) async {
+  final box = find.byKey(const Key('signUpLegalConsent'));
+  await tester.ensureVisible(box);
+  await tester.tap(find.descendant(of: box, matching: find.byType(Checkbox)));
+  await tester.pump();
 }
 
 void main() {
@@ -305,6 +316,9 @@ void main() {
 
     expect(find.text('Signed in as test@example.com'), findsOneWidget);
     expect(find.text('Sign out'), findsOneWidget);
+    // Informativa e Termini restano raggiungibili da loggati (Apple 5.1.1).
+    expect(find.byKey(const Key('privacyPolicyLink')), findsOneWidget);
+    expect(find.byKey(const Key('termsLink')), findsOneWidget);
   });
 
   testWidgets('toggling to sign-up mode changes the submit button label', (
@@ -362,6 +376,7 @@ void main() {
       find.byType(TextFormField).last,
       'lunga-password-2026',
     );
+    await _acceptLegal(tester);
     await tester.tap(find.widgetWithText(FilledButton, 'Sign up'));
     await tester.pumpAndSettle();
     expect(fakeAuth.currentUser, isNotNull);
@@ -408,11 +423,87 @@ void main() {
       find.byType(TextFormField).last,
       'lunga-password-2026',
     );
+    await _acceptLegal(tester);
     await tester.tap(find.widgetWithText(FilledButton, 'Sign up'));
     await tester.pumpAndSettle();
 
     expect(fakeAuth.lastSignUpDisplayName, 'Sergio');
     expect(fakeAuth.currentUser, isNotNull);
+  });
+
+  testWidgets('sign-up is refused inline until the age and legal box is '
+      'ticked', (tester) async {
+    final fakeAuth = FakeAuthService();
+    await tester.pumpWidget(_wrap(const AccountScreen(), fakeAuth: fakeAuth));
+    // Solo in registrazione: chi accede l'ha già accettata.
+    expect(find.byKey(const Key('signUpLegalConsent')), findsNothing);
+    await tester.tap(find.text("Don't have an account? Sign up"));
+    await tester.pump();
+
+    await tester.enterText(find.byKey(const Key('signUpNameField')), 'Nuovo');
+    await tester.enterText(find.byType(TextFormField).at(1), 'new@example.com');
+    await tester.enterText(
+      find.byType(TextFormField).last,
+      'lunga-password-2026',
+    );
+    final box = find.byKey(const Key('signUpLegalConsent'));
+    await tester.ensureVisible(box);
+    expect(
+      tester
+          .widget<Checkbox>(
+            find.descendant(of: box, matching: find.byType(Checkbox)),
+          )
+          .value,
+      isFalse,
+    );
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign up'));
+    await tester.pump();
+    expect(
+      find.text('You need to tick this box to create an account.'),
+      findsOneWidget,
+    );
+    expect(fakeAuth.currentUser, isNull);
+    expect(fakeAuth.lastSignUpDisplayName, isNull);
+
+    await _acceptLegal(tester);
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign up'));
+    await tester.pumpAndSettle();
+    expect(fakeAuth.currentUser, isNotNull);
+  });
+
+  testWidgets('the legal links open the policy and terms in the app language, '
+      'and a failure is explained', (tester) async {
+    final opened = <Uri>[];
+    var succeed = true;
+    await tester.pumpWidget(
+      _wrap(
+        const AccountScreen(),
+        fakeAuth: FakeAuthService(),
+        openUrl: (uri) async {
+          opened.add(uri);
+          return succeed;
+        },
+      ),
+    );
+    await tester.ensureVisible(find.byKey(const Key('privacyPolicyLink')));
+    await tester.tap(find.byKey(const Key('privacyPolicyLink')));
+    await tester.tap(find.byKey(const Key('termsLink')));
+    await tester.pump();
+    expect(opened, [
+      privacyPolicyUri(const Locale('en')),
+      termsUri(const Locale('en')),
+    ]);
+    expect(opened.first.path, endsWith('/privacy-policy.en.md'));
+    expect(privacyPolicyUri(const Locale('it')).path, endsWith('.it.md'));
+    expect(find.text("Couldn't open the page. Try again later."), findsNothing);
+
+    succeed = false;
+    await tester.tap(find.byKey(const Key('termsLink')));
+    await tester.pump();
+    expect(
+      find.text("Couldn't open the page. Try again later."),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a second reset email within a minute is not requested', (

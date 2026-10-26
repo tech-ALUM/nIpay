@@ -382,5 +382,10 @@
   "editSharedExpense": "تعديل المصروف المشترك",
   "deleteSharedExpenseBody": "يختفي للجميع، مع حركاتك في المحفظة.",
   "splitTodoBadge": "{count, plural, =1{مصروف مشترك واحد بانتظارك} other{{count} من المصروفات المشتركة بانتظارك}}",
-  "accountPendingDeletionError": "جارٍ حذف حسابك: يمكنك فقط القراءة وتسوية ديونك."
+  "accountPendingDeletionError": "جارٍ حذف حسابك: يمكنك فقط القراءة وتسوية ديونك.",
+  "privacyPolicy": "سياسة الخصوصية",
+  "termsOfUse": "شروط الاستخدام",
+  "signUpLegalConsent": "عمري 16 عامًا على الأقل، وأوافق على شروط الاستخدام، وقد قرأت سياسة الخصوصية.",
+  "signUpLegalConsentRequired": "لإنشاء حساب، يجب تحديد هذا المربع.",
+  "legalLinkError": "تعذّر فتح الصفحة. حاول مرة أخرى لاحقًا."
 }

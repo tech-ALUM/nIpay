@@ -382,5 +382,10 @@
   "editSharedExpense": "Modifier la dépense partagée",
   "deleteSharedExpenseBody": "Elle disparaît pour tout le monde, avec vos mouvements dans le portefeuille.",
   "splitTodoBadge": "{count, plural, =1{1 dépense partagée à traiter} other{{count} dépenses partagées à traiter}}",
-  "accountPendingDeletionError": "Votre compte est en cours de suppression : vous pouvez seulement lire et rembourser vos dettes."
+  "accountPendingDeletionError": "Votre compte est en cours de suppression : vous pouvez seulement lire et rembourser vos dettes.",
+  "privacyPolicy": "Politique de confidentialité",
+  "termsOfUse": "Conditions d'utilisation",
+  "signUpLegalConsent": "J'ai au moins 16 ans, j'accepte les Conditions d'utilisation et j'ai lu la Politique de confidentialité.",
+  "signUpLegalConsentRequired": "Pour créer un compte, vous devez cocher cette case.",
+  "legalLinkError": "Impossible d'ouvrir la page. Réessayez plus tard."
 }

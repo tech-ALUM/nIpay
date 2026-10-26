@@ -1257,4 +1257,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get accountPendingDeletionError =>
       'Your account is being deleted: you can only read and settle your debts.';
+
+  @override
+  String get privacyPolicy => 'Privacy Policy';
+
+  @override
+  String get termsOfUse => 'Terms of Use';
+
+  @override
+  String get signUpLegalConsent =>
+      'I am at least 16 years old, I accept the Terms of Use and I have read the Privacy Policy.';
+
+  @override
+  String get signUpLegalConsentRequired =>
+      'You need to tick this box to create an account.';
+
+  @override
+  String get legalLinkError => 'Couldn\'t open the page. Try again later.';
 }

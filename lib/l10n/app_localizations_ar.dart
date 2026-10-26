@@ -1250,4 +1250,20 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get accountPendingDeletionError =>
       'جارٍ حذف حسابك: يمكنك فقط القراءة وتسوية ديونك.';
+
+  @override
+  String get privacyPolicy => 'سياسة الخصوصية';
+
+  @override
+  String get termsOfUse => 'شروط الاستخدام';
+
+  @override
+  String get signUpLegalConsent =>
+      'عمري 16 عامًا على الأقل، وأوافق على شروط الاستخدام، وقد قرأت سياسة الخصوصية.';
+
+  @override
+  String get signUpLegalConsentRequired => 'لإنشاء حساب، يجب تحديد هذا المربع.';
+
+  @override
+  String get legalLinkError => 'تعذّر فتح الصفحة. حاول مرة أخرى لاحقًا.';
 }

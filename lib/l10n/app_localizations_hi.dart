@@ -1259,4 +1259,21 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get accountPendingDeletionError =>
       'आपका खाता हटाया जा रहा है: आप केवल पढ़ सकते हैं और अपना बकाया चुका सकते हैं।';
+
+  @override
+  String get privacyPolicy => 'गोपनीयता नीति';
+
+  @override
+  String get termsOfUse => 'उपयोग की शर्तें';
+
+  @override
+  String get signUpLegalConsent =>
+      'मेरी उम्र कम से कम 16 वर्ष है, मैं उपयोग की शर्तें स्वीकार करता/करती हूँ और मैंने गोपनीयता नीति पढ़ ली है।';
+
+  @override
+  String get signUpLegalConsentRequired =>
+      'खाता बनाने के लिए आपको यह बॉक्स चुनना होगा।';
+
+  @override
+  String get legalLinkError => 'पेज नहीं खुल सका। बाद में फिर से कोशिश करें।';
 }

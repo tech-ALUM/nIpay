@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/legal_links.dart';
 import '../../core/providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/ui/ui.dart';
@@ -268,6 +269,8 @@ class _SignedInViewState extends ConsumerState<_SignedInView> {
           onPressed: _confirmSignOutEverywhere,
           label: Text(l10n.signOutEverywhere),
         ),
+        const SizedBox(height: 16),
+        const _LegalLinks(),
         // Zona pericolo, staccata dalle azioni ordinarie.
         const SizedBox(height: 32),
         const Divider(),
@@ -721,8 +724,38 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
                   child: Text(l10n.forgotPassword),
                 ),
               )
-            else
+            else ...[
               const SizedBox(height: 12),
+              // Non pre-spuntata (M-ACC0): età minima, Termini e informativa.
+              FormField<bool>(
+                key: const Key('signUpLegalConsent'),
+                initialValue: false,
+                validator: (value) =>
+                    value == true ? null : l10n.signUpLegalConsentRequired,
+                builder: (field) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      value: field.value,
+                      onChanged: (value) => field.didChange(value ?? false),
+                      title: Text(l10n.signUpLegalConsent),
+                    ),
+                    if (field.hasError)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 12),
+                        child: Text(
+                          field.errorText!,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: scheme.error),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             FilledButton(
               onPressed: _isSubmitting ? null : _submit,
@@ -737,6 +770,8 @@ class _AuthFormState extends ConsumerState<_AuthForm> {
                 _isSignUp ? l10n.alreadyHaveAccount : l10n.noAccountYet,
               ),
             ),
+            const SizedBox(height: 16),
+            const _LegalLinks(),
           ],
         ),
       ),
@@ -1333,6 +1368,40 @@ class _Banner extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Informativa e Termini, nel browser (lib/core/legal_links.dart).
+class _LegalLinks extends ConsumerWidget {
+  const _LegalLinks();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+    Future<void> open(Uri uri) async {
+      final messenger = ScaffoldMessenger.of(context);
+      if (!await ref.read(openExternalUrlProvider)(uri)) {
+        messenger.showSnackBar(SnackBar(content: Text(l10n.legalLinkError)));
+      }
+    }
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      children: [
+        TextButton(
+          key: const Key('privacyPolicyLink'),
+          onPressed: () => open(privacyPolicyUri(locale)),
+          child: Text(l10n.privacyPolicy),
+        ),
+        TextButton(
+          key: const Key('termsLink'),
+          onPressed: () => open(termsUri(locale)),
+          child: Text(l10n.termsOfUse),
+        ),
+      ],
     );
   }
 }

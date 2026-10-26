@@ -1265,4 +1265,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get accountPendingDeletionError =>
       'Tu cuenta se está eliminando: solo puedes leer y saldar tus deudas.';
+
+  @override
+  String get privacyPolicy => 'Política de privacidad';
+
+  @override
+  String get termsOfUse => 'Términos de uso';
+
+  @override
+  String get signUpLegalConsent =>
+      'Tengo al menos 16 años, acepto los Términos de uso y he leído la Política de privacidad.';
+
+  @override
+  String get signUpLegalConsentRequired =>
+      'Para crear una cuenta tienes que marcar esta casilla.';
+
+  @override
+  String get legalLinkError =>
+      'No se pudo abrir la página. Inténtalo más tarde.';
 }

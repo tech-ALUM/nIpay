@@ -382,5 +382,10 @@
   "editSharedExpense": "编辑分摊支出",
   "deleteSharedExpenseBody": "它将对所有人消失，你钱包里的相关记录也会一并删除。",
   "splitTodoBadge": "{count, plural, =1{1 项分摊待处理} other{{count} 项分摊待处理}}",
-  "accountPendingDeletionError": "你的账户正在注销：你只能查看内容并结清欠款。"
+  "accountPendingDeletionError": "你的账户正在注销：你只能查看内容并结清欠款。",
+  "privacyPolicy": "隐私政策",
+  "termsOfUse": "使用条款",
+  "signUpLegalConsent": "我已年满 16 岁，接受使用条款，并已阅读隐私政策。",
+  "signUpLegalConsentRequired": "要创建账户，你需要勾选此框。",
+  "legalLinkError": "无法打开页面。请稍后再试。"
 }

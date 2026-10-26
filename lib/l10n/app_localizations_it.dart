@@ -1262,4 +1262,22 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get accountPendingDeletionError =>
       'Il tuo account è in cancellazione: puoi solo leggere e saldare i debiti.';
+
+  @override
+  String get privacyPolicy => 'Informativa sulla privacy';
+
+  @override
+  String get termsOfUse => 'Termini d\'uso';
+
+  @override
+  String get signUpLegalConsent =>
+      'Ho almeno 16 anni, accetto i Termini d\'uso e ho letto l\'Informativa sulla privacy.';
+
+  @override
+  String get signUpLegalConsentRequired =>
+      'Per creare un account devi confermare questa casella.';
+
+  @override
+  String get legalLinkError =>
+      'Impossibile aprire la pagina. Riprova più tardi.';
 }

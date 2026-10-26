@@ -382,5 +382,10 @@
   "editSharedExpense": "Editar gasto compartido",
   "deleteSharedExpenseBody": "Desaparece para todos, junto con tus movimientos en la cartera.",
   "splitTodoBadge": "{count, plural, =1{1 gasto compartido pendiente} other{{count} gastos compartidos pendientes}}",
-  "accountPendingDeletionError": "Tu cuenta se está eliminando: solo puedes leer y saldar tus deudas."
+  "accountPendingDeletionError": "Tu cuenta se está eliminando: solo puedes leer y saldar tus deudas.",
+  "privacyPolicy": "Política de privacidad",
+  "termsOfUse": "Términos de uso",
+  "signUpLegalConsent": "Tengo al menos 16 años, acepto los Términos de uso y he leído la Política de privacidad.",
+  "signUpLegalConsentRequired": "Para crear una cuenta tienes que marcar esta casilla.",
+  "legalLinkError": "No se pudo abrir la página. Inténtalo más tarde."
 }

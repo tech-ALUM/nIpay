@@ -1268,4 +1268,22 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get accountPendingDeletionError =>
       'Votre compte est en cours de suppression : vous pouvez seulement lire et rembourser vos dettes.';
+
+  @override
+  String get privacyPolicy => 'Politique de confidentialité';
+
+  @override
+  String get termsOfUse => 'Conditions d\'utilisation';
+
+  @override
+  String get signUpLegalConsent =>
+      'J\'ai au moins 16 ans, j\'accepte les Conditions d\'utilisation et j\'ai lu la Politique de confidentialité.';
+
+  @override
+  String get signUpLegalConsentRequired =>
+      'Pour créer un compte, vous devez cocher cette case.';
+
+  @override
+  String get legalLinkError =>
+      'Impossible d\'ouvrir la page. Réessayez plus tard.';
 }

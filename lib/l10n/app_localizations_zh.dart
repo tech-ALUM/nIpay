@@ -1215,4 +1215,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get accountPendingDeletionError => '你的账户正在注销：你只能查看内容并结清欠款。';
+
+  @override
+  String get privacyPolicy => '隐私政策';
+
+  @override
+  String get termsOfUse => '使用条款';
+
+  @override
+  String get signUpLegalConsent => '我已年满 16 岁，接受使用条款，并已阅读隐私政策。';
+
+  @override
+  String get signUpLegalConsentRequired => '要创建账户，你需要勾选此框。';
+
+  @override
+  String get legalLinkError => '无法打开页面。请稍后再试。';
 }
